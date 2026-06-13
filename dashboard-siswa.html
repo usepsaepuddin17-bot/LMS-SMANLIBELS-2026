@@ -46,7 +46,7 @@
             <h1>Ruang Belajar Siswa</h1>
             <p style="color:#a3b8cc; margin: 5px 0 0 0;">Aplikasi Sistem Pengelolaan Pembelajaran</p>
         </div>
-        <button class="btn-danger" onclick="window.location.href='index.html'">Keluar</button>
+        <button class="btn-danger" onclick="window.location.href='../index.html'">Keluar</button>
     </div>
 
     <div class="filter-panel">
@@ -182,7 +182,11 @@
                     ? `<a href="tampilkan_materi.html?doc=${encodeURIComponent(materi.bahanAjar.trim())}" class="btn-link">📖 Bahan Ajar</a>` 
                     : `<span class="btn-disabled">📖 Bahan Ajar (Kosong)</span>`;
                     
-                let btnLkpd = (materi.lkpd && materi.lkpd.trim() !== "-") ? `<a href="${materi.lkpd}" target="_blank" class="btn-link">📝 LKPD</a>` : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
+                // 🌟 PERUBAHANNYA ADA DI SINI (Baris 214 pada kode di atas):
+                let btnLkpd = (materi.lkpd && materi.lkpd.trim() !== "-") 
+                ? `<a href="tampilkan_lkpd.html?doc=${encodeURIComponent(materi.lkpd.trim())}" class="btn-link">📝 LKPD Berkas</a>` 
+                : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
+                
                 let btnSoal = (materi.latihanSoal && materi.latihanSoal.trim() !== "-") ? `<a href="${materi.latihanSoal}" target="_blank" class="btn-link">✍️ Latihan Soal</a>` : `<span class="btn-disabled">✍️ Latihan Soal (Kosong)</span>`;
 
                 let htmlCard = `

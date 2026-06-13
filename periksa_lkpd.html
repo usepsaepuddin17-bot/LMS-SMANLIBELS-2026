@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Guru - Pemeriksaan Jawaban LKPD</title>
+    <link rel="stylesheet" href="../style-shared.css">
+    <style>
+        body {
+            padding: 12px;
+            box-sizing: border-box;
+            background-color: #0b1a1a;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            color: #ffffff;
+        }
+
+        .header-app {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px 10px;
+            border-bottom: 2px solid #bfa15f;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card-filter {
+            background-color: #032b30;
+            border: 1px solid #1a5157;
+            border-top: 4px solid #bfa15f;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 13px;
+            color: #bfa15f;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            font-size: 16px;
+            padding: 10px 12px;
+            background-color: #07383d;
+            color: #ffffff;
+            border: 1px solid #bfa15f;
+            border-radius: 8px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        /* Desain List Kartu Jawaban Siswa */
+        .jawaban-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card-jawaban {
+            background: #032b30;
+            border: 1px solid #1a5157;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .meta-siswa {
+            border-bottom: 1px solid #1a5157;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .meta-siswa h4 {
+            margin: 0 0 5px 0;
+            color: #bfa15f;
+            font-size: 16px;
+        }
+        .meta-siswa p {
+            margin: 2px 0;
+            font-size: 13px;
+            color: #a3b8cc;
+        }
+
+        .box-jawaban {
+            background: #04383e;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #1a5157;
+            font-size: 14px;
+            white-space: pre-wrap; /* Mempertahankan baris enter jawaban siswa */
+            color: #e6f1f2;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        /* Grid Penilaian */
+        .grid-penilaian {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(191, 161, 95, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed #bfa15f;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #bfa15f, #9a7d3e);
+            color: #032b30;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 13px;
+            width: 100%;
+        }
+        
+        .btn-danger {
+            background-color: #d9534f;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .status-nilai {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .belum-dinilai { background-color: #d9534f; color: white; }
+        .sudah-dinilai { background-color: #2eb872; color: white; }
+
+        @media (min-width: 768px) {
+            .header-app { flex-direction: row; text-align: left; justify-content: space-between; }
+            .grid-penilaian { flex-direction: row; align-items: flex-end; }
+            .grid-penilaian .form-group:nth-child(1) { width: 20%; }
+            .grid-penilaian .form-group:nth-child(2) { width: 60%; }
+            .grid-penilaian button { width: 20%; height: 42px; }
+            .btn-danger { width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-app">
+        <div>
+            <h1>Panel Pemeriksaan LKPD</h1>
+            <p style="color:#a3b8cc; margin: 0;">Evaluasi hasil kerja, berikan nilai, dan catatan umpan balik untuk siswa.</p>
+        </div>
+        <button class="btn-danger" onclick="window.history.back()">← Kembali</button>
+    </div>
+
+    <div class="card-filter">
+        <div class="form-group">
+            <label>Pilih Nama Anda (Guru)</label>
+            <select id="pilihGuruKoreksi" class="form-control" onchange="muatJawabanSiswa(this.value)">
+                <option value="">-- Memuat Daftar Guru... --</option>
+            </select>
+        </div>
+    </div>
+
+    <h3 style="color:#bfa15f; margin-bottom: 10px;">Daftar Jawaban Masuk:</h3>
+    <div id="wrapperJawaban" class="jawaban-container">
+        <p style="color: #a3b8cc; text-align: center; padding: 20px;">Silakan pilih nama guru terlebih dahulu untuk memunculkan lembar jawaban siswa.</p>
+    </div>
+
+    <script>
+        // Konstanta API diarahkan ke Spreadsheet Master dan Web App Anda
+        const URL_SPREADSHEET_MASTER = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit";
+        const SCRIPT_URL_SISTEM = "https://script.google.com/macros/s/AKfycby3rdH9a0kwUNhhduvMKbSCibzAMR5jCsypK2P3sJE2Oq6gbmAlbbLJq6CcCKy93uto/exec";
+
+        window.onload = function() {
+            muatDaftarGuruMaster();
+        };
+
+        // 1. Ambil daftar guru dari spreadsheet utama untuk mengisi dropdown pencarian
+        function muatDaftarGuruMaster() {
+            fetch(SCRIPT_URL_SISTEM, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: "GET_INITIAL_DATA",
+                    urlSpreadsheet: URL_SPREADSHEET_MASTER
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const selectGuru = document.getElementById('pilihGuruKoreksi');
+                selectGuru.innerHTML = '<option value="">-- Pilih Nama Guru --</option>';
+                if(data.guru && data.guru.length > 0) {
+                    data.guru.forEach(g => {
+                        selectGuru.innerHTML += `<option value="${g}">${g}</option>`;
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Gagal memuat list guru:", err);
+                document.getElementById('pilihGuruKoreksi').innerHTML = '<option value="">Gagal memuat daftar guru</option>';
+            });
+        }
+
+        // 2. Ambil data lembar jawaban dari sheet guru yang dipilih
+        // 2. Ambil data lembar jawaban dari sheet guru yang dipilih
+        function muatJawabanSiswa(namaGuru) {
+            if (!namaGuru) {
+                document.getElementById('wrapperJawaban').innerHTML = '<p style="color: #a3b8cc; text-align: center; padding: 20px;">Silakan pilih nama guru terlebih dahulu untuk memunculkan lembar jawaban siswa.</p>';
+                return;
+            }
+
+            document.getElementById('wrapperJawaban').innerHTML = '<p style="color: #bfa15f; text-align: center; padding: 20px;">🔄 Sedang mengambil rekap data jawaban kelompok...</p>';
+
+            fetch(SCRIPT_URL_SISTEM, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: "GET_JAWABAN_GURU",
+                    guru: namaGuru
+                })
+            })
+            .then(res => res.json())
+            .then(listGrup => {
+                const wrapper = document.getElementById('wrapperJawaban');
+                wrapper.innerHTML = "";
+
+                if (listGrup.length === 0) {
+                    wrapper.innerHTML = '<p style="color: #d9534f; text-align: center; padding: 20px;">Belum ada jawaban kelompok yang dikirimkan ke lembar Anda.</p>';
+                    return;
+                }
+
+                listGrup.reverse().forEach(g => {
+                    const statusBadge = g.nilai ? `<span class="status-nilai sudah-dinilai">✓ Sudah Dinilai: ${g.nilai}</span>` : '<span class="status-nilai belum-dinilai">⚠ Belum Diperiksa</span>';
+                    
+                    // Membuat susunan list nama siswa di samping kelas dan status nilainya
+                    let htmlDaftarSiswa = '<div style="background:#021f22; padding:10px; border-radius:6px; margin: 8px 0; font-size:13px; border:1px solid #144347;">';
+                    htmlDaftarSiswa += '<b style="color:#bfa15f;">Daftar Anggota Kelompok (Rekap Nilai Masuk):</b><ol style="margin:5px 0; padding-left:20px;">';
+                    g.anggotaList.forEach(s => {
+                        htmlDaftarSiswa += `<li style="margin-bottom:3px;">👤 <b>${s.nama}</b> — Kelas: ${s.kelas} — <span style="color:#a3b8cc;">Nilai: ${s.nilaiSiswa}</span></li>`;
+                    });
+                    htmlDaftarSiswa += '</ol></div>';
+                    
+                    wrapper.innerHTML += `
+                        <div class="card-jawaban">
+                            <div class="meta-siswa">
+                                <h4>${g.kelompok} (Kelas ${g.kelas}) ${statusBadge}</h4>
+                                <p><b>Waktu Kirim:</b> ${g.tanggal} | <b>Ref LKPD:</b> <a href="${g.linkLkpd}" target="_blank" style="color: #bfa15f; font-weight:bold;">Buka Link Materi</a></p>
+                                ${htmlDaftarSiswa}
+                            </div>
+                            
+                            <div class="box-jawaban" style="font-weight: 500; border-left: 4px solid #bfa15f;">${g.jawaban}</div>
+                            
+                            <div class="grid-penilaian">
+                                <div class="form-group">
+                                    <label>Input Nilai Kelompok</label>
+                                    <input type="number" id="nilai_${g.idGrup}" class="form-control" placeholder="0-100" value="${g.nilai || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Catatan Koreksi / Feedback Bersama</label>
+                                    <input type="text" id="catatan_${g.idGrup}" class="form-control" placeholder="Tulis masukan evaluasi disini..." value="${g.catatan || ''}">
+                                </div>
+                                <button class="btn-gold" onclick="simpanNilaiSiswaMasal('${namaGuru}', '${g.idGrup}')">Simpan Nilai</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                console.error("Gagal memuat jawaban:", err);
+                document.getElementById('wrapperJawaban').innerHTML = '<p style="color: #d9534f; text-align: center; padding: 20px;">Terjadi kesalahan saat memuat data dari database.</p>';
+            });
+        }
+
+        // 3. Fungsi eksekusi tombol untuk mengirimkan nilai balik secara masal ke seluruh ID grup di Google Sheets
+        function simpanNilaiSiswaMasal(namaGuru, idGrupTarget) {
+            const nilaiAngka = document.getElementById(`nilai_${idGrupTarget}`).value;
+            const catatanTeks = document.getElementById(`catatan_${idGrupTarget}`).value;
+
+            if(!nilaiAngka) {
+                alert("Mohon masukkan angka nilai terlebih dahulu sebelum menyimpan!");
+                return;
+            }
+
+            fetch(SCRIPT_URL_SISTEM, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: "UPDATE_NILAI_GURU",
+                    guru: namaGuru,
+                    idGrup: idGrupTarget,
+                    nilai: nilaiAngka,
+                    catatan: catatanTeks
+                })
+            })
+            .then(res => res.text())
+            .then(respon => {
+                alert("🎉 " + respon);
+                muatJawabanSiswa(namaGuru); // Refresh halaman biar nilai barunya langsung kelihatan di daftar nama sampingan
+            })
+            .catch(err => {
+                alert("Gagal menyimpan nilai akibat kendala jaringan: " + err);
+            });
+        
+        }
+    </script>
+</body>
+</html>
