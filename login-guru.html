@@ -2,87 +2,112 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Masuk Guru</title>
     <link rel="stylesheet" href="style-shared.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        /* 🌟 MEMAKSA RESET PENGATURAN GLOBAL YANG MERUSAK DI HP */
+        html, body {
+            width: 100% !important;
+            height: 100% !important;
+            font-size: 16px !important; /* Mengunci standar font mobile */
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
         
         body { 
-            background-color: #0d1b2a; 
-            color: #ffffff; 
-            padding: 20px; 
-            min-height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            background-color: #0d1b2a !important; /* Memaksa warna latar gelap */
+            color: #ffffff !important; 
+            display: flex !important; 
+            justify-content: center !important; 
+            align-items: center !important; 
+            padding: 20px !important;
         }
         
+        /* 🌟 MEMBESARKAN KOTAK LOGIN DI LAYAR MOBILE */
         .login-box { 
-            width: 100%; 
-            max-width: 400px; 
-            text-align: center; 
-            background-color: #032b30; 
-            border: 1px solid #1a5157; 
-            border-top: 4px solid #bfa15f; 
-            border-radius: 12px; 
-            padding: 30px 20px; /* Diperlebar ruang dalamnya */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            width: 100% !important; 
+            max-width: 420px !important; 
+            text-align: center !important; 
+            background-color: #032b30 !important; 
+            border: 2px solid #bfa15f !important; 
+            border-top: 5px solid #bfa15f !important; 
+            border-radius: 16px !important; 
+            padding: 40px 24px !important; /* Ruang dalam diperbesar agar kotak terlihat kokoh */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important; 
         }
         
-        /* Memperbesar Judul Form */
+        /* Judul dibuat sangat besar dan jelas */
         .login-box h3 { 
-            color: #bfa15f; 
-            margin-bottom: 12px; 
-            font-size: 20px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
+            color: #bfa15f !important; 
+            margin-bottom: 12px !important; 
+            font-size: 24px !important; /* Ukuran teks dinaikkan */
+            text-transform: uppercase !important; 
+            letter-spacing: 1px !important;
+            font-weight: bold !important;
+        }
+
+        .login-box p {
+            font-size: 15px !important; /* Ukuran teks petunjuk dinaikkan */
+            color: #a3b8cc !important; 
+            margin-bottom: 25px !important;
         }
         
-        /* Memperbesar kotak input password agar nyaman diketik jari */
+        /* 🌟 MEMBESARKAN INPUT FORM (SANGAT NYAMAN DIKETIK) */
         .form-control { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 16px; 
-            border-radius: 8px; 
-            border: 1px solid #1a5157; 
-            background: #07383d; 
-            color: white; 
-            font-size: 16px; /* 🌟 Di HP minimal 16px agar browser tidak auto-zoom saat diklik */
-            text-align: center;
+            width: 100% !important; 
+            height: 55px !important; /* Memaksa tinggi input ideal mobile */
+            padding: 12px !important; 
+            margin-bottom: 20px !important; 
+            border-radius: 10px !important; 
+            border: 2px solid #1a5157 !important; 
+            background: #07383d !important; 
+            color: white !important; 
+            font-size: 18px !important; /* Huruf password berukuran besar saat diketik */
+            text-align: center !important;
+            font-weight: bold !important;
+        }
+        .form-control:focus {
+            border-color: #bfa15f !important;
+            outline: none;
         }
         .form-control::placeholder {
-            color: #657e82;
+            color: #657e82 !important;
+            font-size: 15px !important;
+            font-weight: normal;
         }
         
-        /* Memperbesar tombol Masuk */
+        /* 🌟 MEMBESARKAN TOMBOL MASUK UTAMA */
         .btn-gold { 
-            background-color: #c49a23; 
-            color: #0c1a1c; 
-            border: none; 
-            padding: 12px 15px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 15px;
-            cursor: pointer; 
-            transition: 0.3s; 
-            width: 100%; 
-            letter-spacing: 0.5px;
+            background-color: #c49a23 !important; 
+            color: #0c1a1c !important; 
+            border: none !important; 
+            height: 50px !important; /* Tinggi tombol ditingkatkan */
+            border-radius: 10px !important; 
+            font-weight: bold !important; 
+            font-size: 16px !important; /* Teks tombol lebih besar */
+            cursor: pointer !important; 
+            transition: 0.3s !important; 
+            width: 100% !important; 
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
         }
-        .btn-gold:hover { background-color: #b0891e; }
+        .btn-gold:hover { background-color: #b0891e !important; }
         
-        /* Memperbesar tombol Kembali */
+        /* Tombol Kembali */
         .link-kembali {
-            display: block; 
-            margin-top: 20px; 
-            color: #a3b8cc; 
-            text-decoration: none; 
-            font-size: 14px;
-            font-weight: 500;
-            transition: 0.2s;
+            display: inline-block !important; 
+            margin-top: 25px !important; 
+            color: #a3b8cc !important; 
+            text-decoration: none !important; 
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            transition: 0.2s !important;
         }
         .link-kembali:hover {
-            color: #bfa15f;
+            color: #bfa15f !important;
         }
     </style>
 </head>
@@ -90,9 +115,9 @@
 
     <div class="login-box">
         <h3>Pintu Masuk Guru</h3>
-        <p style="font-size:14px; color:#a3b8cc; margin-bottom:20px;">Silakan masukkan kata sandi akses guru</p>
+        <p>Silakan masukkan kata sandi akses guru</p>
         
-        <input type="password" id="passInput" class="form-control" placeholder="Kata Sandi (Bawaan: guru123)">
+        <input type="password" id="passInput" class="form-control" placeholder="Masukkan Kata Sandi">
         <button class="btn-gold" onclick="cekLogin()">MASUK SISTEM</button>
         
         <a href="index.html" class="link-kembali">← Kembali ke Halaman Utama</a>
