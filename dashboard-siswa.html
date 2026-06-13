@@ -2,21 +2,41 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruang Belajar Siswa - Sistem Otentik</title>
     <link rel="stylesheet" href="../style-shared.css">
     <style>
+        /* Optimasi pembungkus agar ramah padding layar HP */
+        body {
+            padding: 15px;
+            box-sizing: border-box;
+        }
         .filter-panel { background-color: #032b30; border: 1px solid #bfa15f; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
         .filter-panel label { display: block; font-size: 14px; color: #bfa15f; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Menaikkan ukuran font kartu materi agar terbaca jelas di HP */
         .mapel-card { cursor: default; transition: transform 0.2s, box-shadow 0.2s; background: #04383e; border: 1px solid #1a5157; padding: 20px; border-radius: 8px; margin-bottom: 15px;}
+        .mapel-card h3 { font-size: 18px; margin-top: 0; }
         .mapel-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(196, 154, 35, 0.15); border-color: #bfa15f; }
-        .meta-info { font-size: 13px; color: #a3b8cc; margin-bottom: 10px; line-height: 1.6; }
+        
+        /* Memperbesar teks informasi materi pokok & kelas */
+        .meta-info { font-size: 14px; color: #a3b8cc; margin-bottom: 10px; line-height: 1.6; }
         .meta-info strong { color: #fff; }
+        
+        /* Jarak antar tombol diatur agar pas disentuh jari */
         .link-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .btn-link { padding: 6px 12px; background-color: #1a5157; border: 1px solid #bfa15f; color: #bfa15f; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.2s; }
+        
+        /* Memperbesar ukuran tombol agar mudah diklik di HP tanpa salah tekan */
+        .btn-link { padding: 8px 16px; background-color: #1a5157; border: 1px solid #bfa15f; color: #bfa15f; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s; }
         .btn-link:hover { background-color: #bfa15f; color: #032b30; }
-        .btn-disabled { padding: 6px 12px; background-color: #222; border: 1px solid #444; color: #666; border-radius: 4px; font-size: 12px; cursor: not-allowed; }
-        .info-text { text-align: center; color: #a3b8cc; font-style: italic; padding: 30px; width: 100%; }
-        .tag-pertemuan { background: #bfa15f; color: #032b30; padding: 2px 6px; font-size: 11px; font-weight: bold; border-radius: 3px; margin-left: 5px; text-transform: uppercase;}
+        .btn-disabled { padding: 8px 16px; background-color: #222; border: 1px solid #444; color: #666; border-radius: 6px; font-size: 13px; cursor: not-allowed; }
+        
+        .info-text { text-align: center; color: #a3b8cc; font-style: italic; padding: 30px; width: 100%; box-sizing: border-box; font-size: 14px; }
+        .tag-pertemuan { background: #bfa15f; color: #032b30; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; margin-left: 5px; text-transform: uppercase; display: inline-block; vertical-align: middle;}
+        
+        /* Responsivitas Tambahan Khusus Header */
+        .header-app { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .header-app h1 { font-size: 24px; margin: 0; }
     </style>
 </head>
 <body>
@@ -24,14 +44,14 @@
     <div class="header-app">
         <div>
             <h1>Ruang Belajar Siswa</h1>
-            <p style="color:#a3b8cc;">Aplikasi Sistem Pengelolaan Pembelajaran</p>
+            <p style="color:#a3b8cc; margin: 5px 0 0 0;">Aplikasi Sistem Pengelolaan Pembelajaran</p>
         </div>
         <button class="btn-danger" onclick="window.location.href='../index.html'">Keluar</button>
     </div>
 
     <div class="filter-panel">
         <label for="pilihGuru">Silakan Pilih Guru Pengampu:</label>
-        <select class="form-control" id="pilihGuru" style="margin-bottom: 0; font-size: 16px; font-weight: 600;" onchange="muatMateriPerGuru()">
+        <select class="form-control" id="pilihGuru" style="margin-bottom: 0; font-size: 16px; font-weight: 600; padding: 8px; height: auto;" onchange="muatMateriPerGuru()">
             <option value="">-- Menghubungkan ke database akademik... --</option>
         </select>
     </div>
@@ -54,30 +74,29 @@
     // =========================================================================
     // 🌐 URL WEB APP GOOGLE APPS SCRIPT
     // =========================================================================
-    // Kita arahkan semua kebutuhan siswa ke Web App 2 yang kodenya sehat (Bebas Crash Index)
     const SCRIPT_URL_MATERI = "https://script.google.com/macros/s/AKfycbwsnZKsdIOIF3RlY6iG-8yv9PH2f-ZTbst14MKT3AyILDer6z2CNSZtHX5WspCZmL6-iA/exec";
 
-    // GANTI Pemicu awal saat halaman dimuat dengan kode ini:
-window.onload = async function() {
-    // 1. Muat dulu semua daftar guru ke dropdown seperti biasa
-    await muatDaftarGuruDariSheet();
-    
-    // 2. Cek apakah ada nama guru yang tersimpan di memori browser
-    const guruTersimpan = localStorage.getItem('guruTerakhir');
-    if (guruTersimpan) {
-        // Otomatis pilih nama guru tersebut di dropdown
-        document.getElementById('pilihGuru').value = guruTersimpan;
-        // Otomatis panggil data materinya tanpa menyuruh siswa klik lagi
-        muatMateriPerGuru();
-    }
-};
+    // Pemicu awal saat halaman dimuat dengan pembaca memori
+    window.onload = async function() {
+        // 1. Muat dulu semua daftar guru ke dropdown seperti biasa
+        await muatDaftarGuruDariSheet();
+        
+        // 2. Cek apakah ada nama guru yang tersimpan di memori browser
+        const guruTersimpan = localStorage.getItem('guruTerakhir');
+        if (guruTersimpan) {
+            // Otomatis pilih nama guru tersebut di dropdown
+            document.getElementById('pilihGuru').value = guruTersimpan;
+            // Otomatis panggil data materinya tanpa menyuruh siswa klik lagi
+            muatMateriPerGuru();
+        }
+    };
+
     // =========================================================================
-    // 🔄 FUNGSI 1: MEMUAT DAFTAR GURU KE DROPDOWN (LEWAT WEB APP 2)
+    // 🔄 FUNGSI 1: MEMUAT DAFTAR GURU KE DROPDOWN
     // =========================================================================
     async function muatDaftarGuruDariSheet() {
         const selectGuru = document.getElementById('pilihGuru');
         try {
-            // Menembak aksi GET_DATA_KONFIGURASI bawaan Web App 2 kamu
             let parameterPayload = {
                 aksi: "GET_DATA_KONFIGURASI",
                 urlSpreadsheetSumber: URL_SS_SUMBER
@@ -86,7 +105,7 @@ window.onload = async function() {
             let respon = await fetch(SCRIPT_URL_MATERI, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8' // Trik handal bypass CORS lokal
+                    'Content-Type': 'text/plain;charset=utf-8'
                 },
                 body: JSON.stringify(parameterPayload)
             });
@@ -99,7 +118,6 @@ window.onload = async function() {
                 return;
             }
 
-            // Menyaring nama guru agar tidak ada duplikat di menu dropdown siswa
             let listNamaGuruUnik = [];
             dataKonf.forEach(item => {
                 if (item.guru && listNamaGuruUnik.indexOf(item.guru.trim()) === -1) {
@@ -121,81 +139,76 @@ window.onload = async function() {
     }
 
     // =========================================================================
-    // 🔄 FUNGSI 2: MEMUAT ISI MATERI BERDASARKAN GURU YANG DIPILIH (LEWAT WEB APP 2)
+    // 🔄 FUNGSI 2: MEMUAT ISI MATERI BERDASARKAN GURU YANG DIPILIH
     // =========================================================================
-async function muatMateriPerGuru() {
-    const guruDipilih = document.getElementById('pilihGuru').value;
-    const containerMapel = document.getElementById('containerMapel');
+    async function muatMateriPerGuru() {
+        const guruDipilih = document.getElementById('pilihGuru').value;
+        const containerMapel = document.getElementById('containerMapel');
 
-    if (!guruDipilih) {
-        containerMapel.innerHTML = `<div class="info-text">Silakan pilih nama guru terlebih dahulu pada menu di atas untuk menampilkan data paket pembelajaran.</div>`;
-        // Jika siswa sengaja memilih opsi kosong, hapus ingatan di browser
-        localStorage.removeItem('guruTerakhir');
-        return;
-    }
-
-    // 🌟 BARIS BARU: Kunci nama guru pilihan ke memori internal HP/Laptop siswa
-    localStorage.setItem('guruTerakhir', guruDipilih);
-
-    containerMapel.innerHTML = `<div class="info-text" style="color: #bfa15f;">Membuka berkas mengajar ${guruDipilih}...</div>`;
-
-    try {
-        let parameterPayload = {
-            aksi: "GET_RIWAYAT_MATERI", 
-            guru: guruDipilih,
-            urlSpreadsheetTujuan: URL_SS_TUJUAN
-        };
-
-        let respon = await fetch(SCRIPT_URL_MATERI, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
-            body: JSON.stringify(parameterPayload)
-        });
-        
-        let daftarMateri = await respon.json();
-        containerMapel.innerHTML = "";
-
-        if (!daftarMateri || daftarMateri.length === 0 || daftarMateri.error) {
-            containerMapel.innerHTML = `<div class="info-text" style="color: #d9534f;">Belum ada paket materi aktif atau sheet atas nama "${guruDipilih}" tidak ditemukan.</div>`;
+        if (!guruDipilih) {
+            containerMapel.innerHTML = `<div class="info-text">Silakan pilih nama guru terlebih dahulu pada menu di atas untuk menampilkan data paket pembelajaran.</div>`;
+            localStorage.removeItem('guruTerakhir');
             return;
         }
 
-        // Looping dan render ke bentuk Card UI
-        daftarMateri.forEach(materi => {
-            // Link tetap dialihkan ke halaman internal 'tampilkan_materi.html'
-            let btnBahan = (materi.bahanAjar && materi.bahanAjar.trim() !== "-") 
-                ? `<a href="tampilkan_materi.html?doc=${encodeURIComponent(materi.bahanAjar.trim())}" class="btn-link">📖 Bahan Ajar</a>` 
-                : `<span class="btn-disabled">📖 Bahan Ajar (Kosong)</span>`;
-                
-            let btnLkpd = (materi.lkpd && materi.lkpd.trim() !== "-") ? `<a href="${materi.lkpd}" target="_blank" class="btn-link">📝 LKPD</a>` : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
-            let btnSoal = (materi.latihanSoal && materi.latihanSoal.trim() !== "-") ? `<a href="${materi.latihanSoal}" target="_blank" class="btn-link">✍️ Latihan Soal</a>` : `<span class="btn-disabled">✍️ Latihan Soal (Kosong)</span>`;
+        localStorage.setItem('guruTerakhir', guruDipilih);
+        containerMapel.innerHTML = `<div class="info-text" style="color: #bfa15f;">Membuka berkas mengajar ${guruDipilih}...</div>`;
 
-            let htmlCard = `
-                <div class="mapel-card">
-                    <h3 style="color: #bfa15f; margin-bottom: 8px;">📌 ${materi.mapel} <span class="tag-pertemuan">Pertemuan ${materi.pertemuan}</span></h3>
+        try {
+            let parameterPayload = {
+                aksi: "GET_RIWAYAT_MATERI", 
+                guru: guruDipilih,
+                urlSpreadsheetTujuan: URL_SS_TUJUAN
+            };
+
+            let respon = await fetch(SCRIPT_URL_MATERI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
+                body: JSON.stringify(parameterPayload)
+            });
+            
+            let daftarMateri = await respon.json();
+            containerMapel.innerHTML = "";
+
+            if (!daftarMateri || daftarMateri.length === 0 || daftarMateri.error) {
+                containerMapel.innerHTML = `<div class="info-text" style="color: #d9534f;">Belum ada paket materi aktif atau sheet atas nama "${guruDipilih}" tidak ditemukan.</div>`;
+                return;
+            }
+
+            daftarMateri.forEach(materi => {
+                let btnBahan = (materi.bahanAjar && materi.bahanAjar.trim() !== "-") 
+                    ? `<a href="tampilkan_materi.html?doc=${encodeURIComponent(materi.bahanAjar.trim())}" class="btn-link">📖 Bahan Ajar</a>` 
+                    : `<span class="btn-disabled">📖 Bahan Ajar (Kosong)</span>`;
                     
-                    <div class="meta-info">
-                        <strong>Materi Pokok:</strong> ${materi.judul}<br>
-                        <strong>Target Kelas:</strong> ${materi.kelas}
-                    </div>
+                let btnLkpd = (materi.lkpd && materi.lkpd.trim() !== "-") ? `<a href="${materi.lkpd}" target="_blank" class="btn-link">📝 LKPD</a>` : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
+                let btnSoal = (materi.latihanSoal && materi.latihanSoal.trim() !== "-") ? `<a href="${materi.latihanSoal}" target="_blank" class="btn-link">✍️ Latihan Soal</a>` : `<span class="btn-disabled">✍️ Latihan Soal (Kosong)</span>`;
 
-                    <div class="link-buttons">
-                        ${btnBahan}
-                        ${btnLkpd}
-                        ${btnSoal}
-                    </div>
-                </div>
-            `;
-            containerMapel.innerHTML += htmlCard;
-        });
+                let htmlCard = `
+                    <div class="mapel-card">
+                        <h3 style="color: #bfa15f; margin-bottom: 8px;">📌 ${materi.mapel} <span class="tag-pertemuan">Pertemuan ${materi.pertemuan}</span></h3>
+                        
+                        <div class="meta-info">
+                            <strong>Materi Pokok:</strong> ${materi.judul}<br>
+                            <strong>Target Kelas:</strong> ${materi.kelas}
+                        </div>
 
-    } catch (error) {
-        console.error("Error Materi:", error);
-        containerMapel.innerHTML = `<div class="info-text" style="color: #d9534f;">Terjadi kesalahan sistem saat mengambil paket data materi.</div>`;
+                        <div class="link-buttons">
+                            ${btnBahan}
+                            ${btnLkpd}
+                            ${btnSoal}
+                        </div>
+                    </div>
+                `;
+                containerMapel.innerHTML += htmlCard;
+            });
+
+        } catch (error) {
+            console.error("Error Materi:", error);
+            containerMapel.innerHTML = `<div class="info-text" style="color: #d9534f;">Terjadi kesalahan sistem saat mengambil paket data materi.</div>`;
+        }
     }
-}
 </script>
 </body>
 </html>
