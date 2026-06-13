@@ -115,7 +115,7 @@
 
     <div class="login-box">
         <h3>Pintu Masuk Guru</h3>
-        <p>Masukkan kata sandi akses guru</p>
+        <p>Silakan masukkan kata sandi akses guru</p>
         
         <input type="password" id="passInput" class="form-control" placeholder="Masukkan Kata Sandi">
         <button class="btn-gold" onclick="cekLogin()">MASUK SISTEM</button>
@@ -128,7 +128,7 @@
             const pass = document.getElementById('passInput').value;
             if(pass === "guru123") {
                 localStorage.setItem("guruIn", "true");
-                window.location.href = "dashboard.html";
+                window.location.href = "guru/dashboard.html";
             } else {
                 alert("Kata sandi salah!");
             }
