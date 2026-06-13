@@ -9,54 +9,101 @@
         body {
             background-color: #0b1a1a;
             color: #ffffff;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 12px;
+            box-sizing: border-box;
         }
         .container-materi {
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
         }
         .nav-aksi {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            background: #032b30;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #1a5157;
+        }
+        .judul-halaman {
+            color: #bfa15f; 
+            margin: 0; 
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
         .btn-kembali {
-            padding: 8px 16px;
+            padding: 6px 14px;
             background-color: #1a5157;
             border: 1px solid #bfa15f;
             color: #bfa15f;
-            border-radius: 4px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
             transition: 0.2s;
         }
         .btn-kembali:hover {
             background-color: #bfa15f;
             color: #032b30;
         }
+        
+        /* 📱 DESAIN BINGKAI MOBILE PREMIUM */
         .frame-pembungkus {
             position: relative;
             width: 100%;
-            height: 75vh; /* Mengambil 75% tinggi layar komputer/HP */
-            background: #04383e;
-            border: 2px solid #bfa15f;
-            border-radius: 8px;
+            height: calc(100vh - 100px); /* Memaksimalkan tinggi layar HP */
+            background: #ffffff; /* Latar belakang putih bersih khas dokumen kertas */
+            border: 3px solid #bfa15f;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
+        
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            background-color: #ffffff;
         }
+        
+        /* Loading Animasi Kreatif */
+        .loading-box {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #04383e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(191, 161, 95, 0.2);
+            border-top: 4px solid #bfa15f;
+            border-radius: 50%;
+            animation: putar 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes putar {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .error-notif {
             text-align: center;
-            padding: 40px;
+            padding: 40px 20px;
             color: #d9534f;
             font-weight: bold;
+            background: #04383e;
+            height: 100%;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -64,42 +111,63 @@
 
     <div class="container-materi">
         <div class="nav-aksi">
-            <h2 style="color: #bfa15f; margin: 0;">📖 Membaca Dokumen Materi</h2>
-            <a href="javascript:history.back()" class="btn-kembali">← Kembali ke Dashboard</a>
+            <div class="judul-halaman">📖 RUANG BACA</div>
+            <a href="javascript:history.back()" class="btn-kembali">← Kembali</a>
         </div>
 
         <div class="frame-pembungkus" id="boxMateri">
-            <div style="text-align: center; padding: 50px; color: #bfa15f;">Memuat dokumen materi, mohon tunggu...</div>
+            <div class="loading-box" id="loadingSistem">
+                <div class="spinner"></div>
+                <div style="color: #bfa15f; font-size: 14px; font-weight: 500;">Menyelaraskan dokumen dengan layar HP...</div>
+            </div>
+            
+            <iframe id="iframeMateri" src="" allow="autoplay" onload="hilangkanLoading()"></iframe>
         </div>
     </div>
 
 <script>
     window.onload = function() {
-        // 1. Ambil seluruh parameter teks di URL browser
         const parameterUrl = new URLSearchParams(window.location.search);
         let linkGoogleDoc = parameterUrl.get('doc');
 
         const boxMateri = document.getElementById('boxMateri');
+        const iframeMateri = document.getElementById('iframeMateri');
+        const loadingSistem = document.getElementById('loadingSistem');
 
         if (!linkGoogleDoc) {
             boxMateri.innerHTML = `<div class="error-notif">❌ Tautan dokumen materi tidak valid atau tidak ditemukan!</div>`;
             return;
         }
 
-        // 2. Logika Konversi Otomatis ke Mode Embed/Preview
-        // Jika link bertipe '/edit', '/view', atau sharing biasa, kita ubah ke bentuk '/preview' agar rapi tanpa menu Google Doc
-        if (linkGoogleDoc.includes('/edit')) {
-            linkGoogleDoc = linkGoogleDoc.split('/edit')[0] + '/preview';
-        } else if (linkGoogleDoc.includes('/view')) {
-            linkGoogleDoc = linkGoogleDoc.split('/view')[0] + '/preview';
-        } else if (!linkGoogleDoc.includes('/preview')) {
-            // Jika tidak ada akhiran edit/view, coba bersihkan spasi dan pastikan formatnya siap disematkan
-            linkGoogleDoc = linkGoogleDoc.trim();
+        // 🌟 TRIK RAHASIA: Mengubah endpoint ke '/mobilebasic'
+        // Format ini memaksa Google Doc merender dokumennya khusus untuk layar mobile/HP
+        let urlBersih = linkGoogleDoc.trim();
+        
+        if (urlBersih.includes('/edit')) {
+            urlBersih = urlBersih.split('/edit')[0];
+        } else if (urlBersih.includes('/view')) {
+            urlBersih = urlBersih.split('/view')[0];
+        } else if (urlBersih.includes('/preview')) {
+            urlBersih = urlBersih.split('/preview')[0];
         }
 
-        // 3. Render Iframe Dokumen ke layar siswa
-        boxMateri.innerHTML = `<iframe src="${linkGoogleDoc}" allow="autoplay"></iframe>`;
+        // Tembakkan ke mode mobile basic milik Google
+        const linkResponsiveMobile = urlBersih + '/mobilebasic';
+
+        // Masukkan tautan responsif ke iframe
+        iframeMateri.src = linkResponsiveMobile;
     };
+
+    // Fungsi menghilangkan layar loading saat Google Doc selesai dimuat
+    function hilangkanLoading() {
+        const loadingSistem = document.getElementById('loadingSistem');
+        if(loadingSistem) {
+            loadingSistem.style.opacity = '0';
+            setTimeout(() => {
+                loadingSistem.style.display = 'none';
+            }, 500);
+        }
+    }
 </script>
 
 </body>
