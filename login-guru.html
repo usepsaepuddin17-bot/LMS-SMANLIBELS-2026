@@ -2,46 +2,100 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masuk Guru</title>
     <link rel="stylesheet" href="style-shared.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-body { background-color: #0d1b2a; color: #ffffff; padding: 25px; min-height: 100vh; }
-.header-app { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #bfa15f; padding-bottom: 15px; margin-bottom: 25px; }
-.header-app h1 { font-size: 22px; color: #e6f1f5; }
-.grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-.card { background-color: #032b30; border: 1px solid #1a5157; border-top: 4px solid #bfa15f; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-.card h3 { color: #bfa15f; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; }
-.form-control { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 6px; border: 1px solid #1a5157; background: #07383d; color: white; }
-.btn-gold { background-color: #c49a23; color: #0c1a1c; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
-.btn-gold:hover { background-color: #b0891e; }
-.btn-danger { background-color: #d9534f; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-.table-data { width: 100%; border-collapse: collapse; margin-top: 15px; background: #032b30; }
-.table-data th, .table-data td { border: 1px solid #1a5157; padding: 10px; text-align: left; font-size: 14px; }
-.table-data th { background-color: #07383d; color: #bfa15f; }
-.hidden { display: none; }
-
-@media screen and (max-width: 768px) {
-    body { padding: 15px; }
-    .header-app { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .header-app button { width: 100%; padding: 12px; }
-    .grid-menu, .grid-container { grid-template-columns: 1fr !important; gap: 15px; }
-    .card { padding: 15px; overflow-x: auto; }
-    .tabs { flex-direction: column; gap: 8px; }
-    .tab-btn { width: 100%; text-align: left; padding: 12px 15px; }
-}
-
-        body { display: flex; justify-content: center; align-items: center; }
-        .login-box { width: 100%; max-width: 400px; text-align: center; }
+        
+        body { 
+            background-color: #0d1b2a; 
+            color: #ffffff; 
+            padding: 20px; 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        .login-box { 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center; 
+            background-color: #032b30; 
+            border: 1px solid #1a5157; 
+            border-top: 4px solid #bfa15f; 
+            border-radius: 12px; 
+            padding: 30px 20px; /* Diperlebar ruang dalamnya */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
+        
+        /* Memperbesar Judul Form */
+        .login-box h3 { 
+            color: #bfa15f; 
+            margin-bottom: 12px; 
+            font-size: 20px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        
+        /* Memperbesar kotak input password agar nyaman diketik jari */
+        .form-control { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 16px; 
+            border-radius: 8px; 
+            border: 1px solid #1a5157; 
+            background: #07383d; 
+            color: white; 
+            font-size: 16px; /* 🌟 Di HP minimal 16px agar browser tidak auto-zoom saat diklik */
+            text-align: center;
+        }
+        .form-control::placeholder {
+            color: #657e82;
+        }
+        
+        /* Memperbesar tombol Masuk */
+        .btn-gold { 
+            background-color: #c49a23; 
+            color: #0c1a1c; 
+            border: none; 
+            padding: 12px 15px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 15px;
+            cursor: pointer; 
+            transition: 0.3s; 
+            width: 100%; 
+            letter-spacing: 0.5px;
+        }
+        .btn-gold:hover { background-color: #b0891e; }
+        
+        /* Memperbesar tombol Kembali */
+        .link-kembali {
+            display: block; 
+            margin-top: 20px; 
+            color: #a3b8cc; 
+            text-decoration: none; 
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .link-kembali:hover {
+            color: #bfa15f;
+        }
     </style>
 </head>
 <body>
-    <div class="login-box card">
+
+    <div class="login-box">
         <h3>Pintu Masuk Guru</h3>
-        <p style="font-size:13px; color:#a3b8cc; margin-bottom:15px;">Silakan masukkan kata sandi akses guru</p>
-        <input type="password" id="passInput" class="form-control" placeholder="Kata Sandi (Bawaan: guru123)" style="text-align:center;">
+        <p style="font-size:14px; color:#a3b8cc; margin-bottom:20px;">Silakan masukkan kata sandi akses guru</p>
+        
+        <input type="password" id="passInput" class="form-control" placeholder="Kata Sandi (Bawaan: guru123)">
         <button class="btn-gold" onclick="cekLogin()">MASUK SISTEM</button>
-        <a href="index.html" style="display:block; margin-top:15px; color:#657e82; text-decoration:none; font-size:13px;">← Kembali</a>
+        
+        <a href="index.html" class="link-kembali">← Kembali ke Halaman Utama</a>
     </div>
 
     <script>
