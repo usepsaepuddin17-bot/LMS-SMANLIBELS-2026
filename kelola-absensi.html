@@ -5,60 +5,248 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guru - Jurnal Kehadiran Kolektif</title>
     <link rel="stylesheet" href="../style-shared.css">
+    
+    <style>
+        /* 🌟 RESPONSIVITAS GLOBAL UNTUK LAYAR HP */
+        body {
+            padding: 12px;
+            background-color: #0b1a1a;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            color: #ffffff;
+        }
+
+        /* Header atas agar rapi saat dibuka di HP */
+        .header-app {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+            padding: 15px 10px;
+            border-bottom: 2px solid #ffd700;
+            margin-bottom: 20px;
+        }
+        .header-app h1 {
+            font-size: 1.4rem;
+            margin: 0 0 5px 0;
+            color: #ffffff;
+        }
+        .header-app p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        /* 🌟 PERBAIKAN STRUKTUR CARD */
+        .card {
+            background-color: #032b30 !important;
+            border: 1px solid #1a5157 !important;
+            border-top: 4px solid #ffd700 !important;
+            border-radius: 12px !important;
+            padding: 20px 15px !important;
+            margin: 0 0 20px 0 !important;
+            box-sizing: border-box;
+            width: 100%;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+        }
+        .card h3 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #ffd700;
+            letter-spacing: 0.5px;
+        }
+
+        /* 🌟 SUSUNAN FORM INPUT AGAR TIDAK MELUBER DI HP */
+        .form-grid-responsive {
+            display: flex;
+            flex-direction: column; /* Berjejer ke bawah di HP */
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .form-group-item {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .card label {
+            color: #ffd700;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        /* Input & Dropdown yang serasi dengan tema gelap */
+        .form-control {
+            font-size: 16px !important;
+            padding: 12px 10px !important;
+            background-color: #07383d !important;
+            color: #ffffff !important;
+            border: 1px solid #ffd700 !important;
+            border-radius: 8px;
+            font-weight: 500;
+            box-sizing: border-box;
+            width: 100% !important;
+            height: 46px;
+        }
+
+        /* 🌟 TABEL RESPONSIF (Bisa di-geser/swipe di HP dengan mulus) */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 15px;
+            border: 1px solid #2d5a5a;
+            border-radius: 8px;
+        }
+
+        table {
+            min-width: 650px; /* Memastikan kolom tabel punya ruang dan tidak gepeng */
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #07383d !important;
+            color: #ffd700 !important;
+            padding: 12px !important;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #2d5a5a;
+        }
+
+        td {
+            padding: 12px !important;
+            border-bottom: 1px solid #2d5a5a;
+            color: #ffffff;
+            font-size: 14px;
+            background-color: #032b30;
+        }
+
+        /* 🌟 DESAIN BUTTON PREMIUM */
+        .btn-gold, .btn-danger {
+            padding: 14px !important;
+            font-size: 14px !important;
+            width: 100%;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #ffd700, #c5a000);
+            color: #0b1a1a;
+        }
+        
+        .btn-danger {
+            background-color: #d9534f;
+            color: #ffffff;
+        }
+
+        /* Tombol cetak khusus agar posisinya manis */
+        .btn-cetak-container {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        /* 💻 PENYESUAIAN JIKA DIBUKA DI DESKTOP/KOMPUTER */
+        @media (min-width: 768px) {
+            .header-app {
+                flex-direction: row;
+                text-align: left;
+                justify-content: space-between;
+                padding: 15px 0;
+            }
+            .header-app button {
+                width: auto;
+                padding: 0 24px !important;
+            }
+            .form-grid-responsive {
+                flex-direction: row; /* Berjejer ke samping di PC */
+                align-items: flex-end;
+            }
+            .form-group-item {
+                flex: 1;
+                min-width: 200px;
+            }
+            .btn-cetak-container {
+                width: auto;
+            }
+            .btn-gold {
+                width: auto;
+                padding: 0 20px !important;
+                height: 46px;
+            }
+        }
+    </style>
 </head>
 <body>
+
     <div class="header-app">
         <div>
-            <h1>Manajemen Data Akademik</h1>
+            <h1>Manajemen Data Academic</h1>
             <p style="color:#657e82;">Konfigurasi Kelas, Siswa, dan Mata Pelajaran Terintegrasi</p>
         </div>
         <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
     </div>
 
-    <div class="card" style="margin-bottom: 20px;">
+    <div class="card">
         <h3>📍 PENGATURAN SESI PBM</h3>
-        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
-            <div style="flex: 1; min-width: 200px;">
-                <label>Pilih Kelas</label>
+        <div class="form-grid-responsive">
+            <div class="form-group-item">
+                <label for="filterKelasAbsen">Pilih Kelas</label>
                 <select id="filterKelasAbsen" class="form-control" onchange="loadSiswaJurnal(this.value)" required>
                     <option value="">-- Memuat Daftar Kelas --</option>
                 </select>
             </div>
-            <div style="flex: 1; min-width: 200px;">
-                <label>Pilih Nama Guru</label>
+            
+            <div class="form-group-item">
+                <label for="filterGuruAbsen">Pilih Nama Guru</label>
                 <select id="filterGuruAbsen" class="form-control" required>
                     <option value="">-- Memuat Daftar Guru --</option>
                 </select>
             </div>
-            <div style="flex: 1; min-width: 200px;">
-                <label>Tanggal Hari Ini</label>
+            
+            <div class="form-group-item">
+                <label for="tanggalAbsen">Tanggal Hari Ini</label>
                 <input type="date" id="tanggalAbsen" class="form-control" required>
             </div>
-            <div style="display: flex; align-items: flex-end;">
-<button class="btn-gold" style="height: 42px; cursor: pointer;" onclick="cetakPDFJurnal()">Cetak Rekap Wali Kelas</button>
+            
+            <div class="btn-cetak-container">
+                <button class="btn-gold" onclick="cetakPDFJurnal()">Cetak Rekap Wali Kelas</button>
             </div>
         </div>
     </div>
 
     <div class="card">
         <h3>📝 JURNAL KEHADIRAN & KEAKTIFAN KOLEKTIF</h3>
-        <p style="color: #657e82; font-size: 13px; font-style: italic; margin-top: 5px;">
+        <p style="color: #657e82; font-size: 13px; font-style: italic; margin-top: 5px; margin-bottom: 0;">
             *Nilai default disetel: Hadir & Cukup. Guru cukup mengganti siswa yang absen/sangat aktif saja.
         </p>
 
-        <div style="overflow-x: auto; margin-top: 15px;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;" id="tabelJurnalSiswa">
+        <div class="table-responsive">
+            <table id="tabelJurnalSiswa">
                 <thead>
-                    <tr style="background-color: #0b2226; color: gold; border-bottom: 2px solid #657e82;">
-                        <th style="padding: 12px; width: 50px;">No</th>
-                        <th style="padding: 12px;">Nama Lengkap Siswa</th>
-                        <th style="padding: 12px; width: 180px;">Status Kehadiran</th>
-                        <th style="padding: 12px; width: 180px;">Tingkat Keaktifan PBM</th>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>Nama Lengkap Siswa</th>
+                        <th style="width: 180px;">Status Kehadiran</th>
+                        <th style="width: 180px;">Tingkat Keaktifan PBM</th>
                     </tr>
                 </thead>
                 <tbody id="bodySiswaJurnal">
                     <tr>
-                        <td colspan="4" style="padding: 20px; text-align: center; color: #657e82;">Silakan pilih kelas terlebih dahulu untuk memunculkan nama siswa.</td>
+                        <td colspan="4" style="text-align: center; color: #657e82; padding: 20px !important;">Silakan pilih kelas terlebih dahulu untuk memunculkan nama siswa.</td>
                     </tr>
                 </tbody>
             </table>
