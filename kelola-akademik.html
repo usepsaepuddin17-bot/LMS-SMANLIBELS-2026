@@ -2,48 +2,233 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Guru - Kelola Akademik Dinamis</title>
     <link rel="stylesheet" href="../style-shared.css">
     <style>
-    /* Mengatur tampilan khusus untuk layar HP (lebar di bawah 768px) */
-    @media (max-width: 768px) {
-        .grid-menu {
-            display: flex;
-            flex-direction: column; /* Membuat panel menumpuk ke bawah */
-            gap: 20px;
-            padding: 10px;
-        }
+/* 🌟 OVERRIDE RESET UNTUK MEMASTIKAN RESPONSIVITAS DI HP */
+html, body {
+    width: 100% !important;
+    min-height: 100vh;
+    background-color: #0d1b2a !important;
+    color: #ffffff !important;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 15px !important;
+}
 
-        .card {
-            width: 100% !important; /* Panel memenuhi lebar layar HP */
-            box-sizing: border-box;
-        }
+body {
+    padding: 15px !important;
+    box-sizing: border-box;
+}
 
-        /* Membuat tombol CRUD yang berjajar 3 tetap proporsional di HP */
-        .card form div {
-            flex-direction: row; /* Tetap berdampingan */
-            gap: 5px !important;
-        }
+/* Navigasi atas */
+.header-app {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #bfa15f;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+.header-app h1 { font-size: 22px; color: #e6f1f5; margin: 0; }
+.btn-danger {
+    padding: 8px 16px;
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+.btn-danger:hover {
+    background-color: #c9302c;
+    box-shadow: 0 0 10px rgba(217, 83, 79, 0.4);
+}
 
-        .btn-gold {
-            font-size: 12px; /* Memperkecil tulisan tombol sedikit agar muat di HP */
-            padding: 10px 5px;
-        }
+/* Pembungkus Grid Utama */
+.grid-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* 🌟 DESAIN CARD KELOLA YANG MODEREN */
+.card {
+    background-color: #032b30 !important;
+    border: 1px solid #1a5157 !important;
+    border-top: 4px solid #bfa15f !important;
+    border-radius: 14px !important;
+    padding: 24px 20px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+.card h3 {
+    color: #bfa15f !important;
+    margin-bottom: 18px;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid #1a5157;
+    padding-bottom: 10px;
+}
+
+/* Label Formulir */
+.card label {
+    display: block !important;
+    font-size: 12px !important;
+    color: #bfa15f !important;
+    font-weight: bold !important;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 🌟 OPTIMASI KOLOM INPUT & SELECT (ANTI-MELUBER) */
+.form-control {
+    width: 100% !important;
+    height: 46px !important;
+    padding: 10px 14px !important;
+    border-radius: 8px !important;
+    border: 1px solid #1a5157 !important;
+    background: #07383d !important;
+    color: #ffffff !important;
+    font-size: 15px !important;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    text-overflow: ellipsis; /* Mengatasi link panjang di gambar 1 agar terpotong rapi dengan titik-titik (...) jika tidak aktif */
+}
+.form-control:focus {
+    border-color: #bfa15f !important;
+    background: #0a474e !important;
+    box-shadow: 0 0 8px rgba(191, 161, 95, 0.2);
+    outline: none;
+}
+.form-control:disabled {
+    background-color: #021f22 !important;
+    color: #657e82 !important;
+    cursor: not-allowed;
+    border-color: #0d3337 !important;
+}
+
+/* 🌟 STRUKTUR TOMBOL BARU (JEJER SAMPING & GRADASI) */
+.action-group {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10px !important;
+    margin-top: 24px;
+}
+
+.btn-crud {
+    flex: 1 !important;
+    height: 46px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ffffff !important;
+}
+
+/* Identitas Warna Unik Setiap Tombol */
+.btn-tambah {
+    background: linear-gradient(135deg, #c49a23, #a07b18) !important;
+    color: #0c1a1c !important; /* Tulisan hitam pekat khusus emas agar kontras */
+}
+.btn-tambah:hover {
+    background: linear-gradient(135deg, #dbb034, #b0891e) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(196, 154, 35, 0.3);
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+}
+.btn-edit:hover {
+    background: linear-gradient(135deg, #2ff076, #2ebd69) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.btn-hapus {
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+}
+.btn-hapus:hover {
+    background: linear-gradient(135deg, #ff5b4a, #d34131) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+/* Khusus tombol simpan konfigurasi (Panel Panjang) */
+.btn-block-gold {
+    width: 100% !important;
+    height: 46px !important;
+    background: linear-gradient(135deg, #c49a23, #a07b18) !important;
+    color: #0c1a1c !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-block-gold:hover {
+    background: linear-gradient(135deg, #dbb034, #b0891e) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(196, 154, 35, 0.3);
+}
+
+/* 📱 ADAPTASI LAYAR HP */
+@media screen and (max-width: 768px) {
+    body { padding: 12px !important; }
+    
+    .header-app {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
-</style>
+    .header-app button { width: 100%; height: 44px; }
+    
+    .grid-menu {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+    
+    .card { padding: 20px 16px !important; }
+    
+    .action-group {
+        gap: 6px !important;
+    }
+    .btn-crud {
+        font-size: 11px !important; /* Sedikit dikecilkan di HP agar tulisan tidak patah */
+        height: 44px !important;
+    }
+}
+    </style>
 </head>
 <body>
+
     <div class="header-app">
         <div>
             <h1>Manajemen Data Akademik</h1>
-            <p style="color:#657e82;">Konfigurasi Kelas, Siswa, dan Mata Pelajaran Terintegrasi</p>
+            <p style="color:#657e82; margin-top: 4px;">Konfigurasi Kelas, Siswa, dan Mata Pelajaran Terintegrasi</p>
         </div>
         <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
     </div>
 
     <div class="grid-menu">
-<div class="card">
+        <div class="card">
             <h3>Daftar Kelas & Manajemen Siswa</h3>
             <form id="formSiswaKelas" onsubmit="event.preventDefault();">
                 <label for="filterKelas">Pilih Kelas</label>
@@ -62,15 +247,16 @@
                 <label for="inputNamaSiswa">Nama Siswa</label>
                 <input type="text" id="inputNamaSiswa" class="form-control" placeholder="Tulis nama lengkap siswa" required>
 
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="button" class="btn-gold" style="flex: 1;" onclick="crudSiswa('TAMBAH')">TAMBAH</button>
-                    <button type="button" class="btn-gold" style="flex: 1; background-color: #2ecc71;" onclick="crudSiswa('EDIT')">EDIT</button>
-                    <button type="button" class="btn-gold" style="flex: 1; background-color: #e74c3c;" onclick="crudSiswa('HAPUS')">HAPUS</button>
-                </div>
+                <div class="action-group">
+                <button type="button" class="btn-crud btn-tambah" onclick="crudSiswa('TAMBAH')">TAMBAH</button>
+                <button type="button" class="btn-crud btn-edit" onclick="crudSiswa('EDIT')">EDIT</button>
+                <button type="button" class="btn-crud btn-hapus" onclick="crudSiswa('HAPUS')">HAPUS</button>
+                </div>  
             </form>
         </div>
+
         <div class="card">
-            <h3> Daftar Mata Pelajaran Per Kelas</h3>
+            <h3>Daftar Mata Pelajaran Per Kelas</h3>
             <form id="formKonfigurasi" onsubmit="event.preventDefault(); simpanKonfigurasi();">
                 <label for="configKelas">Daftar Kelas</label>
                 <select id="configKelas" class="form-control" required>
@@ -93,18 +279,11 @@
     </div>
 
 <script>
-    
-    // =========================================================================
-    // TEMPELKAN URL DI SINI KETIKA CODING DI VS CODE
-    // =========================================================================
     const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzjm8phxd3vYA1lyZ3-9wsPCSOwpuTnseuA5ZGhW7STRXoQxtY6pXWZhS53T8hXH9HwRw/exec"; 
     const URL_SPREADSHEET = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit?gid=220342903#gid=220342903";
-    // =========================================================================
-    // =========================================================================
 
     let listSiswaAktif = [];
 
-    // Ambil data dropdown saat halaman pertama kali dibuka
     window.onload = function() {
         fetch(URL_WEB_APP, {
             method: 'POST',
@@ -129,10 +308,8 @@
             configKelas.innerHTML += opt;
         });
 
-        // 2. Isi Dropdown Mata Pelajaran (Panel 2)
         configMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
         data.mapel.forEach(m => {
-            // value tetap Kode (Kolom A), tapi tulisan yang dilihat Admin HANYA Nama Mata Pelajaran
             configMapel.innerHTML += `<option value="${m.kode}">${m.nama}</option>`;
         });
         configGuru.innerHTML = '<option value="">-- Pilih Guru --</option>';
