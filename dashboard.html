@@ -2,111 +2,48 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk Guru</title>
-    <link rel="stylesheet" href="style-shared.css">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        
-        body { 
-            background-color: #0d1b2a; 
-            color: #ffffff; 
-            padding: 20px; 
-            min-height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        
-        .login-box { 
-            width: 100%; 
-            max-width: 400px; 
-            text-align: center; 
-            background-color: #032b30; 
-            border: 1px solid #1a5157; 
-            border-top: 4px solid #bfa15f; 
-            border-radius: 12px; 
-            padding: 30px 20px; /* Diperlebar ruang dalamnya */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-        }
-        
-        /* Memperbesar Judul Form */
-        .login-box h3 { 
-            color: #bfa15f; 
-            margin-bottom: 12px; 
-            font-size: 20px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-        }
-        
-        /* Memperbesar kotak input password agar nyaman diketik jari */
-        .form-control { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 16px; 
-            border-radius: 8px; 
-            border: 1px solid #1a5157; 
-            background: #07383d; 
-            color: white; 
-            font-size: 16px; /* 🌟 Di HP minimal 16px agar browser tidak auto-zoom saat diklik */
-            text-align: center;
-        }
-        .form-control::placeholder {
-            color: #657e82;
-        }
-        
-        /* Memperbesar tombol Masuk */
-        .btn-gold { 
-            background-color: #c49a23; 
-            color: #0c1a1c; 
-            border: none; 
-            padding: 12px 15px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 15px;
-            cursor: pointer; 
-            transition: 0.3s; 
-            width: 100%; 
-            letter-spacing: 0.5px;
-        }
-        .btn-gold:hover { background-color: #b0891e; }
-        
-        /* Memperbesar tombol Kembali */
-        .link-kembali {
-            display: block; 
-            margin-top: 20px; 
-            color: #a3b8cc; 
-            text-decoration: none; 
-            font-size: 14px;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .link-kembali:hover {
-            color: #bfa15f;
-        }
-    </style>
+    <title>Dashboard Utama Guru</title>
+    <link rel="stylesheet" href="../style-shared.css">
 </head>
 <body>
-
-    <div class="login-box">
-        <h3>Pintu Masuk Guru</h3>
-        <p style="font-size:14px; color:#a3b8cc; margin-bottom:20px;">Silakan masukkan kata sandi akses guru</p>
-        
-        <input type="password" id="passInput" class="form-control" placeholder="Kata Sandi (Bawaan: guru123)">
-        <button class="btn-gold" onclick="cekLogin()">MASUK SISTEM</button>
-        
-        <a href="index.html" class="link-kembali">← Kembali ke Halaman Utama</a>
+    <div class="header-app">
+        <div>
+            <h1>Ruang Kontrol Pendidik</h1>
+            <p style="color:#a3b8cc;">Selamat datang kembali, Guru/Admin Sekolah</p>
+        </div>
+        <button class="btn-danger" onclick="localStorage.removeItem('guruIn'); window.location.href='../index.html'">Keluar</button>
     </div>
 
+    <div class="grid-menu">
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-akademik.html'">
+            <h3>🏫 1. Data Akademik</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Kelola data daftar kelas, nama siswa, dan mata pelajaran inti.</p>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-materi.html'">
+            <h3>📚 2. Bahan Ajar & Drive</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Input bank soal latihan, link LKPD word, dan instrumen ujian drive.</p>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-absensi.html'">
+            <h3>📝 3. Presensi & Keaktifan</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Isi kehadiran harian siswa dan generate laporan untuk wali kelas.</p>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='rekap-nilai.html'">
+            <h3>📊 4. Monitoring & Nilai</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Lihat rekap seluruh rata-rata kompetensi nilai dan estimasi raport.</p>
+        </div>
+        <!-- Ganti baris kartu monitoring lama menjadi seperti ini -->
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='monitoring-ujian.html'">
+            <h3>🛡️ 5. Pengawas Ruang (Live)</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Pantau status real-time, validasi koordinat GPS siswa, catat indikasi kecurangan, dan unduh rekapan excel.</p>
+        </div>
+
+    </div>
+
+    <!-- DI SINI POSISI KODE PENGAMAN TERSEBUT -->
     <script>
-        function cekLogin() {
-            const pass = document.getElementById('passInput').value;
-            if(pass === "guru123") {
-                localStorage.setItem("guruIn", "true");
-                window.location.href = "guru/dashboard.html";
-            } else {
-                alert("Kata sandi salah!");
-            }
+        if (localStorage.getItem("guruIn") !== "true") {
+            alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
+            window.location.href = "../login-guru.html";
         }
     </script>
 </body>
