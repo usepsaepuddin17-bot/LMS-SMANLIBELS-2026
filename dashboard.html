@@ -2,10 +2,93 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Utama Guru</title>
     <link rel="stylesheet" href="../style-shared.css">
+    <style>
+        /* Pengaturan dasar agar ruang baca di HP longgar dan pas */
+        body {
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #0d1b2a; /* Menjaga warna latar belakang tetap solid */
+            color: #ffffff;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+        }
+
+        /* Mengatur tata letak Header agar rapi saat dibuka di HP */
+        .header-app { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 2px solid #bfa15f; 
+            padding-bottom: 15px; 
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header-app h1 { font-size: 24px; color: #e6f1f5; margin: 0; }
+        .header-app p { font-size: 14px; margin: 5px 0 0 0; }
+        
+        /* Mengatur Tombol Keluar agar mudah ditekan jari di HP */
+        .btn-danger {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            background-color: #d9534f;
+            color: white;
+        }
+
+        /* 🌟 SISTEM GRID RESPONSIF: Otomatis deteksi ukuran layar */
+        .grid-menu { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 20px; 
+        }
+
+        /* Desain Kartu Menu yang Lebih Kokoh dan Tebal di HP */
+        .card { 
+            background-color: #032b30; 
+            border: 1px solid #1a5157; 
+            border-top: 4px solid #bfa15f; 
+            border-radius: 12px; 
+            padding: 22px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(196, 154, 35, 0.15);
+            border-color: #bfa15f;
+        }
+        .card h3 { 
+            color: #bfa15f; 
+            margin-bottom: 10px; 
+            font-size: 18px; /* Ukuran judul menu dinaikkan agar jelas */
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .card p {
+            font-size: 14px !important; /* Ukuran deskripsi menu dinaikkan agar mudah dibaca */
+            color: #a3b8cc;
+            line-height: 1.5;
+        }
+
+        /* 📱 PERBAIKAN MATANG KHUSUS LAYAR HP (BREAKPOINT MOBILE) */
+        @media screen and (max-width: 768px) {
+            body { padding: 15px; }
+            .header-app { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-app button { width: 100%; padding: 12px; font-size: 15px; }
+            /* Memaksa grid menjadi satu kolom lurus ke bawah di HP */
+            .grid-menu { grid-template-columns: 1fr !important; gap: 15px; }
+            .card { padding: 18px; }
+        }
+    </style>
 </head>
 <body>
+
     <div class="header-app">
         <div>
             <h1>Ruang Kontrol Pendidik</h1>
@@ -16,30 +99,31 @@
 
     <div class="grid-menu">
         <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-akademik.html'">
-            <h3>🏫 1. Data Akademik</h3>
-            <p style="font-size:13px; color:#a3b8cc;">Kelola data daftar kelas, nama siswa, dan mata pelajaran inti.</p>
+            <h3>🏫 1. Data Academic</h3>
+            <p>Kelola data daftar kelas, nama siswa, dan mata pelajaran inti.</p>
         </div>
+        
         <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-materi.html'">
             <h3>📚 2. Bahan Ajar & Drive</h3>
-            <p style="font-size:13px; color:#a3b8cc;">Input bank soal latihan, link LKPD word, dan instrumen ujian drive.</p>
+            <p>Input bank soal latihan, link LKPD word, dan instrumen ujian drive.</p>
         </div>
+        
         <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-absensi.html'">
             <h3>📝 3. Presensi & Keaktifan</h3>
-            <p style="font-size:13px; color:#a3b8cc;">Isi kehadiran harian siswa dan generate laporan untuk wali kelas.</p>
+            <p>Isi kehadiran harian siswa dan generate laporan untuk wali kelas.</p>
         </div>
+        
         <div class="card" style="cursor:pointer;" onclick="window.location.href='rekap-nilai.html'">
             <h3>📊 4. Monitoring & Nilai</h3>
-            <p style="font-size:13px; color:#a3b8cc;">Lihat rekap seluruh rata-rata kompetensi nilai dan estimasi raport.</p>
+            <p>Lihat rekap seluruh rata-rata kompetensi nilai dan estimasi raport.</p>
         </div>
-        <!-- Ganti baris kartu monitoring lama menjadi seperti ini -->
+        
         <div class="card" style="cursor:pointer;" onclick="window.location.href='monitoring-ujian.html'">
             <h3>🛡️ 5. Pengawas Ruang (Live)</h3>
-            <p style="font-size:13px; color:#a3b8cc;">Pantau status real-time, validasi koordinat GPS siswa, catat indikasi kecurangan, dan unduh rekapan excel.</p>
+            <p>Pantau status real-time, validasi koordinat GPS siswa, catat indikasi kecurangan, dan unduh rekapan excel.</p>
         </div>
-
     </div>
 
-    <!-- DI SINI POSISI KODE PENGAMAN TERSEBUT -->
     <script>
         if (localStorage.getItem("guruIn") !== "true") {
             alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
