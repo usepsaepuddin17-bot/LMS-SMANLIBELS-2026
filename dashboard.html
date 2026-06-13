@@ -123,7 +123,7 @@
             <p>Pantau status real-time, validasi koordinat GPS siswa, catat indikasi kecurangan, dan unduh rekapan excel.</p>
         </div>
 
-        <div class="card" style="cursor:pointer;" onclick="window.location.href='siswa/guru/periksa_lkpd.html'">
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='periksa_lkpd.html'">
             <h3>✍️ 6. Periksa Jawaban LKPD</h3>
             <p>Periksa hasil pengerjaan LKPD siswa, berikan penilaian massal kelompok, dan kirim masukan langsung ke siswa.</p>
         </div>
@@ -132,7 +132,7 @@
     <script>
         if (localStorage.getItem("guruIn") !== "true") {
             alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
-            window.location.href = "../login-guru.html";
+            window.location.href = "login-guru.html";
         }
     </script>
 </body>
