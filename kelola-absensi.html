@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Guru - Jurnal Kehadiran Kolektif</title>
+    <link rel="stylesheet" href="../style-shared.css">
+</head>
+<body>
+    <div class="header-app">
+        <div>
+            <h1>Manajemen Data Akademik</h1>
+            <p style="color:#657e82;">Konfigurasi Kelas, Siswa, dan Mata Pelajaran Terintegrasi</p>
+        </div>
+        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+        <h3>📍 PENGATURAN SESI PBM</h3>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
+            <div style="flex: 1; min-width: 200px;">
+                <label>Pilih Kelas</label>
+                <select id="filterKelasAbsen" class="form-control" onchange="loadSiswaJurnal(this.value)" required>
+                    <option value="">-- Memuat Daftar Kelas --</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label>Pilih Nama Guru</label>
+                <select id="filterGuruAbsen" class="form-control" required>
+                    <option value="">-- Memuat Daftar Guru --</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label>Tanggal Hari Ini</label>
+                <input type="date" id="tanggalAbsen" class="form-control" required>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+<button class="btn-gold" style="height: 42px; cursor: pointer;" onclick="cetakPDFJurnal()">Cetak Rekap Wali Kelas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📝 JURNAL KEHADIRAN & KEAKTIFAN KOLEKTIF</h3>
+        <p style="color: #657e82; font-size: 13px; font-style: italic; margin-top: 5px;">
+            *Nilai default disetel: Hadir & Cukup. Guru cukup mengganti siswa yang absen/sangat aktif saja.
+        </p>
+
+        <div style="overflow-x: auto; margin-top: 15px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;" id="tabelJurnalSiswa">
+                <thead>
+                    <tr style="background-color: #0b2226; color: gold; border-bottom: 2px solid #657e82;">
+                        <th style="padding: 12px; width: 50px;">No</th>
+                        <th style="padding: 12px;">Nama Lengkap Siswa</th>
+                        <th style="padding: 12px; width: 180px;">Status Kehadiran</th>
+                        <th style="padding: 12px; width: 180px;">Tingkat Keaktifan PBM</th>
+                    </tr>
+                </thead>
+                <tbody id="bodySiswaJurnal">
+                    <tr>
+                        <td colspan="4" style="padding: 20px; text-align: center; color: #657e82;">Silakan pilih kelas terlebih dahulu untuk memunculkan nama siswa.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn-gold" style="margin-top: 20px;" onclick="simpanSemuaJurnal()">💾 SIMPAN SEMUA DATA JURNAL KELAS</button>
+    </div>
+
+<script>
+    // =========================================================================
+    // 1. URL SUMBER (Untuk Mengambil Daftar Kelas, Siswa, dan Guru)
+    // Menembak ke Spreadsheet: KELOLA AKADEMIK
+    // =========================================================================
+    const URL_WEB_APP_SUMBER = "https://script.google.com/macros/s/AKfycbzjm8phxd3vYA1lyZ3-9wsPCSOwpuTnseuA5ZGhW7STRXoQxtY6pXWZhS53T8hXH9HwRw/exec"; 
+    const URL_SPREADSHEET_SUMBER = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit?gid=0#gid=0";
+
+    // =========================================================================
+    // 2. URL TUJUAN (Untuk Mengirim & Menyimpan Data Jurnal Kelas Bergeser)
+    // Menembak ke Spreadsheet: JURNAL KEHADIRAN DAN KEAKTIFAN
+    // =========================================================================
+    const URL_WEB_APP_TUJUAN = "https://script.google.com/macros/s/AKfycbxmFgIFRPHj2ItdnhdPmieHA3WpFHmQWs-rNoYTKAH42Qm33ut09yqJ9xDqb1PaJpVmjg/exec"; 
+    const URL_SPREADSHEET_TUJUAN = "https://docs.google.com/spreadsheets/d/1Qy68muNhK2fKu2ZzZ9u0NtFi3RFVwK3wBPxXEnm7eEM/edit?hl=id&gid=0#gid=0";
+    // =========================================================================
+
+    // Set otomatis tanggal hari ini saat halaman dimuat
+    document.getElementById('tanggalAbsen').valueAsDate = new Date();
+    let listSiswaAktif = [];
+
+    // Tembak ke SPREADSHEET SUMBER saat halaman pertama kali dibuka
+    window.onload = function() {
+        fetch(URL_WEB_APP_SUMBER, {
+            method: 'POST',
+            body: JSON.stringify({ aksi: 'GET_INITIAL_ABSENSI', urlSpreadsheet: URL_SPREADSHEET_SUMBER })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const filterKelas = document.getElementById('filterKelasAbsen');
+            const filterGuru = document.getElementById('filterGuruAbsen');
+
+            filterKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            data.kelas.forEach(k => {
+                filterKelas.innerHTML += `<option value="${k}">${k}</option>`;
+            });
+
+            filterGuru.innerHTML = '<option value="">-- Pilih Guru --</option>';
+            data.guru.forEach(g => {
+                filterGuru.innerHTML += `<option value="${g}">${g}</option>`;
+            });
+        })
+        .catch(err => console.error("Gagal sinkronisasi data awal:", err));
+    };
+
+    // Tembak ke SPREADSHEET SUMBER saat kelas dipilih untuk memunculkan nama siswa
+    function loadSiswaJurnal(kelas) {
+        if (!kelas) {
+            document.getElementById('bodySiswaJurnal').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#657e82;">Silakan pilih kelas terlebih dahulu.</td></tr>';
+            return;
+        }
+        document.getElementById('bodySiswaJurnal').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#657e82;">Memuat nama siswa...</td></tr>';
+        
+        fetch(URL_WEB_APP_SUMBER, {
+            method: 'POST',
+            body: JSON.stringify({ aksi: 'GET_SISWA_ABSENSI', urlSpreadsheet: URL_SPREADSHEET_SUMBER, kelasTerpilih: kelas })
+        })
+        .then(res => res.json())
+        .then(dataSiswa => {
+            const tbody = document.getElementById('bodySiswaJurnal');
+            tbody.innerHTML = '';
+            
+            if(dataSiswa.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#e74c3c;">Tidak ada siswa di kelas ini.</td></tr>';
+                return;
+            }
+
+            dataSiswa.forEach((siswa, index) => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #1a3a3a;" class="baris-siswa" data-nama="${siswa.nama}">
+                        <td style="padding: 12px;">${index + 1}</td>
+                        <td style="padding: 12px; font-weight: bold;">${siswa.nama}</td>
+                        <td style="padding: 12px;">
+                            <select class="form-control select-hadir" style="margin: 0;">
+                                <option value="Hadir" selected>Hadir</option>
+                                <option value="Sakit">Sakit</option>
+                                <option value="Izin">Izin</option>
+                                <option value="Alfa">Alfa</option>
+                            </select>
+                        </td>
+                        <td style="padding: 12px;">
+                            <select class="form-control select-aktif" style="margin: 0;">
+                                <option value="A (Sangat Aktif)">A (Sangat Aktif)</option>
+                                <option value="B (Aktif)">B (Aktif)</option>
+                                <option value="C (Cukup)" selected>C (Cukup)</option>
+                                <option value="D (Kurang)">D (Kurang)</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    // Tembak ke SPREADSHEET TUJUAN saat tombol simpan jurnal diklik
+    function simpanSemuaJurnal() {
+        const guru = document.getElementById('filterGuruAbsen').value;
+        const kelas = document.getElementById('filterKelasAbsen').value;
+        const tanggal = document.getElementById('tanggalAbsen').value;
+        const rows = document.querySelectorAll('.baris-siswa');
+
+        if (!kelas || !guru || !tanggal) {
+            return alert("Peringatan: Pilih Kelas, Guru, dan Tanggal terlebih dahulu!");
+        }
+        if (rows.length === 0) {
+            return alert("Peringatan: Tabel siswa kosong!");
+        }
+
+        let dataAbsensi = [];
+        rows.forEach(row => {
+            const nama = row.getAttribute('data-nama');
+            const hadir = row.querySelector('.select-hadir').value;
+            const aktif = row.querySelector('.select-aktif').value;
+            dataAbsensi.push({ nama: nama, hadir: hadir, aktif: aktif });
+        });
+
+        // DI SINI KUNCI PERUBAHANNYA: Data dikirim menggunakan URL_WEB_APP_TUJUAN & URL_SPREADSHEET_TUJUAN
+        fetch(URL_WEB_APP_TUJUAN, {
+            method: 'POST',
+            body: JSON.stringify({
+                aksi: 'SIMPAN_JURNAL_KOLEKTIF',
+                urlSpreadsheet: URL_SPREADSHEET_TUJUAN, // Masuk ke Spreadsheet Jurnal
+                guru: guru,
+                kelas: kelas,
+                tanggal: tanggal,
+                dataAbsensi: dataAbsensi
+            })
+        })
+        .then(res => res.text())
+        .then(respon => {
+            alert(respon);
+        })
+        .catch(err => alert("Terjadi kesalahan pengiriman ke Jurnal: " + err));
+    }
+    // =========================================================================
+    // 3. FUNGSI CETAK JURNAL KELAS MENJADI PDF
+    // Mengirim perintah cetak ke SPREADSHEET TUJUAN (Jurnal Kehadiran)
+    // =========================================================================
+    function cetakPDFJurnal() {
+    const guru = document.getElementById('filterGuruAbsen').value; // Harus filterGuruAbsen
+    const kelas = document.getElementById('filterKelasAbsen').value; // Harus filterKelasAbsen
+
+    if (!kelas || !guru) {
+        return alert("Peringatan: Silakan pilih Kelas dan Guru terlebih dahulu sebelum mencetak!");
+    }
+        // Tampilkan konfirmasi atau status loading jika diperlukan
+        alert("Sedang memproses dokumen PDF... Mohon tunggu sejenak, tab baru akan terbuka otomatis.");
+
+        fetch(URL_WEB_APP_TUJUAN, {
+            method: 'POST',
+            body: JSON.stringify({
+                aksi: 'CETAK_PDF_JURNAL',
+                urlSpreadsheet: URL_SPREADSHEET_TUJUAN, // Membaca data dari Spreadsheet Jurnal
+                guru: guru,
+                kelas: kelas
+            })
+        })
+.then(async res => {
+            // Cek jika response berbentuk teks biasa (artinya terjadi error di Google Script)
+            const textData = await res.text();
+            try {
+                const response = JSON.parse(textData);
+                if (response.status === "sukses" && response.urlPdf) {
+                    window.open(response.urlPdf, '_blank');
+                } else {
+                    alert("Gagal memproses PDF: " + response.pesan);
+                }
+            } catch(e) {
+                // Jika tidak bisa di-parse ke JSON, tampilkan text error asli dari Google Script
+                alert("Pesan Error Asli dari Google Script:\n" + textData);
+            }
+        })
+        .catch(err => {
+            console.error("Error Cetak:", err);
+            alert("Terjadi kesalahan koneksi sistem.");
+        });
+    }
+</script>
+</body>
+</html>

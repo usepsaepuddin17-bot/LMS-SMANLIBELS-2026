@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Sistem Pengelolaan Pembelajaran</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d1b2a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #032b30;
+            border: 2px solid #bfa15f;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 450px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-top {
+            color: #a3b8cc;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+
+        .school-name {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-container {
+            width: 110px;
+            height: 110px;
+            border: 2px dashed #bfa15f;
+            border-radius: 50%;
+            margin: 25px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .welcome-text {
+            color: #bfa15f;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .app-title {
+            color: #e6f1f5;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .year-badge {
+            background-color: #0b3d42;
+            border: 1px solid #4a5d4e;
+            color: #bfa15f;
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 35px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-bottom: 15px;
+        }
+
+        .btn-siswa {
+            background-color: #c49a23;
+            color: #0c1a1c;
+            border: none;
+            box-shadow: 0 0 15px rgba(196, 154, 35, 0.3);
+        }
+
+        .btn-siswa:hover {
+            background-color: #b0891e;
+        }
+
+        .btn-guru {
+            background-color: #07383d;
+            color: #ffffff;
+            border: 1px solid #1a5157;
+        }
+
+        .btn-guru:hover {
+            background-color: #0a464c;
+        }
+
+        .btn .icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .footer {
+            color: #657e82;
+            font-size: 10px;
+            margin-top: 25px;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-top">Dinas Pendidikan dan Kebudayaan<br>Provinsi Maluku</div>
+        <div class="school-name">SMA NEGERI 15 MALUKU TENGAH</div>
+
+        <div class="logo-container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/LOGO_SMANLIBELS-removebg-preview.png" alt="Logo Sekolah">
+        </div>
+
+        <div class="welcome-text">Selamat Datang Di</div>
+        <div class="app-title">Aplikasi Sistem Pengelolaan Pembelajaran</div>
+        
+        <div class="year-badge">Tahun Pelajaran 2026/2027</div>
+
+        <!-- TAUTAN SISWA -->
+        <a href="siswa/dashboard.html" class="btn btn-siswa">
+            <span class="icon">🧑‍🎓</span> PINTU MASUK SISWA
+        </a>
+
+        <!-- TAUTAN GURU -->
+        <a href="login-guru.html" class="btn btn-guru">
+            <span class="icon">🔒</span> PINTU MASUK GURU
+        </a>
+
+        <div class="footer">
+            © 2026 SMAN 15 Maluku Tengah. All Rights Reserved.
+        </div>
+    </div>
+
+</body>
+</html>

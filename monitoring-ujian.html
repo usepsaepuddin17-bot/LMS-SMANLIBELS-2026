@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitoring Pelaksanaan Ujian (Pengawas)</title>
+    <link rel="stylesheet" href="../style-shared.css">
+    <style>
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .bg-belum { background-color: #7f8c8d; color: white; }
+        .bg-ujian { background-color: #2980b9; color: white; animation: pulse 1.5s infinite; }
+        .bg-selesai { background-color: #27ae60; color: white; }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+        .gps-box { background: #07383d; border: 1px dashed #bfa15f; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; }
+        .flex-filter { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .flex-filter > div { flex: 1; min-width: 200px; }
+    </style>
+    <!-- Library SheetJS untuk Ekspor Excel -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <div class="header-app">
+        <div>
+            <h1>Panel Pengawas Ruang - Monitoring Real-Time</h1>
+            <p style="color:#a3b8cc;">Pelaksanaan Evaluasi & Asesmen Sumatif Terkendali</p>
+        </div>
+        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Panel Utama</button>
+    </div>
+
+    <!-- AREA GEOLOCATION / DEKLARE RADIUS GPS -->
+    <div class="gps-box">
+        📍 <strong>Validasi Radius Lokasi Pengawas (Anti-Remote Rumah):</strong> 
+        <span id="gpsStatus">Mengambil data koordinat pengawas...</span>
+        <br><span style="font-size:11px; color:#657e82;">*Siswa hanya dapat membuka lembar ujian jika berada dalam radius maksimal 50 meter dari titik koordinat pengawas di atas.</span>
+    </div>
+
+    <!-- PANEL FILTER & IDENTITAS PENGAWAS -->
+    <div class="card" style="margin-bottom:25px;">
+        <h3>Konfigurasi Pengawasan</h3>
+        <div class="flex-filter">
+            <div>
+                <label style="font-size:13px; color:#a3b8cc;">Nama Pengawas Ruang</label>
+                <input type="text" id="namaPengawas" class="form-control" value="Drs. Iwan Setiawan" placeholder="Ketik nama pengawas">
+            </div>
+            <div>
+                <label style="font-size:13px; color:#a3b8cc;">Filter Daftar Kelas</label>
+                <select class="form-control" id="filterKelas" onchange="filterSiswaUjian()">
+                    <option value="ALL">-- Tampilkan Semua Kelas --</option>
+                    <option value="XI-MIPA 1" selected>XI-MIPA 1</option>
+                    <option value="XI-MIPA 2">XI-MIPA 2</option>
+                    <option value="XII-IPS 1">XII-IPS 1</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:13px; color:#a3b8cc;">Waktu Server</label>
+                <div id="jamServer" style="font-size:18px; font-weight:bold; color:#bfa15f; margin-top:8px;">00:00:00 WIT</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABEL MONITORING UTAMA -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+            <h3>Status Pengerjaan Siswa Real-Time</h3>
+            <button class="btn-gold" style="width:auto; padding:8px 16px;" onclick="eksporKeExcel()">📊 Unduh Format Excel</button>
+        </div>
+        
+        <table class="table-data" id="tabelUjian">
+            <thead>
+                <tr>
+                    <th>Nama Siswa</th>
+                    <th>Kelas</th>
+                    <th>Status</th>
+                    <th>Mulai / Selesai</th>
+                    <th>Nilai</th>
+                    <th>Catatan Kecurangan / Log Instansi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-kelas="XI-MIPA 1">
+                    <td>Muhammad Rafli</td>
+                    <td>XI-MIPA 1</td>
+                    <td><span class="badge bg-ujian">Sedang Ujian</span></td>
+                    <td>07:30 WIT / --</td>
+                    <td>--</td>
+                    <td><input type="text" class="form-control" style="margin:0; padding:5px;" placeholder="Contoh: Aman / Pindah Tab 2x"></td>
+                </tr>
+                <tr data-kelas="XI-MIPA 1">
+                    <td>Ahmad Fauzi</td>
+                    <td>XI-MIPA 1</td>
+                    <td><span class="badge bg-selesai">Sudah Selesai</span></td>
+                    <td>07:32 WIT / 08:45 WIT</td>
+                    <td style="font-weight:bold; color:#2ecc71;">85</td>
+                    <td><span style="color:#2ecc71; font-size:13px;">Selesai Tertib</span></td>
+                </tr>
+                <tr data-kelas="XI-MIPA 1">
+                    <td>Siti Aminah</td>
+                    <td>XI-MIPA 1</td>
+                    <td><span class="badge bg-belum">Belum Masuk</span></td>
+                    <td>-- / --</td>
+                    <td>--</td>
+                    <td><span style="color:#7f8c8d; font-size:13px;">Belum Klik Login</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. SISTEM PENGAMAN DAN RUNNING TIME WIT
+        if (localStorage.getItem("guruIn") !== "true") {
+            alert("Akses Terlarang!");
+            window.location.href = "../login-guru.html";
+        }
+        
+        setInterval(() => {
+            const sekarang = new Date();
+            document.getElementById('jamServer').innerText = sekarang.toLocaleTimeString('id-ID') + " WIT";
+        }, 1000);
+
+        // 2. DETEKSI OTOMATIS GPS PENGAWAS VIA GEOLOCATION
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (posisi) => {
+                    const lat = posisi.coords.latitude.toFixed(6);
+                    const lon = posisi.coords.longitude.toFixed(6);
+                    document.getElementById('gpsStatus').innerHTML = `<span style="color:#2ecc71; font-weight:bold;">AKTIF (Lat: ${lat}, Lon: ${lon})</span> • Radius Lock 50m Terkunci.`;
+                },
+                (error) => {
+                    document.getElementById('gpsStatus').innerHTML = `<span style="color:#e74c3c; font-weight:bold;">Gagal melacak lokasi (${error.message}).</span> Menggunakan fallback IP Sekolah.`;
+                }
+            );
+        }
+
+        // 3. FUNGSI FILTER KELAS SECARA LIVE
+        function filterSiswaUjian() {
+            const pilihan = document.getElementById('filterKelas').value;
+            const baris = document.querySelectorAll('#tabelUjian tbody tr');
+            
+            baris.forEach(row => {
+                if (pilihan === "ALL" || row.getAttribute('data-kelas') === pilihan) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // 4. FUNGSI UNDUH EXCEL SECARA INSTAN (CLIENT-SIDE)
+        function eksporKeExcel() {
+            const namaPengawas = document.getElementById('namaPengawas').value || 'Tanpa Nama';
+            const kelasPilihan = document.getElementById('filterKelas').value;
+            
+            // Konversi tabel HTML menjadi data array baris SheetJS
+            const tabel = document.getElementById("tabelUjian");
+            const wb = XLSX.utils.table_to_book(tabel, { sheet: "Monitoring Ujian" });
+            
+            // Generate nama file sesuai identitas pengawasan
+            const namaFile = `Laporan_Ujian_${kelasPilihan}_Pengawas_${namaPengawas.replace(/+/g, '_')}.xlsx`;
+            XLSX.writeFile(wb, namaFile);
+        }
+    </script>
+</body>
+</html>

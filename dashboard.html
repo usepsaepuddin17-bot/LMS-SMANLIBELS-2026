@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Utama Guru</title>
+    <link rel="stylesheet" href="../style-shared.css">
+</head>
+<body>
+    <div class="header-app">
+        <div>
+            <h1>Ruang Kontrol Pendidik</h1>
+            <p style="color:#a3b8cc;">Selamat datang kembali, Guru/Admin Sekolah</p>
+        </div>
+        <button class="btn-danger" onclick="localStorage.removeItem('guruIn'); window.location.href='../index.html'">Keluar</button>
+    </div>
+
+    <div class="grid-menu">
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-akademik.html'">
+            <h3>🏫 1. Data Akademik</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Kelola data daftar kelas, nama siswa, dan mata pelajaran inti.</p>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-materi.html'">
+            <h3>📚 2. Bahan Ajar & Drive</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Input bank soal latihan, link LKPD word, dan instrumen ujian drive.</p>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='kelola-absensi.html'">
+            <h3>📝 3. Presensi & Keaktifan</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Isi kehadiran harian siswa dan generate laporan untuk wali kelas.</p>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='rekap-nilai.html'">
+            <h3>📊 4. Monitoring & Nilai</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Lihat rekap seluruh rata-rata kompetensi nilai dan estimasi raport.</p>
+        </div>
+        <!-- Ganti baris kartu monitoring lama menjadi seperti ini -->
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='monitoring-ujian.html'">
+            <h3>🛡️ 5. Pengawas Ruang (Live)</h3>
+            <p style="font-size:13px; color:#a3b8cc;">Pantau status real-time, validasi koordinat GPS siswa, catat indikasi kecurangan, dan unduh rekapan excel.</p>
+        </div>
+
+    </div>
+
+    <!-- DI SINI POSISI KODE PENGAMAN TERSEBUT -->
+    <script>
+        if (localStorage.getItem("guruIn") !== "true") {
+            alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
+            window.location.href = "../login-guru.html";
+        }
+    </script>
+</body>
+</html>

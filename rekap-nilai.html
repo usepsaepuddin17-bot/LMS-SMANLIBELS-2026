@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Guru - Rekap Nilai Total</title>
+    <link rel="stylesheet" href="../style-shared.css">
+</head>
+<body>
+    <div class="header-app">
+        <div>
+            <h1>Rekap Nilai & Monitoring Sumatif</h1>
+            <p style="color:#657e82;">Kelas: XI-MIPA 1 | Mata Pelajaran: Biologi</p>
+        </div>
+        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
+    </div>
+
+    <div class="card">
+        <h3>Buku Nilai & Estimasi Raport Kolektif</h3>
+        <table class="table-data">
+            <thead>
+                <tr>
+                    <th>Nama Siswa</th>
+                    <th>Rerata Tugas</th>
+                    <th>Rerata LKPD</th>
+                    <th>Rerata Sumatif</th>
+                    <th>Keaktifan</th>
+                    <th>Absen (H/I/S/A)</th>
+                    <th>Estimasi Raport</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Muhammad Rafli</td>
+                    <td>80.0</td>
+                    <td>85.0</td>
+                    <td>77.5</td>
+                    <td>A</td>
+                    <td>24 / 2 / 1 / 0</td>
+                    <td style="color:#bfa15f; font-weight:bold;">81.2</td>
+                </tr>
+                <tr>
+                    <td>Ahmad Fauzi</td>
+                    <td>78.5</td>
+                    <td>80.0</td>
+                    <td>82.0</td>
+                    <td>B</td>
+                    <td>26 / 1 / 0 / 0</td>
+                    <td style="color:#bfa15f; font-weight:bold;">80.1</td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn-gold" style="margin-top:20px; width:auto; padding:10px 20px;" onclick="alert('Data rekap nilai berhasil diekspor ke format Excel/Cetak!')">Cetak Buku Nilai Akhir</button>
+    </div>
+    <!-- DI SINI POSISI KODE PENGAMAN TERSEBUT -->
+    <script>
+        if (localStorage.getItem("guruIn") !== "true") {
+            alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
+            window.location.href = "../login-guru.html";
+        }
+    </script>
+</body>
+</html>

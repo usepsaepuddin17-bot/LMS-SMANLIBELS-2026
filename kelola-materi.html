@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guru - Kelola Materi & Evaluasi</title>
+    <link rel="stylesheet" href="../style-shared.css">
+    
+    <style>
+        body {
+            padding: 10px;
+            background-color: #0b1a1a;
+        }
+        
+        .header-app {
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+            padding: 15px 10px;
+        }
+
+        .header-app button {
+            width: 100%;
+        }
+
+        .grid-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .card {
+            padding: 15px !important;
+            margin: 0 !important;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .form-control {
+            font-size: 16px !important;
+            padding: 12px 10px !important;
+            margin-bottom: 12px;
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #ffd700 !important;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .form-control:disabled {
+            background-color: #e0e0e0 !important;
+            color: #757575 !important;
+            border: 2px solid #b0b0b0 !important;
+        }
+
+        .wrapper-checkbox-kelas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px;
+            background: #ffffff;
+            border: 2px solid #ffd700;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            min-height: 45px;
+            box-sizing: border-box;
+        }
+
+        .item-checkbox {
+            display: flex;
+            align-items: center;
+            background: #f0f4f4;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+        }
+
+        .item-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .item-checkbox span {
+            color: #000000;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .sub-card-paket {
+            background: #1c3d3d;
+            border: 1px dashed #ffd700;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .row-link-integrasi {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .label-kategori {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .row-link-integrasi {
+                flex-direction: row;
+                align-items: center;
+            }
+            .label-kategori {
+                width: 250px;
+                flex-shrink: 0;
+            }
+            .row-link-integrasi .form-control {
+                margin-bottom: 0 !important;
+            }
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 15px;
+        }
+
+        .table-data {
+            min-width: 800px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-data th {
+            background-color: #1c3d3d;
+            color: #ffd700;
+            padding: 10px;
+            border: 1px solid #2d5a5a;
+            font-size: 13px;
+        }
+
+        .table-data td {
+            padding: 10px;
+            border: 1px solid #2d5a5a;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .link-tabel {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .link-tabel:hover {
+            text-decoration: underline;
+        }
+
+        .btn-gold, .btn-danger {
+            padding: 14px !important;
+            font-size: 15px !important;
+            width: 100%;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-app">
+        <div>
+            <h1 style="font-size: 1.4rem; margin-bottom: 5px;">Dashboard Manajemen Pembelajaran</h1>
+            <p style="color:#657e82; font-size: 12px;">Pengaturan Konten, LKPD, Soal Latihan & Google Drive</p>
+        </div>
+        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Panel Utama</button>
+    </div>
+
+    <div class="grid-menu">
+        <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: #ffd700;">+ Input Paket Pembelajaran Lengkap</h3>
+            <form id="formMateri" onsubmit="terbitkanPaketMateri(event)">
+                
+                <label style="color: #ffffff; font-weight: bold; display: block; margin-bottom: 5px;">Pilih Nama Guru</label>
+                <select id="filterGuruMateri" class="form-control" onchange="aksiGantiGuru(this.value)" required>
+                    <option value="">-- Memuat Daftar Guru... --</option>
+                </select>
+
+                <label style="color: #ffffff; font-weight: bold; display: block; margin-bottom: 5px;">Pilih Mata Pelajaran</label>
+                <select id="filterMapelMateri" class="form-control" onchange="updateKelasMateri(this.value)" disabled required>
+                    <option value="">-- Pilih Mata Pelajaran --</option>
+                </select>
+
+                <label style="color: #ffffff; font-weight: bold; display: block; margin-bottom: 5px;">Target Distribusi Kelas (Bisa Centang Banyak)</label>
+                <div id="containerKelasCheckbox" class="wrapper-checkbox-kelas">
+                    <span style="color: #757575; font-size: 13px; align-self: center;">Silahkan pilih Guru & Mapel terlebih dahulu...</span>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="width: 30%;">
+                        <label style="color: #ffffff; display: block; margin-bottom: 5px;">Pertemuan Ke-</label>
+                        <input type="number" id="pertemuanKe" class="form-control" placeholder="Ex: 3" min="1" required>
+                    </div>
+                    <div style="width: 70%;">
+                        <label style="color: #ffffff; display: block; margin-bottom: 5px;">Materi Pokok / Judul Bahasan</label>
+                        <input type="text" id="materiPokok" class="form-control" placeholder="Contoh: Sel Volta / Teks Prosedur" required>
+                    </div>
+                </div>
+
+                <div class="sub-card-paket">
+                    <h4 style="color: #ffd700; margin-top: 0; margin-bottom: 20px; font-size: 1rem;">📦 Integrasi Link Dokumen Berbagi (Sekaligus)</h4>
+                    
+                    <div class="row-link-integrasi">
+                        <div class="label-kategori">📚 1. Bahan Ajar / Slide</div>
+                        <input type="url" id="linkBahanAjar" class="form-control" style="flex: 1;" placeholder="https://drive.google.com/... (Kosongkan jika tidak ada)">
+                    </div>
+
+                    <div class="row-link-integrasi">
+                        <div class="label-kategori">📝 2. LKPD / Lembar Kerja</div>
+                        <input type="url" id="linkLKPD" class="form-control" style="flex: 1;" placeholder="https://drive.google.com/... (Kosongkan jika tidak ada)">
+                    </div>
+
+                    <div class="row-link-integrasi">
+                        <div class="label-kategori">✏️ 3. Latihan Soal / Tugas</div>
+                        <input type="url" id="linkLatihanSoal" class="form-control" style="flex: 1;" placeholder="https://forms.gle/... (Kosongkan jika tidak ada)">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-gold">TERBITKAN & DISTRIBUSIKAN SATU PAKET</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: #ffd700;">Monitoring Hasil Distribusi Berkas</h3>
+        <div class="table-responsive">
+            <table class="table-data">
+                <thead>
+                    <tr>
+                        <th>Target Mapel/Kelas</th>
+                        <th>Pertemuan</th>
+                        <th>Materi Pokok</th>
+                        <th>Bahan Ajar</th>
+                        <th>LKPD</th>
+                        <th>Latihan Soal</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyDaftarMateri">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #657e82; padding: 15px;">Silahkan pilih nama guru untuk memuat riwayat distribusi...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        if (localStorage.getItem("guruIn") !== "true") {
+            alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
+            window.location.href = "../login-guru.html";
+        }
+
+        const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzeaPPW7Y9ucxohF2vXQ39UZp2uo_Wpgz8QX7ZfvlBRvE7mtZuVd2tVkgUA4rHHKFIcGg/exec";
+        const URL_SPREADSHEET_SUMBER = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit?gid=0#gid=0";
+        const URL_SPREADSHEET_TUJUAN = "https://docs.google.com/spreadsheets/d/1_Sq1YBH2tiGXXp4MovSQ9ErGpSYCGDZqXKzTE0JU3HU/edit?gid=0#gid=0";
+
+        let dataMasterKonfigurasi = [];
+
+        window.onload = function() {
+            muatFilterKonfigurasi();
+        };
+
+        function muatFilterKonfigurasi() {
+            fetch(URL_WEB_APP, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    aksi: 'GET_DATA_KONFIGURASI', 
+                    urlSpreadsheetSumber: URL_SPREADSHEET_SUMBER
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                dataMasterKonfigurasi = data;
+                const paraGuru = [...new Set(data.map(item => item.guru))];
+                const selectGuru = document.getElementById('filterGuruMateri');
+                selectGuru.innerHTML = '<option value="">-- Pilih Guru --</option>';
+                paraGuru.forEach(g => {
+                    if(g) selectGuru.innerHTML += `<option value="${g}">${g}</option>`;
+                });
+            })
+            .catch(err => {
+                console.error("Gagal sinkronisasi data dropdown:", err);
+                document.getElementById('filterGuruMateri').innerHTML = '<option value="">Gagal memuat data</option>';
+            });
+        }
+
+        function aksiGantiGuru(guruTerpilih) {
+            updateMapelMateri(guruTerpilih);
+            muatTabelDistribusi(guruTerpilih); // Jalankan penarikan data tabel otomatis
+        }
+
+        function updateMapelMateri(guruTerpilih) {
+            const selectMapel = document.getElementById('filterMapelMateri');
+            const containerKelas = document.getElementById('containerKelasCheckbox');
+            
+            selectMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+            containerKelas.innerHTML = '<span style="color: #757575; font-size: 13px; align-self: center;">Silahkan pilih Mata Pelajaran...</span>';
+
+            if (!guruTerpilih) {
+                selectMapel.disabled = true;
+                return;
+            }
+
+            const mapelFiltered = dataMasterKonfigurasi.filter(item => item.guru === guruTerpilih);
+            const mapelUnik = [...new Set(mapelFiltered.map(item => item.mapel))];
+
+            mapelUnik.forEach(m => {
+                if(m) selectMapel.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+            selectMapel.disabled = false;
+        }
+
+        function updateKelasMateri(mapelTerpilih) {
+            const guruTerpilih = document.getElementById('filterGuruMateri').value;
+            const containerKelas = document.getElementById('containerKelasCheckbox');
+            
+            containerKelas.innerHTML = '';
+
+            if (!mapelTerpilih) {
+                containerKelas.innerHTML = '<span style="color: #757575; font-size: 13px; align-self: center;">Silahkan pilih Mata Pelajaran...</span>';
+                return;
+            }
+
+            const kelasUnik = [...new Set(dataMasterKonfigurasi.filter(item => item.guru === guruTerpilih && item.mapel === mapelTerpilih).map(item => item.kelas))];
+
+            if(kelasUnik.length === 0 || !kelasUnik[0]) {
+                containerKelas.innerHTML = '<span style="color: #ff0000; font-size: 13px;">Tidak ada kelas terkonfigurasi.</span>';
+                return;
+            }
+
+            kelasUnik.forEach(k => {
+                if(k) {
+                    containerKelas.innerHTML += `
+                        <label class="item-checkbox">
+                            <input type="checkbox" name="kelasCentang" value="${k}">
+                            <span>${k}</span>
+                        </label>
+                    `;
+                }
+            });
+        }
+
+        // FUNGSI UTAMA MEMBACA DAN MENAMPILKAN RIWAYAT PAKET LINK DI TABEL (FIXED ERROR HANDLING)
+        function muatTabelDistribusi(guruTerpilih) {
+            const tbody = document.getElementById('bodyDaftarMateri');
+            if (!guruTerpilih) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #657e82; padding: 15px;">Silahkan pilih nama guru...</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ffd700; padding: 15px;">🔄 Memuat riwayat berkas dari Sheet...</td></tr>';
+
+            fetch(URL_WEB_APP, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: 'GET_RIWAYAT_MATERI',
+                    urlSpreadsheetTujuan: URL_SPREADSHEET_TUJUAN,
+                    guru: guruTerpilih
+                })
+            })
+            .then(res => {
+                // PENGAMAN: Jika server mengembalikan text error bukan JSON, tangkap kesalahannya di sini
+                if (!res.headers.get('content-type') || !res.headers.get('content-type').includes('application/json')) {
+                    return res.text().then(text => { throw new Error(text) });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #657e82; padding: 15px;">Belum ada paket link yang didistribusikan oleh guru ini.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                // Looping data terbalik supaya inputan terbaru muncul di paling atas tabel
+                for (let i = data.length - 1; i >= 0; i--) {
+                    let item = data[i];
+                    
+                    let linkAjarHtml = item.bahanAjar && item.bahanAjar !== "-" ? `<a class="link-tabel" href="${item.bahanAjar}" target="_blank">👁️ Lihat Slide</a>` : "<span style='color:#657e82;'>-</span>";
+                    let linkLkpdHtml = item.lkpd && item.lkpd !== "-" ? `<a class="link-tabel" href="${item.lkpd}" target="_blank">📝 Lihat LKPD</a>` : "<span style='color:#657e82;'>-</span>";
+                    let linkSoalHtml = item.latihanSoal && item.latihanSoal !== "-" ? `<a class="link-tabel" href="${item.latihanSoal}" target="_blank">✏️ Buka Soal</a>` : "<span style='color:#657e82;'>-</span>";
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${item.mapel}</strong><br><small style="color:#a3b8cc;">${item.kelas}</small></td>
+                            <td style="text-align:center;">${item.pertemuan}</td>
+                            <td>${item.judul}</td>
+                            <td style="text-align:center;">${linkAjarHtml}</td>
+                            <td style="text-align:center;">${linkLkpdHtml}</td>
+                            <td style="text-align:center;">${linkSoalHtml}</td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error("Detail Error:", err);
+                // Menampilkan pesan edukatif daripada sekadar tulisan gagal memuat mentah
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff6b6b; padding: 15px;">⚠️ Sheet untuk guru <strong>"${guruTerpilih}"</strong> belum terbentuk atau tidak ditemukan di Spreadsheet Tujuan. Silakan lakukan pengisian materi pertama kali di atas untuk membuatnya secara otomatis.</td></tr>`;
+            });
+        }
+        function terbitkanPaketMateri(e) {
+            e.preventDefault();
+
+            const guru = document.getElementById('filterGuruMateri').value;
+            const mapel = document.getElementById('filterMapelMateri').value;
+            const pertemuan = document.getElementById('pertemuanKe').value;
+            const materi = document.getElementById('materiPokok').value;
+            
+            const linkMateri = document.getElementById('linkBahanAjar').value || "-";
+            const linkLKPD = document.getElementById('linkLKPD').value || "-";
+            const linkSoal = document.getElementById('linkLatihanSoal').value || "-";
+
+            const checkboxes = document.querySelectorAll('input[name="kelasCentang"]:checked');
+            const listKelasTerpilih = [];
+            checkboxes.forEach(cb => listKelasTerpilih.push(cb.value));
+
+            if (listKelasTerpilih.length === 0) {
+                alert("Peringatan: Silakan centang minimal satu kelas tujuan!");
+                return;
+            }
+
+            fetch(URL_WEB_APP, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: 'SIMPAN_MATERI_BARU',
+                    urlSpreadsheetTujuan: URL_SPREADSHEET_TUJUAN,
+                    guru: guru,
+                    mapel: mapel,
+                    kelas: listKelasTerpilih.join(", "),
+                    pertemuan: pertemuan,
+                    judul: materi,
+                    linkBahanAjar: linkMateri,
+                    linkLKPD: linkLKPD,
+                    linkLatihanSoal: linkSoal
+                })
+            })
+            .then(res => res.text())
+            .then(respon => {
+                alert(respon);
+                
+                document.getElementById('pertemuanKe').value = "";
+                document.getElementById('materiPokok').value = "";
+                document.getElementById('linkBahanAjar').value = "";
+                document.getElementById('linkLKPD').value = "";
+                document.getElementById('linkLatihanSoal').value = "";
+                
+                const semuaCheckbox = document.querySelectorAll('input[name="kelasCentang"]');
+                semuaCheckbox.forEach(cb => cb.checked = false);
+
+                // Segarkan isi tabel secara otomatis sesaat setelah sukses menyimpan data baru
+                muatTabelDistribusi(guru);
+            })
+            .catch(err => alert("Terjadi kesalahan pengiriman paket borongan: " + err));
+        }
+    </script>
+</body>
+</html>

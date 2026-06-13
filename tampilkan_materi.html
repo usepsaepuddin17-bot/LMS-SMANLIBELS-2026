@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pratinjau Materi Pembelajaran</title>
+    <link rel="stylesheet" href="../style-shared.css">
+    <style>
+        body {
+            background-color: #0b1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container-materi {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .nav-aksi {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-kembali {
+            padding: 8px 16px;
+            background-color: #1a5157;
+            border: 1px solid #bfa15f;
+            color: #bfa15f;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn-kembali:hover {
+            background-color: #bfa15f;
+            color: #032b30;
+        }
+        .frame-pembungkus {
+            position: relative;
+            width: 100%;
+            height: 75vh; /* Mengambil 75% tinggi layar komputer/HP */
+            background: #04383e;
+            border: 2px solid #bfa15f;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .error-notif {
+            text-align: center;
+            padding: 40px;
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-materi">
+        <div class="nav-aksi">
+            <h2 style="color: #bfa15f; margin: 0;">📖 Membaca Dokumen Materi</h2>
+            <a href="javascript:history.back()" class="btn-kembali">← Kembali ke Dashboard</a>
+        </div>
+
+        <div class="frame-pembungkus" id="boxMateri">
+            <div style="text-align: center; padding: 50px; color: #bfa15f;">Memuat dokumen materi, mohon tunggu...</div>
+        </div>
+    </div>
+
+<script>
+    window.onload = function() {
+        // 1. Ambil seluruh parameter teks di URL browser
+        const parameterUrl = new URLSearchParams(window.location.search);
+        let linkGoogleDoc = parameterUrl.get('doc');
+
+        const boxMateri = document.getElementById('boxMateri');
+
+        if (!linkGoogleDoc) {
+            boxMateri.innerHTML = `<div class="error-notif">❌ Tautan dokumen materi tidak valid atau tidak ditemukan!</div>`;
+            return;
+        }
+
+        // 2. Logika Konversi Otomatis ke Mode Embed/Preview
+        // Jika link bertipe '/edit', '/view', atau sharing biasa, kita ubah ke bentuk '/preview' agar rapi tanpa menu Google Doc
+        if (linkGoogleDoc.includes('/edit')) {
+            linkGoogleDoc = linkGoogleDoc.split('/edit')[0] + '/preview';
+        } else if (linkGoogleDoc.includes('/view')) {
+            linkGoogleDoc = linkGoogleDoc.split('/view')[0] + '/preview';
+        } else if (!linkGoogleDoc.includes('/preview')) {
+            // Jika tidak ada akhiran edit/view, coba bersihkan spasi dan pastikan formatnya siap disematkan
+            linkGoogleDoc = linkGoogleDoc.trim();
+        }
+
+        // 3. Render Iframe Dokumen ke layar siswa
+        boxMateri.innerHTML = `<iframe src="${linkGoogleDoc}" allow="autoplay"></iframe>`;
+    };
+</script>
+
+</body>
+</html>

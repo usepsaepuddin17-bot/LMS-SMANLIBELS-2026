@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Guru - Kelola Akademik Dinamis</title>
+    <link rel="stylesheet" href="../style-shared.css">
+    <style>
+    /* Mengatur tampilan khusus untuk layar HP (lebar di bawah 768px) */
+    @media (max-width: 768px) {
+        .grid-menu {
+            display: flex;
+            flex-direction: column; /* Membuat panel menumpuk ke bawah */
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .card {
+            width: 100% !important; /* Panel memenuhi lebar layar HP */
+            box-sizing: border-box;
+        }
+
+        /* Membuat tombol CRUD yang berjajar 3 tetap proporsional di HP */
+        .card form div {
+            flex-direction: row; /* Tetap berdampingan */
+            gap: 5px !important;
+        }
+
+        .btn-gold {
+            font-size: 12px; /* Memperkecil tulisan tombol sedikit agar muat di HP */
+            padding: 10px 5px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="header-app">
+        <div>
+            <h1>Manajemen Data Akademik</h1>
+            <p style="color:#657e82;">Konfigurasi Kelas, Siswa, dan Mata Pelajaran Terintegrasi</p>
+        </div>
+        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
+    </div>
+
+    <div class="grid-menu">
+<div class="card">
+            <h3>Daftar Kelas & Manajemen Siswa</h3>
+            <form id="formSiswaKelas" onsubmit="event.preventDefault();">
+                <label for="filterKelas">Pilih Kelas</label>
+                <select id="filterKelas" class="form-control" required onchange="loadSiswaPerKelas(this.value)">
+                    <option value="">-- Memuat Daftar Kelas --</option>
+                </select>
+
+                <label for="selectSiswa">Pilih Siswa Terdaftar</label>
+                <select id="selectSiswa" class="form-control" onchange="IsiInputSiswa(this.value)">
+                    <option value="">-- Pilih Siswa (Kosongkan jika ingin tambah baru) --</option>
+                </select>
+
+                <label for="idSiswa">ID Siswa</label>
+                <input type="text" id="idSiswa" class="form-control" placeholder="Contoh: S001 / NISN" required>
+
+                <label for="inputNamaSiswa">Nama Siswa</label>
+                <input type="text" id="inputNamaSiswa" class="form-control" placeholder="Tulis nama lengkap siswa" required>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="button" class="btn-gold" style="flex: 1;" onclick="crudSiswa('TAMBAH')">TAMBAH</button>
+                    <button type="button" class="btn-gold" style="flex: 1; background-color: #2ecc71;" onclick="crudSiswa('EDIT')">EDIT</button>
+                    <button type="button" class="btn-gold" style="flex: 1; background-color: #e74c3c;" onclick="crudSiswa('HAPUS')">HAPUS</button>
+                </div>
+            </form>
+        </div>
+        <div class="card">
+            <h3> Daftar Mata Pelajaran Per Kelas</h3>
+            <form id="formKonfigurasi" onsubmit="event.preventDefault(); simpanKonfigurasi();">
+                <label for="configKelas">Daftar Kelas</label>
+                <select id="configKelas" class="form-control" required>
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+
+                <label for="configMapel">Kode Mata Pelajaran</label>
+                <select id="configMapel" class="form-control" required>
+                    <option value="">-- Pilih Mata Pelajaran --</option>
+                </select>
+
+                <label for="configGuru">Nama Guru</label>
+                <select id="configGuru" class="form-control" required>
+                    <option value="">-- Pilih Guru --</option>
+                </select>
+
+                <button type="submit" class="btn-gold">SIMPAN KONFIGURASI</button>
+            </form>
+        </div>
+    </div>
+
+<script>
+    
+    // =========================================================================
+    // TEMPELKAN URL DI SINI KETIKA CODING DI VS CODE
+    // =========================================================================
+    const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzjm8phxd3vYA1lyZ3-9wsPCSOwpuTnseuA5ZGhW7STRXoQxtY6pXWZhS53T8hXH9HwRw/exec"; 
+    const URL_SPREADSHEET = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit?gid=220342903#gid=220342903";
+    // =========================================================================
+    // =========================================================================
+
+    let listSiswaAktif = [];
+
+    // Ambil data dropdown saat halaman pertama kali dibuka
+    window.onload = function() {
+        fetch(URL_WEB_APP, {
+            method: 'POST',
+            body: JSON.stringify({ aksi: 'GET_INITIAL_DATA', urlSpreadsheet: URL_SPREADSHEET })
+        })
+        .then(res => res.json())
+        .then(data => isiDropdownAwal(data))
+        .catch(err => console.error("Gagal memuat data awal:", err));
+    };
+
+    function isiDropdownAwal(data) {
+        const filterKelas = document.getElementById('filterKelas');
+        const configKelas = document.getElementById('configKelas');
+        const configMapel = document.getElementById('configMapel');
+        const configGuru = document.getElementById('configGuru');
+
+        filterKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+        configKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+        data.kelas.forEach(k => {
+            let opt = `<option value="${k}">${k}</option>`;
+            filterKelas.innerHTML += opt;
+            configKelas.innerHTML += opt;
+        });
+
+        // 2. Isi Dropdown Mata Pelajaran (Panel 2)
+        configMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+        data.mapel.forEach(m => {
+            // value tetap Kode (Kolom A), tapi tulisan yang dilihat Admin HANYA Nama Mata Pelajaran
+            configMapel.innerHTML += `<option value="${m.kode}">${m.nama}</option>`;
+        });
+        configGuru.innerHTML = '<option value="">-- Pilih Guru --</option>';
+        data.guru.forEach(g => {
+            configGuru.innerHTML += `<option value="${g}">${g}</option>`;
+        });
+    }
+
+    function loadSiswaPerKelas(kelas) {
+        if (!kelas) return;
+        document.getElementById('selectSiswa').innerHTML = '<option value="">-- Memuat Siswa... --</option>';
+        
+        fetch(URL_WEB_APP, {
+            method: 'POST',
+            body: JSON.stringify({ aksi: 'GET_SISWA_KELAS', urlSpreadsheet: URL_SPREADSHEET, kelasTerpilih: kelas })
+        })
+        .then(res => res.json())
+        .then(dataSiswa => {
+            listSiswaAktif = dataSiswa;
+            const selectSiswa = document.getElementById('selectSiswa');
+            selectSiswa.innerHTML = '<option value="">-- Pilih Siswa (Kosongkan jika ingin tambah baru) --</option>';
+            dataSiswa.forEach(s => {
+                selectSiswa.innerHTML += `<option value="${s.id}">${s.nama}</option>`;
+            });
+            batalPilihSiswa();
+        });
+    }
+
+    function IsiInputSiswa(id) {
+        if (!id) {
+            batalPilihSiswa();
+            return;
+        }
+        const siswa = listSiswaAktif.find(s => s.id == id);
+        if (siswa) {
+            document.getElementById('idSiswa').value = siswa.id;
+            document.getElementById('idSiswa').disabled = true;
+            document.getElementById('inputNamaSiswa').value = siswa.nama;
+        }
+    }
+
+    function batalPilihSiswa() {
+        document.getElementById('idSiswa').value = '';
+        document.getElementById('idSiswa').disabled = false;
+        document.getElementById('inputNamaSiswa').value = '';
+    }
+
+    function crudSiswa(aksi) {
+        const idSiswa = document.getElementById('idSiswa').value;
+        const namaSiswa = document.getElementById('inputNamaSiswa').value;
+        const kelasSiswa = document.getElementById('filterKelas').value;
+
+        if (!kelasSiswa) return alert("Pilih Kelas terlebih dahulu!");
+        if (!idSiswa || !namaSiswa) return alert("ID Siswa dan Nama Siswa tidak boleh kosong!");
+        if (aksi === 'HAPUS' && !confirm("Apakah Anda yakin ingin menghapus siswa ini?")) return;
+
+        fetch(URL_WEB_APP, {
+            method: 'POST',
+            body: JSON.stringify({
+                aksi: aksi,
+                urlSpreadsheet: URL_SPREADSHEET,
+                idSiswa: idSiswa,
+                namaSiswa: namaSiswa,
+                kelasSiswa: kelasSiswa
+            })
+        })
+        .then(res => res.text())
+        .then(respon => {
+            alert(respon);
+            loadSiswaPerKelas(kelasSiswa);
+        });
+    }
+
+    function simpanKonfigurasi() {
+        const guru = document.getElementById('configGuru').value;
+        const mapel = document.getElementById('configMapel').value;
+        const kelas = document.getElementById('configKelas').value;
+
+        fetch(URL_WEB_APP, {
+            method: 'POST',
+            body: JSON.stringify({
+                aksi: 'SIMPAN_KONFIGURASI',
+                urlSpreadsheet: URL_SPREADSHEET,
+                guru: guru,
+                mapel: mapel,
+                kelas: kelas
+            })
+        })
+        .then(res => res.text())
+        .then(respon => {
+            alert(respon);
+            document.getElementById('formKonfigurasi').reset();
+        });
+    }
+</script>
+</body>
+</html>
