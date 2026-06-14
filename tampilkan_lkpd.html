@@ -252,9 +252,9 @@
             iframeMateri.src = urlFinal;
         } 
         
-        // KONDISI 4: DEFAULT (Google Docs, Google Slide, atau PDF Bacaan)
+     // KONDISI 4: DEFAULT (Google Docs untuk LKPD Interaktif)
         else {
-            textJudulHalaman.innerText = "📖 RUANG BACA";
+            textJudulHalaman.innerText = "📖 RUANG BACA DOKUMEN";
             textLoading.innerText = "Menyelaraskan dokumen dengan layar HP...";
             boxMateri.style.backgroundColor = "#ffffff";
             
@@ -269,7 +269,8 @@
                 urlBersih = urlBersih.split('/preview')[0];
             }
             
-             urlFinal = urlBersih + '/preview';
+            // ✨ KITA KEMBALIKAN KE MOBILEBASIC: Agar kotak jawaban LKPD muncul lagi demi siswa
+            urlFinal = urlBersih + '/mobilebasic';
             iframeMateri.src = urlFinal;
         }
     };
