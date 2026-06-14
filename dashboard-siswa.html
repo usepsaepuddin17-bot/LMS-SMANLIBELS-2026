@@ -129,7 +129,7 @@
             });
             
             let dataKonf = await respon.json();
-            selectGuru.innerHTML = `<option value="">-- Klik untuk Memilih Nama Guru --</option>`;
+            selectGuru.innerHTML = `<option value="">-- Klik Nama Guru --</option>`;
             
             if(!dataKonf || dataKonf.length === 0 || dataKonf.error) {
                 selectGuru.innerHTML = `<option value="">Belum ada data di tab Konfigurasi.</option>`;
