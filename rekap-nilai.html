@@ -4,20 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guru - Rekap Nilai Total</title>
-    <link rel="stylesheet" href="../style-shared.css">
+    <link class="shared-css" rel="stylesheet" href="../style-shared.css">
+    <style>
+        /* GAYA FILTER DROPDOWN DI ATAS TABEL */
+        .filter-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            background: #032b30;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #1a5157;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            color: #bfa15f;
+            font-weight: bold;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            background-color: #0b1a1a;
+            color: #ffffff;
+            border: 1px solid #1a5157;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-group select:focus {
+            border-color: #bfa15f;
+        }
+
+        .filter-group select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* TOMBOL KELUAR MERAH 3D */
+        .btn-danger-3d {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            outline: none;
+            border: none;
+            vertical-align: middle;
+            text-decoration: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+            color: #ffffff;
+            padding: 10px 20px;
+            background-color: #d9534f;
+            border-radius: 6px;
+            box-shadow: 0 4px 0 #b52b27, 0 6px 10px rgba(0, 0, 0, 0.4);
+            transition: all 0.1s ease;
+        }
+
+        .btn-danger-3d:hover {
+            background-color: #e2625e;
+        }
+
+        .btn-danger-3d:active {
+            background-color: #d9534f;
+            box-shadow: 0 1px 0 #b52b27, 0 2px 4px rgba(0, 0, 0, 0.4);
+            transform: translateY(3px);
+        }
+    </style>
 </head>
 <body>
     <div class="header-app">
         <div>
             <h1>Rekap Nilai</h1>
-            <p style="color:#657e82;">Kelas: XI-MIPA 1 | Mata Pelajaran: Biologi</p>
         </div>
-        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
+        <button class="btn-danger-3d" onclick="window.location.href='dashboard.html'">← Kembali</button>
     </div>
 
     <div class="card">
         <h3>Buku Nilai & Estimasi Raport Kolektif</h3>
-        <table class="table-data">
+        
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="pilihGuru">Nama Guru :</label>
+                <select id="pilihGuru">
+                    <option value="">-- Memuat Guru... --</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="pilihMapel">Mata Pelajaran :</label>
+                <select id="pilihMapel">
+                    <option value="">-- Memuat Mapel... --</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="pilihKelas">Kelas :</label>
+                <select id="pilihKelas" onchange="saringTabelKelas()" disabled>
+                    <option value="semua">-- Memuat Kelas... --</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="table-data" id="tabelNilaiSiswa">
             <thead>
                 <tr>
                     <th>Nama Siswa</th>
@@ -29,35 +129,197 @@
                     <th>Estimasi Raport</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="bodyTabelSiswa">
                 <tr>
-                    <td>Muhammad Rafli</td>
-                    <td>80.0</td>
-                    <td>85.0</td>
-                    <td>77.5</td>
-                    <td>A</td>
-                    <td>24 / 2 / 1 / 0</td>
-                    <td style="color:#bfa15f; font-weight:bold;">81.2</td>
-                </tr>
-                <tr>
-                    <td>Ahmad Fauzi</td>
-                    <td>78.5</td>
-                    <td>80.0</td>
-                    <td>82.0</td>
-                    <td>B</td>
-                    <td>26 / 1 / 0 / 0</td>
-                    <td style="color:#bfa15f; font-weight:bold;">80.1</td>
+                    <td colspan="7" style="text-align: center; color: #bfa15f;">Memuat data siswa dari spreadsheet cloud...</td>
                 </tr>
             </tbody>
         </table>
+        
         <button class="btn-gold" style="margin-top:20px; width:auto; padding:10px 20px;" onclick="alert('Data rekap nilai berhasil diekspor ke format Excel/Cetak!')">Cetak Buku Nilai Akhir</button>
     </div>
-    <!-- DI SINI POSISI KODE PENGAMAN TERSEBUT -->
+
     <script>
-        if (localStorage.getItem("guruIn") !== "true") {
-            alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
-            window.location.href = "../login-guru.html";
+    if (localStorage.getItem("guruIn") !== "true") {
+        alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
+        window.location.href = "../login-guru.html";
+    }
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjm8phxd3vYA1lyZ3-9wsPCSOwpuTnseuA5ZGhW7STRXoQxtY6pXWZhS53T8hXH9HwRw/exec";
+    const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit?gid=0#gid=0";
+
+    let dataSiswaGlobal = [];
+    let dataNilaiTugasGlobal = {};
+    let statusTugasGlobal = "OK";
+    let dataNilaiLkpdGlobal = {};
+    let statusLkpdGlobal = "OK";
+    let dataNilaiSumatifGlobal = {};
+    let statusSumatifGlobal = "OK";
+    let dataNilaiAbsenGlobal = {};      
+    let dataNilaiAktifGlobal = {};      
+    let statusAbsenAktifGlobal = "OK";  
+
+    window.addEventListener("DOMContentLoaded", function() {
+        muatDataAkademik(""); 
+        document.getElementById("pilihGuru").addEventListener("change", function() {
+            muatDataAkademik(this.value);
+        });
+    });
+
+    function muatDataAkademik(guruTerpilih) {
+        document.getElementById("bodyTabelSiswa").innerHTML = `
+            <tr><td colspan="7" style="text-align: center; color: #bfa15f;">Menyelaraskan data nilai tugas, LKPD, Sumatif & Kehadiran...</td></tr>
+        `;
+
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                aksi: "GET_REKAP_TOTAL",
+                urlSpreadsheet: SPREADSHEET_URL,
+                guruTerpilih: guruTerpilih
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(document.getElementById("pilihGuru").options.length <= 1) {
+                isiDropdown("pilihGuru", data.guru, "-- Pilih Guru --");
+                isiDropdown("pilihMapel", data.mapel, "-- Pilih Mapel --");
+                isiDropdown("pilihKelas", data.kelas, "-- Semua Kelas --");
+                document.getElementById("pilihKelas").disabled = false;
+            }
+
+            dataSiswaGlobal = data.siswa;
+            dataNilaiTugasGlobal = data.nilaiTugas || {};
+            statusTugasGlobal = data.statusTugas;
+            dataNilaiLkpdGlobal = data.nilaiLkpd || {};
+            statusLkpdGlobal = data.statusLkpd;
+            dataNilaiSumatifGlobal = data.nilaiSumatif || {};
+            statusSumatifGlobal = data.statusSumatif;
+            
+            dataNilaiAbsenGlobal = data.nilaiAbsen || {};
+            dataNilaiAktifGlobal = data.nilaiKeaktifan || {};
+            statusAbsenAktifGlobal = data.statusAbsenAktif;
+
+            susunTabelSiswa(dataSiswaGlobal);
+            saringTabelKelas();
+        })
+        .catch(error => {
+            console.error("Gagal memuat:", error);
+            document.getElementById("bodyTabelSiswa").innerHTML = `
+                <tr><td colspan="7" style="text-align: center; color: #d9534f; font-weight: bold;">Gagal memuat data akademik. Periksa jaringan Anda.</td></tr>
+            `;
+        });
+    }
+
+    function isiDropdown(elementId, arrayData, teksDefault) {
+        const select = document.getElementById(elementId);
+        select.innerHTML = `<option value="semua">${teksDefault}</option>`;
+        arrayData.forEach(item => {
+            if(item) {
+                const opsi = document.createElement("option");
+                opsi.value = item;
+                opsi.textContent = item;
+                select.appendChild(opsi);
+            }
+        });
+    }
+
+    function susunTabelSiswa(siswaArray) {
+        const tbody = document.getElementById("bodyTabelSiswa");
+        tbody.innerHTML = "";
+
+        if(!siswaArray || siswaArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Tidak ada data siswa.</td></tr>`;
+            return;
         }
-    </script>
+
+        siswaArray.forEach(siswa => {
+            const baris = document.createElement("tr");
+            baris.setAttribute("data-kelas", siswa.kelas);
+            const namaClean = siswa.nama.toString().trim().toUpperCase();
+
+            // A. Rerata Tugas
+            let nilaiTugasSiswa = "Belum Rilis";
+            if (statusTugasGlobal !== "Belum Di Nilai / Belum Rilis") {
+                nilaiTugasSiswa = dataNilaiTugasGlobal[namaClean] !== undefined ? dataNilaiTugasGlobal[namaClean] : "0.0";
+            }
+
+            // B. Rerata LKPD
+            let nilaiLkpdSiswa = "Belum Rilis";
+            if (statusLkpdGlobal !== "Belum Di Nilai / Belum Rilis") {
+                nilaiLkpdSiswa = dataNilaiLkpdGlobal[namaClean] !== undefined ? dataNilaiLkpdGlobal[namaClean] : "0.0";
+            }
+
+            // C. Rerata Sumatif
+            let nilaiSumatifSiswa = "Belum Rilis";
+            if (statusSumatifGlobal !== "Belum Di Nilai / Belum Rilis") {
+                nilaiSumatifSiswa = dataNilaiSumatifGlobal[namaClean] !== undefined ? dataNilaiSumatifGlobal[namaClean] : "0.0";
+            }
+
+            // D. Rerata Kehadiran / Absensi
+            let nilaiAbsenSiswa = "Belum Rilis";
+            if (statusAbsenAktifGlobal !== "Belum Di Nilai / Belum Rilis") {
+                nilaiAbsenSiswa = dataNilaiAbsenGlobal[namaClean] !== undefined ? dataNilaiAbsenGlobal[namaClean] : "0.0";
+            }
+
+            // E. Rerata Keaktifan
+            let nilaiAktifSiswa = "Belum Rilis";
+            if (statusAbsenAktifGlobal !== "Belum Di Nilai / Belum Rilis") {
+                nilaiAktifSiswa = dataNilaiAktifGlobal[namaClean] !== undefined ? dataNilaiAktifGlobal[namaClean] : "0.0";
+            }
+
+            // F. Perhitungan Estimasi Raport Berdasarkan Bobot Persentase (15%, 15%, 30%, 10%, 30%)
+            let nTugas = parseFloat(nilaiTugasSiswa) || 0;
+            let nLkpd = parseFloat(nilaiLkpdSiswa) || 0;
+            let nSumatif = parseFloat(nilaiSumatifSiswa) || 0;
+            let nAktif = parseFloat(nilaiAktifSiswa) || 0; // Pemetaan Keaktifan (10%)
+            let nAbsen = parseFloat(nilaiAbsenSiswa) || 0; // Pemetaan Kehadiran (30%)
+
+            // Menentukan pengali bobot secara dinamis jika statusnya sudah rilis
+            let wTugas = (nilaiTugasSiswa === "Belum Rilis") ? 0 : 0.15;
+            let wLkpd = (nilaiLkpdSiswa === "Belum Rilis") ? 0 : 0.15;
+            let wSumatif = (nilaiSumatifSiswa === "Belum Rilis") ? 0 : 0.30;
+            let wAktif = (nilaiAktifSiswa === "Belum Rilis") ? 0 : 0.10;
+            let wAbsen = (nilaiAbsenSiswa === "Belum Rilis") ? 0 : 0.30;
+
+            let totalBobotTersedia = wTugas + wLkpd + wSumatif + wAktif + wAbsen;
+            let rerataTotal = "0.0";
+
+            if (totalBobotTersedia > 0) {
+                // Menghitung nilai akumulasi proporsional berdasarkan bobot yang aktif
+                let kalkulasiMurni = (nTugas * wTugas) + (nLkpd * wLkpd) + (nSumatif * wSumatif) + (nAktif * wAktif) + (nAbsen * wAbsen);
+                rerataTotal = (kalkulasiMurni / totalBobotTersedia).toFixed(1);
+            }
+
+            // ✨ LOGIKA FIX: Memetakan nilaiAbsen ke kolom Absen dan nilaiAktif ke kolom Keaktifan secara presisi
+            baris.innerHTML = `
+                <td>${siswa.nama}</td>
+                <td style="font-weight: bold; color: ${nilaiTugasSiswa === 'Belum Rilis' ? '#d9534f' : '#ffffff'}">${nilaiTugasSiswa}</td>
+                <td style="font-weight: bold; color: ${nilaiLkpdSiswa === 'Belum Rilis' ? '#d9534f' : '#ffffff'}">${nilaiLkpdSiswa}</td>
+                <td style="font-weight: bold; color: ${nilaiSumatifSiswa === 'Belum Rilis' ? '#d9534f' : '#ffffff'}">${nilaiSumatifSiswa}</td>
+                <td style="font-weight: bold; color: ${nilaiAktifSiswa === 'Belum Rilis' ? '#d9534f' : '#ffffff'}">${nilaiAktifSiswa}</td>
+                <td style="font-weight: bold; color: ${nilaiAbsenSiswa === 'Belum Rilis' ? '#d9534f' : '#ffffff'}">${nilaiAbsenSiswa}</td>
+                <td style="color:#bfa15f; font-weight:bold;">${rerataTotal}</td>
+            `;
+            tbody.appendChild(baris);
+        });
+    }
+
+    function saringTabelKelas() {
+        const kelasTerpilih = document.getElementById("pilihKelas").value;
+        const tabel = document.getElementById("tabelNilaiSiswa");
+        const barisData = tabel.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+        for (let i = 0; i < barisData.length; i++) {
+            if (!barisData[i].hasAttribute("data-kelas")) continue;
+            const kelasSiswa = barisData[i].getAttribute("data-kelas");
+            if (kelasTerpilih === "semua" || kelasSiswa === kelasTerpilih) {
+                barisData[i].style.display = ""; 
+            } else {
+                barisData[i].style.display = "none"; 
+            }
+        }
+    }
+</script>
 </body>
 </html>
