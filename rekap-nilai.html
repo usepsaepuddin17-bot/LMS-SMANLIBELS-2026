@@ -5,211 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guru - Rekap Nilai Total</title>
     <link class="shared-css" rel="stylesheet" href="../style-shared.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         /* GAYA FILTER DROPDOWN DI ATAS TABEL */
         .filter-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
-            margin-top: 15px;
-            margin-bottom: 20px;
+            margin: 15px 0 20px 0;
             background: #032b30;
             padding: 16px;
             border-radius: 8px;
             border: 1px solid #1a5157;
         }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .filter-group label {
-            font-size: 13px;
-            color: #bfa15f;
-            font-weight: bold;
-        }
-
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-group label { font-size: 13px; color: #bfa15f; font-weight: bold; }
         .filter-group select {
-            padding: 8px 12px;
-            background-color: #0b1a1a;
-            color: #ffffff;
-            border: 1px solid #1a5157;
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-            transition: 0.2s;
+            padding: 8px 12px; background-color: #0b1a1a; color: #ffffff;
+            border: 1px solid #1a5157; border-radius: 6px; font-size: 14px; outline: none;
         }
 
-        .filter-group select:focus {
-            border-color: #bfa15f;
+        /* Penyembunyian komponen judul PDF saat masih di monitor biasa */
+        .judul-pdf-hanya-cetak { display: none; }
+        .tanda-tangan-container { display: none; margin-top: 40px; font-family: sans-serif; }
+
+        .table-responsive-wrapper {
+            width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px;
         }
 
-        .filter-group select:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        /* Gaya tabel responsif di layar */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; background-color: #0b1a1a; color: #ffffff; }
+        th, td { padding: 10px 8px; border: 1px solid #1a5157; text-align: center; }
+        th { background-color: #032b30; color: #bfa15f; font-weight: bold; }
+        
+        /* Nama Siswa agar tidak bertumpuk ke bawah di HP */
+        td:first-child {
+            text-align: left; font-size: 13px; min-width: 160px; white-space: nowrap;
         }
 
-        /* TOMBOL KELUAR MERAH 3D */
-        .btn-danger-3d {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-            outline: none;
-            border: none;
-            vertical-align: middle;
-            text-decoration: none;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 13px;
-            font-weight: bold;
-            color: #ffffff;
-            padding: 10px 20px;
-            background-color: #d9534f;
-            border-radius: 6px;
-            box-shadow: 0 4px 0 #b52b27, 0 6px 10px rgba(0, 0, 0, 0.4);
-            transition: all 0.1s ease;
+        @media screen and (max-width: 768px) {
+            table { font-size: 11px; }
+            td:first-child { font-size: 11px; font-weight: bold; }
+            th, td { padding: 8px 5px; }
+            .btn-cetak-3d { width: 100% !important; box-sizing: border-box; }
         }
 
-        .btn-danger-3d:hover {
-            background-color: #e2625e;
-        }
-
-        .btn-danger-3d:active {
-            background-color: #d9534f;
-            box-shadow: 0 1px 0 #b52b27, 0 2px 4px rgba(0, 0, 0, 0.4);
-            transform: translateY(3px);
-        }
-
-        /* ✨ TOMBOL CETAK 3D (EMAS/COKLAT) KESELARASAN TEMA WEB */
+        /* TOMBOL UNDUH EMAS ELEGAN */
         .btn-cetak-3d {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-            outline: none;
-            border: none;
-            vertical-align: middle;
-            text-decoration: none;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 13px;
-            font-weight: bold;
-            color: #0b1a1a;
-            padding: 10px 20px;
-            background-color: #bfa15f;
-            border-radius: 6px;
+            cursor: pointer; outline: none; border: none; font-family: sans-serif;
+            font-size: 13px; font-weight: bold; color: #0b1a1a; padding: 12px 24px;
+            background-color: #bfa15f; border-radius: 6px;
             box-shadow: 0 4px 0 #8c7340, 0 6px 10px rgba(0, 0, 0, 0.4);
-            transition: all 0.1s ease;
         }
+        .btn-cetak-3d:active { transform: translateY(3px); box-shadow: 0 1px 0 #8c7340; }
 
-        .btn-cetak-3d:hover {
-            background-color: #d1b473;
-        }
-
-        .btn-cetak-3d:active {
-            background-color: #bfa15f;
-            box-shadow: 0 1px 0 #8c7340, 0 2px 4px rgba(0, 0, 0, 0.4);
-            transform: translateY(3px);
-        }
-
-        /* =========================================================================
-           🖨️ STYLE MEDIA CETAK (DITARUH DI PALING BAWAH SEBELUM TUTUP STYLE)
-           ========================================================================= */
-        @media print {
-            select, button, .filter-container, .nav-bar, .btn-danger-3d, .btn-cetak-3d {
-                display: none !important;
-            }
-
-            body {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-                margin: 0;
-                padding: 0;
-                font-size: 11pt;
-            }
-
-            table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                background-color: #ffffff !important;
-                color: #000000 !important;
-                page-break-inside: auto;
-            }
-            
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-
-            th, td {
-                border: 1px solid #000000 !important;
-                padding: 8px !important;
-                color: #000000 !important;
-                background-color: transparent !important;
-            }
-
-            th {
-                background-color: #f2f2f2 !important;
-                font-weight: bold !important;
-            }
-
-            td[style*="#d9534f"] {
-                color: #d9534f !important;
-            }
-            
-            td[style*="#bfa15f"] {
-                color: #000000 !important;
-                font-weight: bold !important;
-            }
-
-            @page {
-                size: A4;
-                margin: 15mm 10mm 15mm 10mm;
-            }
-        }
-        /* --- TAMPILAN DEFAULT DI LAYAR MONITOR --- */
-        .tanda-tangan-container {
-            display: none; /* Sembunyikan di layar agar web tetap bersih */
-            margin-top: 50px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12pt;
-            color: #ffffff;
-        }
-
-        /* --- TAMPILAN KHUSUS SAAT DIUNDUH JADI PDF --- */
-        @media print {
-            select, button, .filter-container, .nav-bar, .btn-danger-3d, .btn-cetak-3d {
-                display: none !important;
-            }
-
-            body {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-            }
-
-            /* Munculkan area tanda tangan dengan warna hitam standar dokumen resmi */
-            .tanda-tangan-container {
-                display: block !important;
-                float: right !important;
-                text-align: left !important;
-                margin-top: 40px;
-                padding-right: 20px;
-                page-break-inside: avoid;
-                color: #000000 !important;
-            }
-
-            .ttd-Waktu {
-                margin-bottom: 5px;
-            }
-
-            .ttd-Jabatan {
-                margin-bottom: 80px; /* Jarak ruang kosong untuk tanda tangan basah */
-            }
-
-            .ttd-Nama strong {
-                text-decoration: underline;
-            }
-        }
+        /* STANDARISASI GAYA APABILA SUDAH MENJADI BERKAS PDF (HITAM PUTIH RESMI) */
+        .pdf-mode { color: #000000 !important; background: #ffffff !important; }
+        .pdf-mode table { background: #ffffff !important; color: #000000 !important; font-size: 10pt !important; }
+        .pdf-mode th, .pdf-mode td { border: 1px solid #000000 !important; color: #000000 !important; padding: 6px !important; }
+        .pdf-mode th { background-color: #f2f2f2 !important; color: #000000 !important; }
+        .pdf-mode td:first-child { min-width: auto !important; white-space: normal !important; }
+        .pdf-mode .tanda-tangan-container { display: block !important; float: right !important; text-align: left !important; color: #000000 !important; }
+        .pdf-mode .judul-pdf-hanya-cetak { display: block !important; }
 </style>
 </head>
 <body>
@@ -246,6 +103,14 @@
             </div>
         </div>
 
+        <div id="areaCetakPDF" style="background: #ffffff; padding: 20px; color: #000000; border-radius: 8px;">
+    
+    <div class="judul-pdf-hanya-cetak" style="text-align: center; margin-bottom: 20px; font-family: sans-serif;">
+        <h2 style="margin: 0; color: #000000;">BUKU REKAPITULASI NILAI AKHIR SISWA</h2>
+        <p style="margin: 5px 0 0 0; color: #333333; font-weight: bold;" id="subJudulPDF">Mata Pelajaran: - | Kelas: -</p>
+    </div>
+
+    <div class="table-responsive-wrapper">
         <table class="table-data" id="tabelNilaiSiswa">
             <thead>
                 <tr>
@@ -264,20 +129,21 @@
                 </tr>
             </tbody>
         </table>
-        <div id="areaTandaTangan" class="tanda-tangan-container">
-    <div class="ttd-Waktu">
-        <span id="ttdTempatTanggal">Maluku Tengah, 15 Juni 2026</span>
     </div>
-    <div class="ttd-Jabatan">
-        Guru Mata Pelajaran <span id="ttdMapel">...</span>
-    </div>
-    <div class="ttd-Nama">
-        <strong id="ttdNamaGuru">...</strong>
+    
+    <div id="areaTandaTangan" class="tanda-tangan-container">
+        <div class="ttd-Waktu">
+            <span id="ttdTempatTanggal">Maluku Tengah, 15 Juni 2026</span>
+        </div>
+        <div class="ttd-Jabatan">
+            Guru Mata Pelajaran <span id="ttdMapel">...</span>
+        </div>
+        <div class="ttd-Nama">
+            <strong id="ttdNamaGuru">...</strong>
+        </div>
     </div>
 </div>
-      <button class="btn-cetak-3d" style="margin-top:20px; width:auto; padding:10px 20px;" onclick="unduhLaporanPDF()">📥 Unduh Buku Nilai (PDF)</button>
-    </div>
-
+<button class="btn-cetak-3d" style="margin-top:20px; width:auto; padding:10px 20px;" onclick="unduhLaporanPDF()">📥 Unduh Buku Nilai (PDF)</button>
     <script>
     if (localStorage.getItem("guruIn") !== "true") {
         alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
@@ -411,8 +277,8 @@
             let nTugas = parseFloat(nilaiTugasSiswa) || 0;
             let nLkpd = parseFloat(nilaiLkpdSiswa) || 0;
             let nSumatif = parseFloat(nilaiSumatifSiswa) || 0;
-            let nAktif = parseFloat(nilaiAktifSiswa) || 0; // Pemetaan Keaktifan (10%)
-            let nAbsen = parseFloat(nilaiAbsenSiswa) || 0; // Pemetaan Kehadiran (30%)
+            let nAktif = parseFloat(nilaiAktifSiswa) || 0; 
+            let nAbsen = parseFloat(nilaiAbsenSiswa) || 0; 
 
             // Menentukan pengali bobot secara dinamis jika statusnya sudah rilis
             let wTugas = (nilaiTugasSiswa === "Belum Rilis") ? 0 : 0.15;
@@ -425,12 +291,10 @@
             let rerataTotal = "0.0";
 
             if (totalBobotTersedia > 0) {
-                // Menghitung nilai akumulasi proporsional berdasarkan bobot yang aktif
                 let kalkulasiMurni = (nTugas * wTugas) + (nLkpd * wLkpd) + (nSumatif * wSumatif) + (nAktif * wAktif) + (nAbsen * wAbsen);
                 rerataTotal = (kalkulasiMurni / totalBobotTersedia).toFixed(1);
             }
 
-            // ✨ LOGIKA FIX: Memetakan nilaiAbsen ke kolom Absen dan nilaiAktif ke kolom Keaktifan secara presisi
             baris.innerHTML = `
                 <td>${siswa.nama}</td>
                 <td style="font-weight: bold; color: ${nilaiTugasSiswa === 'Belum Rilis' ? '#d9534f' : '#ffffff'}">${nilaiTugasSiswa}</td>
@@ -459,9 +323,10 @@
             }
         }
     }
-    // ✨ FUNGSI BARU: Generate Data Tanda Tangan & Unduh PDF
+
+    // ✨ FUNGSI BARU: Mengonversi khusus area tabel menjadi berkas PDF murni yang rapi di HP & Laptop
     function unduhLaporanPDF() {
-        // 1. Ambil data dari filter dropdown halaman web
+        // 1. Ambil nama filter untuk menyusun judul berkas dinamis
         const guru = document.getElementById("pilihGuru").value;
         const mapel = document.getElementById("pilihMapel").value;
         const kelas = document.getElementById("pilihKelas").value;
@@ -470,24 +335,39 @@
         const namaMapel = (mapel && mapel !== "semua") ? mapel : "Semua Mapel";
         const namaKelas = (kelas && kelas !== "semua") ? kelas : "Semua Kelas";
         
-        // 2. Format Tanggal Indonesia Otomatis Hari Ini (Real-time)
+        // 2. Format Tanggal Indonesia otomatis hari ini
         const opsiTanggal = { year: 'numeric', month: 'long', day: 'numeric' };
         const tanggalHariIni = new Date().toLocaleDateString('id-ID', opsiTanggal);
         
-        // 3. Suntikkan teks ke elemen tanda tangan HTML sebelum diunduh
+        // 3. Suntikkan teks ke dalam layout dokumen PDF
+        document.getElementById("subJudulPDF").textContent = `Mata Pelajaran: ${namaMapel} | Kelas: ${namaKelas}`;
         document.getElementById("ttdTempatTanggal").textContent = `Maluku Tengah, ${tanggalHariIni}`;
         document.getElementById("ttdMapel").textContent = namaMapel;
         document.getElementById("ttdNamaGuru").textContent = namaGuru;
         
-        // 4. Ubah nama file PDF yang akan diunduh secara otomatis
-        const judulAsli = document.title;
-        document.title = `Buku_Nilai_${namaKelas}_${namaMapel}_${namaGuru}`.replace(/\s+/g, '_');
+        // 4. Bidik area kotak yang dibungkus oleh bungkusan PDF putih
+        const elemenTarget = document.getElementById("areaCetakPDF");
         
-        // 5. Panggil dialog unduh PDF bawaan sistem komputer/HP
-        window.print();
+        // 5. Ubah paksa style ke mode cetak kertas putih (menghapus background gelap web)
+        elemenTarget.classList.add("pdf-mode");
         
-        // 6. Kembalikan judul tab browser ke kondisi awal
-        document.title = judulAsli;
+        // 6. Pengaturan kualitas konversi agar tulisan tidak blur/pecah di Android/iOS
+        const opsiPdf = {
+            margin:       [15, 10, 15, 10], // Batas kertas atas, kiri, bawah, kanan (mm)
+            filename:     `Buku_Nilai_${namaKelas}_${namaMapel}_${namaGuru}`.replace(/\s+/g, '_') + '.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, // Skala ditingkatkan agar teks tajam
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // Format kertas standar A4 tegak
+        };
+        
+        // 7. Proses konversi berjalan di latar belakang, otomatis terunduh saat selesai
+        html2pdf().set(opsiPdf).from(elemenTarget).save().then(function() {
+            // Kembalikan tampilan halaman web ke warna normal setelah PDF sukses diunduh
+            elemenTarget.classList.remove("pdf-mode");
+        }).catch(function(error) {
+            console.error("Terjadi kendala unduhan:", error);
+            elemenTarget.classList.remove("pdf-mode");
+        });
     }
 </script>
 </body>
