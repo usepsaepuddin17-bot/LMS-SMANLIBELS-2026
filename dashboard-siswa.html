@@ -46,7 +46,7 @@
             <h1>Ruang Belajar Siswa</h1>
             <p style="color:#a3b8cc; margin: 5px 0 0 0;">Aplikasi Sistem Pengelolaan Pembelajaran</p>
         </div>
-        <button class="btn-danger" onclick="window.location.href='index.html'">Keluar</button>
+        <button class="btn-danger" onclick="window.location.href='../index.html'">Keluar</button>
     </div>
 
     <div class="filter-panel">
@@ -187,7 +187,12 @@
                 ? `<a href="tampilkan_lkpd.html?doc=${encodeURIComponent(materi.lkpd.trim())}" class="btn-link">📝 LKPD Berkas</a>` 
                 : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
                 
-                let btnSoal = (materi.latihanSoal && materi.latihanSoal.trim() !== "-") ? `<a href="${materi.latihanSoal}" target="_blank" class="btn-link">✍️ Latihan Soal</a>` : `<span class="btn-disabled">✍️ Latihan Soal (Kosong)</span>`;
+                let guruAktif = encodeURIComponent(guruDipilih);
+                let linkSoalMentah = encodeURIComponent(materi.latihanSoal.trim());
+
+                let btnSoal = (materi.latihanSoal && materi.latihanSoal.trim() !== "-") 
+                    ? `<a href="tampilkan_soal.html?doc=${linkSoalMentah}&guru=${guruAktif}" class="btn-link">✍️ Latihan Soal</a>` 
+                    : `<span class="btn-disabled">✍️ Latihan Soal (Kosong)</span>`;
 
                 let htmlCard = `
                     <div class="mapel-card">

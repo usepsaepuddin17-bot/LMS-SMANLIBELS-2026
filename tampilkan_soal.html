@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Evaluasi Mandiri CBT - Interaktif</title>
+    <style>
+        :root {
+            --bg-body: #0a1f23;
+            --bg-card: #032b30;
+            --bg-input: #04383e;
+            --accent: #bfa15f;
+            --text-light: #ffffff;
+            --text-muted: #a3b8cc;
+            --btn-nav: #1a5157;
+            --btn-danger: #d32f2f;
+        }
+
+        body {
+            margin: 0; padding: 15px;
+            background-color: var(--bg-body); color: var(--text-light);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
+        }
+
+        .cbt-container { max-width: 900px; margin: 0 auto; }
+
+        .cbt-header {
+            background-color: var(--bg-card); border: 1px solid var(--accent);
+            border-radius: 12px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .cbt-header h2 {
+            margin: 0 0 15px 0; font-size: 18px; color: var(--accent);
+            text-align: center; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .filter-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label {
+            font-size: 11px; color: var(--accent); font-weight: bold;
+            margin-bottom: 6px; text-transform: uppercase;
+        }
+
+        .input-group select {
+            padding: 10px; background-color: var(--bg-input);
+            border: 1px solid #1a5157; color: white; border-radius: 6px;
+            font-size: 14px; font-weight: 600; outline: none;
+        }
+
+        .soal-card {
+            background-color: var(--bg-card); border: 1px solid #1a5157;
+            border-radius: 12px; padding: 25px; display: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: bold; color: var(--accent); font-size: 13px;
+            border-bottom: 1px dashed #1a5157; padding-bottom: 12px; margin-bottom: 20px;
+        }
+
+        .teks-soal { font-size: 16px; line-height: 1.6; margin-bottom: 25px; color: #f5f5f5; }
+
+        .opsi-list { display: flex; flex-direction: column; gap: 12px; }
+        .opsi-item {
+            display: flex; align-items: center; background-color: var(--bg-input);
+            border: 1px solid #1a5157; padding: 14px 18px; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+
+        .opsi-item:hover { background-color: #0b4a52; border-color: var(--accent); }
+        .opsi-item.terpilih { background-color: #176069; border-color: var(--accent); }
+
+        .opsi-bulat {
+            width: 30px; height: 30px; border-radius: 50%;
+            background-color: var(--bg-body); border: 1px solid var(--accent);
+            color: var(--accent); display: flex; align-items: center;
+            justify-content: center; font-weight: bold; margin-right: 15px; flex-shrink: 0;
+        }
+
+        .opsi-item.terpilih .opsi-bulat { background-color: var(--accent); color: var(--bg-body); }
+        .opsi-teks { font-size: 14px; line-height: 1.4; }
+
+        .action-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 30px; padding-top: 15px; border-top: 1px solid #1a5157;
+        }
+
+        .btn-cbt {
+            padding: 12px 24px; border: none; border-radius: 6px;
+            font-weight: bold; font-size: 12px; cursor: pointer; text-transform: uppercase;
+        }
+
+        .btn-kembali { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-nav { background-color: var(--btn-nav); color: white; }
+        .btn-selesai { background-color: var(--btn-danger); color: white; }
+
+        .overlay-skor {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-skor {
+            background-color: var(--bg-card); border: 2px solid var(--accent);
+            padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; width: 90%;
+        }
+
+        .angka-skor { font-size: 64px; font-weight: 800; color: #00e676; margin: 20px 0; }
+        .loading-text { text-align: center; color: var(--accent); padding: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="cbt-container">
+    <div class="cbt-header">
+        <h2>💻 PANEL EVALUASI INTERAKTIF LATIHAN MANDIRI</h2>
+        <div class="filter-grid">
+            <div class="input-group">
+                <label>Nama Guru Pengampu</label>
+                <select id="selectGuru">
+                    <option value="">-- Hubungkan Database Guru --</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Pilih Kelas</label>
+                <select id="selectKelas" onchange="ambilSiswaPerKelas()">
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Nama Siswa</label>
+                <select id="selectSiswa" onchange="bukaLembarSoal()">
+                    <option value="">-- Pilih Nama Anda --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="loaderDoc" class="loading-text" style="display: none;">
+        ⏳ Mengunduh lembar soal dari berkas cloud...
+    </div>
+
+    <div id="cardSoal" class="soal-card">
+        <div class="status-bar">
+            <span id="labelNomor">SOAL NO: 1</span>
+            <span id="labelProgress" style="color: var(--text-muted);">0/0 Terjawab</span>
+        </div>
+        
+        <div class="teks-soal" id="kontenPertanyaan">Memuat soal...</div>
+        <div class="opsi-list" id="kontenOpsi"></div>
+
+        <div class="action-bar">
+            <button class="btn-cbt btn-nav" id="btnSblm" onclick="pindahSoal(-1)">⬅️ Sebelum</button>
+            <button class="btn-cbt btn-kembali" onclick="window.close()">Keluar</button>
+            <button class="btn-cbt btn-nav" id="btnSld" onclick="pindahSoal(1)">Berikutnya ➡️</button>
+            <button class="btn-cbt btn-selesai" id="btnFinish" onclick="prosesSelesaiUjian()" style="display: none;">Kirim Nilai</button>
+        </div>
+    </div>
+</div>
+
+<div class="overlay-skor" id="popSkor">
+    <div class="modal-skor">
+        <h3 style="color: var(--accent); margin: 0;">Latihan Selesai!</h3>
+        <p style="color: var(--text-muted); font-size:14px;">Nilai perolehan latihan mandiri Anda:</p>
+        <div class="angka-skor" id="txtSkor">0</div>
+        <p id="statusSimpan" style="color: #ffb300; font-size: 13px; font-weight: bold;">💾 Menyimpan ke rekap utama...</p>
+        <button class="btn-cbt btn-nav" onclick="window.close()" style="width: 100%; margin-top: 15px;">Tutup Halaman</button>
+    </div>
+</div>
+
+<script>
+    // 🛠️ Konfigurasi URL dan Web App Endpoint Anda (TETAP DIPERTAHANKAN)
+    const URL_SS_SUMBER = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit";
+    const URL_SS_TUJUAN = "https://docs.google.com/spreadsheets/d/1kxZ_Yo8-ebRvStL8WxyHWreqelVMotIGXw_qz2_oqHY/edit";
+    
+    const SCRIPT_SUMBER_AKADEMIK = "https://script.google.com/macros/s/AKfycbzeaPPW7Y9ucxohF2vXQ39UZp2uo_Wpgz8QX7ZfvlBRvE7mtZuVd2tVkgUA4rHHKFIcGg/exec";
+    const SCRIPT_TUJUAN_NILAI = "https://script.google.com/macros/s/AKfycbxF0Yx80-N0R-ZI7LuNLVAQ2Jb4xOcIt8aktfOktqIEXjZVFgLSMCWzQRKtQBpsBJsh/exec";
+
+    let himpunanSoal = [];
+    let indeksSoalAktif = 0;
+    let bundelJawabanSiswa = {};
+
+    const paramUrl = new URLSearchParams(window.location.search);
+    const linkDocMentah = paramUrl.get('doc') || "";
+    const guruDariUrl = paramUrl.get('guru') || "";
+
+    function ekstrakIdGoogleDocs(url) {
+        if (!url || url.indexOf("http") === -1) return url;
+        let cocok = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        return (cocok && cocok[1]) ? cocok[1] : "";
+    }
+    const idDocsUjian = ekstrakIdGoogleDocs(decodeURIComponent(linkDocMentah));
+
+    window.onload = async function() {
+        if (!idDocsUjian) {
+            alert("Error: Link berkas soal Google Docs tidak valid atau kosong!");
+            return;
+        }
+        
+        await sinkronisasiDropdownAkademik();
+        
+        if (guruDariUrl) {
+            document.getElementById("selectGuru").value = decodeURIComponent(guruDariUrl);
+        }
+        
+        await unduhDanProsesSoalDocs();
+    };
+
+    // =========================================================================
+    // 1. SINKRONISASI DROPDOWN GURU & KELAS (DARI SHEET KONFIGURASI)
+    // =========================================================================
+    async function sinkronisasiDropdownAkademik() {
+        try {
+            console.log("Memulai sinkronisasi data master akademik via GET...");
+            
+            // A. Ambil Data List Guru
+            let urlGuru = `${SCRIPT_SUMBER_AKADEMIK}?aksi=GET_LIST_GURU_SISWA&urlSpreadsheetSumber=${encodeURIComponent(URL_SS_SUMBER)}`;
+            let responGuru = await fetch(urlGuru, { method: 'GET' });
+            let dataGuru = await responGuru.json();
+            console.log("Respon Database Guru:", dataGuru);
+
+            let selectGuru = document.getElementById("selectGuru");
+            selectGuru.innerHTML = '<option value="">-- Pilih Guru Pengampu --</option>';
+            
+            if (Array.isArray(dataGuru)) {
+                dataGuru.forEach(g => {
+                    let namaGuru = (typeof g === 'object' && g !== null) ? (g.guru || g.nama || Object.values(g)[0]) : g;
+                    if (namaGuru && namaGuru.toString().trim() !== "" && !namaGuru.toString().toLowerCase().includes("nama")) {
+                        selectGuru.innerHTML += `<option value="${namaGuru.toString().trim()}">${namaGuru.toString().trim()}</option>`;
+                    }
+                });
+            }
+
+            // B. Ambil Data Kelas Berdasarkan Sheet Konfigurasi (Kolom C / Index 2)
+            let urlKonf = `${SCRIPT_SUMBER_AKADEMIK}?aksi=GET_DATA_KONFIGURASI&urlSpreadsheetSumber=${encodeURIComponent(URL_SS_SUMBER)}`;
+            let responKonf = await fetch(urlKonf, { method: 'GET' });
+            let dataAkademikRaw = await responKonf.json();
+            console.log("Respon KONFIGURASI:", dataAkademikRaw);
+
+            let selectKelas = document.getElementById("selectKelas");
+            selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            
+            if (Array.isArray(dataAkademikRaw)) {
+                let listKelasUnik = [];
+                
+                dataAkademikRaw.forEach((row, indeks) => {
+                    // Abaikan baris header spreadsheet jika terbawa
+                    if (indeks === 0 && (!row.kelas && (row[0] === "Nama" || row[1] === "Kelas" || row[0] === "No"))) return;
+
+                    let namaKelas = "";
+                    if (typeof row === 'object' && row !== null && !Array.isArray(row)) {
+                        namaKelas = row.kelas || row.Kelas || row.kelasSiswa;
+                    } else if (Array.isArray(row)) {
+                        namaKelas = row[2]; // Kolom C (Target Kelas)
+                    }
+                    
+                    if (namaKelas && namaKelas.toString().trim() !== "" && !namaKelas.toString().toLowerCase().includes("kelas")) {
+                        let kelasBersih = namaKelas.toString().trim();
+                        if (listKelasUnik.indexOf(kelasBersih) === -1) {
+                            listKelasUnik.push(kelasBersih);
+                        }
+                    }
+                });
+                
+                listKelasUnik.sort().forEach(k => {
+                    selectKelas.innerHTML += `<option value="${k}">${k}</option>`;
+                });
+            }
+        } catch (err) {
+            console.error("Gagal sinkronisasi data master dropdown:", err);
+        }
+    }
+
+    // =========================================================================
+    // 2. FILTER NAMA SISWA BERDASARKAN KELAS (DARI SHEET DATABASE SISWA)
+    // =========================================================================
+    async function ambilSiswaPerKelas() {
+        let kelasTerpilih = document.getElementById("selectKelas").value;
+        let selectSiswa = document.getElementById("selectSiswa");
+        
+        if (!kelasTerpilih) {
+            selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
+            bukaLembarSoal(); 
+            return;
+        }
+
+        selectSiswa.innerHTML = '<option value="">⏳ Memuat nama siswa...</option>';
+        try {
+            let urlSiswa = `${SCRIPT_SUMBER_AKADEMIK}?aksi=GET_DATA_DATABASE SISWA&urlSpreadsheetSumber=${encodeURIComponent(URL_SS_SUMBER)}`;
+            let respon = await fetch(urlSiswa, { method: 'GET' });
+            let dataSiswaRaw = await respon.json();
+
+            console.log("Data Siswa Mentah dari GS:", dataSiswaRaw); 
+
+            selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
+            
+            if (Array.isArray(dataSiswaRaw)) {
+                let jumlahSiswaDitemukan = 0;
+                
+                dataSiswaRaw.forEach((row, indeks) => {
+                    if (indeks === 0) return; // Mengabaikan baris header tabel master siswa
+
+                    let kelasSiswa = "";
+                    let namaSiswa = "";
+
+                    if (Array.isArray(row)) {
+                        namaSiswa = row[1];  // Kolom B -> Index 1 (Nama Siswa)
+                        kelasSiswa = row[2]; // Kolom C -> Index 2 (Kelas Siswa)
+                    } else if (typeof row === 'object' && row !== null) {
+                        kelasSiswa = row.kelas || row.Kelas || row.kelasSiswa;
+                        namaSiswa = row.nama || row.Nama || row.namaSiswa;
+                    }
+
+                    // Pembersihan teks spasi & konversi ke huruf kecil untuk akurasi penyaringan data
+                    if (kelasSiswa && namaSiswa && kelasSiswa.toString().trim().toLowerCase() === kelasTerpilih.trim().toLowerCase()) {
+                        let namaBersih = namaSiswa.toString().trim();
+                        selectSiswa.innerHTML += `<option value="${namaBersih}">${namaBersih}</option>`;
+                        jumlahSiswaDitemukan++;
+                    }
+                });
+                
+                if (jumlahSiswaDitemukan === 0) {
+                    selectSiswa.innerHTML = '<option value="">⚠️ Tidak ada nama siswa di kelas ini</option>';
+                }
+            }
+        } catch (err) {
+            console.error("Gagal memuat data nama siswa:", err);
+            selectSiswa.innerHTML = '<option value="">⚠️ Gagal memuat data dari cloud</option>';
+        }
+        bukaLembarSoal();
+    }
+
+    // =========================================================================
+    // 3. SEKARANG LEBIH AMAN: DOWNLOAD TEKS BANK SOAL VIA GET APPS SCRIPT (ANTI CORS)
+    // =========================================================================
+    async function unduhDanProsesSoalDocs() {
+        document.getElementById("loaderDoc").style.display = "block";
+        try {
+            console.log("Mengunduh teks soal via Jembatan Bebas CORS Apps Script...");
+            
+            // Memanfaatkan endpoint GET_SOAL_DOC di Web App internal Google agar tidak diblokir browser
+            let urlUnduhSoal = `${SCRIPT_SUMBER_AKADEMIK}?aksi=GET_SOAL_DOC&docId=${encodeURIComponent(idDocsUjian)}`;
+            let respon = await fetch(urlUnduhSoal, { method: 'GET' });
+            let data = await respon.json();
+
+            document.getElementById("loaderDoc").style.display = "none";
+            
+            if (data && data.sukses && data.teksMentah) {
+                console.log("Berhasil mengamankan teks soal dari Google Docs!");
+                ekstraksiTeksKeStrukturCbt(data.teksMentah);
+            } else {
+                throw new Error(data.error || "Teks kosong");
+            }
+        } catch (err) {
+            console.warn("Metode utama Apps Script terkendala, beralih ke fallback eksport murni...", err);
+            
+            // Cadangan Fallback otomatis (Metode lama Anda dipertahankan sebagai benteng pertahanan terakhir)
+            let urlExportTeks = `https://docs.google.com/document/d/${idDocsUjian}/export?format=txt`;
+            try {
+                let responFallback = await fetch(urlExportTeks);
+                let teksMentah = await responFallback.text();
+                document.getElementById("loaderDoc").style.display = "none";
+                if (teksMentah && teksMentah.trim() !== "") {
+                    ekstraksiTeksKeStrukturCbt(teksMentah);
+                }
+            } catch (fallbackErr) {
+                document.getElementById("loaderDoc").style.display = "none";
+                alert("Kendala jaringan sistemik saat memuat bank soal dari Google Docs.");
+                bukaLembarSoal();
+            }
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI OPERASIONAL ENGINE CBT (TETAP SEHAT DAN UTUH TANPA PERUBAHAN LOGIKA)
+    // =========================================================================
+    function ekstraksiTeksKeStrukturCbt(teksMentah) {
+        let blokSoalRaw = teksMentah.split(/\[Soal\s+\d+\]/i);
+        himpunanSoal = [];
+
+        blokSoalRaw.forEach(blok => {
+            if (blok.trim() === "") return;
+            let barisTeks = blok.split("\n").map(b => b.trim()).filter(b => b !== "");
+            let butirSoal = { pertanyaan: "", opsi: [], kunci: "" };
+
+            barisTeks.forEach(baris => {
+                if (baris.toUpperCase().includes("[KUNCI]") || baris.toLowerCase().includes("kunci:")) {
+                    let nilaiKunci = baris.replace(/\[KUNCI\]/i, "").replace(/Kunci\s*:/i, "").trim();
+                    butirSoal.kunci = nilaiKunci.toUpperCase();
+                } else if (baris.match(/^[A-E][\.\)]/i)) {
+                    butirSoal.opsi.push(baris);
+                } else {
+                    butirSoal.pertanyaan += (butirSoal.pertanyaan ? "<br>" : "") + baris;
+                }
+            });
+
+            if (butirSoal.opsi.length > 0) {
+                himpunanSoal.push(butirSoal);
+            }
+        });
+        bukaLembarSoal();
+    }
+
+    function bukaLembarSoal() {
+        let cardSoal = document.getElementById("cardSoal");
+        if (himpunanSoal.length > 0) {
+            cardSoal.style.display = "block";
+            renderButirSoalKeLayar(indeksSoalAktif);
+        } else {
+            cardSoal.style.display = "none";
+        }
+    }
+
+    function renderButirSoalKeLayar(indeks) {
+        indeksSoalAktif = indeks;
+        let dataSoal = himpunanSoal[indeksSoalAktif];
+
+        document.getElementById("labelNomor").innerText = `SOAL NO: ${indeksSoalAktif + 1} DARI ${himpunanSoal.length}`;
+        document.getElementById("kontenPertanyaan").innerHTML = dataSoal.pertanyaan;
+
+        let jumlahTerjawab = Object.keys(bundelJawabanSiswa).length;
+        document.getElementById("labelProgress").innerText = `${jumlahTerjawab}/${himpunanSoal.length} Terjawab`;
+
+        let containerOpsi = document.getElementById("kontenOpsi");
+        containerOpsi.innerHTML = "";
+
+        dataSoal.opsi.forEach(opsiMentah => {
+            let abjadHuruf = opsiMentah.charAt(0).toUpperCase();
+            let teksMurniOpsi = opsiMentah.substring(2).trim();
+            let statusTerpilih = (bundelJawabanSiswa[indeksSoalAktif] === abjadHuruf) ? "opsi-item terpilih" : "opsi-item";
+
+            let divOpsi = document.createElement("div");
+            divOpsi.className = statusTerpilih;
+            divOpsi.onclick = function() {
+                bundelJawabanSiswa[indeksSoalAktif] = abjadHuruf;
+                renderButirSoalKeLayar(indeksSoalAktif);
+            };
+
+            divOpsi.innerHTML = `<div class="opsi-bulat">${abjadHuruf}</div><div class="opsi-teks">${teksMurniOpsi}</div>`;
+            containerOpsi.appendChild(divOpsi);
+        });
+
+        document.getElementById("btnSblm").style.visibility = (indeksSoalAktif === 0) ? "hidden" : "visible";
+        if (indeksSoalAktif === himpunanSoal.length - 1) {
+            document.getElementById("btnSld").style.display = "none";
+            document.getElementById("btnFinish").style.display = "block";
+        } else {
+            document.getElementById("btnSld").style.display = "block";
+            document.getElementById("btnFinish").style.none;
+            document.getElementById("btnFinish").style.display = "none";
+        }
+    }
+
+    function pindahSoal(arah) {
+        let targetIndeks = indeksSoalAktif + arah;
+        if (targetIndeks >= 0 && targetIndeks < himpunanSoal.length) {
+            renderButirSoalKeLayar(targetIndeks);
+        }
+    }
+
+async function prosesSelesaiUjian() {
+        if (!confirm("Apakah Anda yakin ingin mengakhiri dan mengirim hasil latihan soal ini?")) return;
+
+        let totalJawabanBenar = 0;
+        himpunanSoal.forEach((soal, i) => {
+            if (bundelJawabanSiswa[i] === soal.kunci) totalJawabanBenar++;
+        });
+
+        let skorAkhir = Math.round((totalJawabanBenar / himpunanSoal.length) * 100);
+        document.getElementById("txtSkor").innerText = skorAkhir;
+        document.getElementById("popSkor").style.display = "flex";
+
+        try {
+            let response = await fetch(SCRIPT_TUJUAN_NILAI, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: 'SIMPAN_NILAI_CBT',
+                    guru: document.getElementById("selectGuru").value || "Umum",
+                    kelas: document.getElementById("selectKelas").value || "Umum",
+                    siswa: document.getElementById("selectSiswa").value || "Siswa Latihan",
+                    nilai: skorAkhir,
+                    urlSpreadsheet: URL_SS_TUJUAN
+                })
+            });
+            await response.text();
+            document.getElementById("statusSimpan").innerHTML = "✅ Hasil sukses direkap secara otomatis di server nilai.";
+        } catch (err) {
+            document.getElementById("statusSimpan").innerHTML = "⚠️ Nilai gagal dipos ke server rekap cloud.";
+        }
+
+        // 🌟 PERBAIKAN BARU: Setelah siswa melihat nilai dan klik "OK" pada alert, halaman otomatis berpindah
+        setTimeout(() => {
+            alert(`Latihan selesai! Skor Anda: ${skorAkhir}. Klik OK untuk kembali ke halaman utama.`);
+            window.location.href = "../index.html";
+        }, 500); // Diberi jeda 500ms agar teks status rekap sukses sempat terbaca di layar sebelum pop-up muncul
+    }    
+</script>
+</body>
+</html>
