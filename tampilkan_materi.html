@@ -56,11 +56,14 @@
             position: relative;
             width: 100%;
             height: calc(100vh - 100px); /* Memaksimalkan tinggi layar HP */
-            background: #ffffff; /* Latar belakang putih bersih khas dokumen kertas */
+            background: #ffffff; 
             border: 3px solid #bfa15f;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         iframe {
@@ -68,6 +71,15 @@
             height: 100%;
             border: none;
             background-color: #ffffff;
+            display: block;
+        }
+
+        /* Elemen khusus gambar agar bisa dizoom & dicenter di HP */
+        #gambarMateri {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none; /* Sembunyikan default */
         }
         
         /* Loading Animasi Kreatif */
@@ -104,6 +116,7 @@
             background: #04383e;
             height: 100%;
             box-sizing: border-box;
+            width: 100%;
         }
     </style>
 </head>
@@ -111,54 +124,155 @@
 
     <div class="container-materi">
         <div class="nav-aksi">
-            <div class="judul-halaman">📖 RUANG BACA</div>
+            <div class="judul-halaman" id="textJudulHalaman">📖 RUANG BACA</div>
             <a href="javascript:history.back()" class="btn-kembali">← Kembali</a>
         </div>
 
         <div class="frame-pembungkus" id="boxMateri">
             <div class="loading-box" id="loadingSistem">
                 <div class="spinner"></div>
-                <div style="color: #bfa15f; font-size: 14px; font-weight: 500;">Menyelaraskan dokumen dengan layar HP...</div>
+                <div style="color: #bfa15f; font-size: 14px; font-weight: 500;" id="textLoading">Menyelaraskan materi dengan layar HP...</div>
             </div>
             
-            <iframe id="iframeMateri" src="" allow="autoplay" onload="hilangkanLoading()"></iframe>
+            <iframe id="iframeMateri" src="" allow="autoplay; encrypted-media" allowfullscreen onload="hilangkanLoading()"></iframe>
+            
+            <img id="gambarMateri" src="" alt="Pratinjau Gambar" onload="hilangkanLoading()">
         </div>
     </div>
 
 <script>
+    
     window.onload = function() {
         const parameterUrl = new URLSearchParams(window.location.search);
-        let linkGoogleDoc = parameterUrl.get('doc');
+        let linkMateriMentah = parameterUrl.get('doc');
 
         const boxMateri = document.getElementById('boxMateri');
         const iframeMateri = document.getElementById('iframeMateri');
-        const loadingSistem = document.getElementById('loadingSistem');
+        const gambarMateri = document.getElementById('gambarMateri');
+        const textJudulHalaman = document.getElementById('textJudulHalaman');
+        const textLoading = document.getElementById('textLoading');
 
-        if (!linkGoogleDoc) {
-            boxMateri.innerHTML = `<div class="error-notif">❌ Tautan dokumen materi tidak valid atau tidak ditemukan!</div>`;
+        if (!linkMateriMentah) {
+            boxMateri.innerHTML = `<div class="error-notif">❌ Tautan materi tidak valid atau tidak ditemukan!</div>`;
             return;
         }
 
-        // 🌟 TRIK RAHASIA: Mengubah endpoint ke '/mobilebasic'
-        // Format ini memaksa Google Doc merender dokumennya khusus untuk layar mobile/HP
-        let urlBersih = linkGoogleDoc.trim();
-        
-        if (urlBersih.includes('/edit')) {
-            urlBersih = urlBersih.split('/edit')[0];
-        } else if (urlBersih.includes('/view')) {
-            urlBersih = urlBersih.split('/view')[0];
-        } else if (urlBersih.includes('/preview')) {
-            urlBersih = urlBersih.split('/preview')[0];
+        let urlBersih = linkMateriMentah.trim();
+        let urlFinal = urlBersih;
+
+        // =========================================================================
+        // FUNGSI EKSTRAKSI PINTAR: Mengambil ID Unik File Google Drive (Anti-Macet)
+        // =========================================================================
+        function ambilIdDrive(url) {
+            let id = "";
+            if (url.includes("/d/")) {
+                id = url.split("/d/")[1].split("/")[0].split("?")[0];
+            } else if (url.includes("id=")) {
+                id = url.split("id=")[1].split("&")[0];
+            } else if (url.includes("drive.google.com/open?")) {
+                id = url.split("id=")[1].split("&")[0];
+            }
+            return id;
         }
 
-        // Tembakkan ke mode mobile basic milik Google
-        const linkResponsiveMobile = urlBersih + '/mobilebasic';
+        // ---------------------------------------------------------------------
+        // ENGINE DETEKSI SINKRONISASI MEDIA (DOKUMEN, VIDEO, & GAMBAR)
+        // ---------------------------------------------------------------------
+        
+        // KONDISI 1: JIKA LINK ADALAH GAMBAR (Ekstensi file atau Google Drive Gambar)
+        // Ditambahkan pendeteksi kata 'image' atau 'viewing' untuk mengunci file gambar dari Drive
+        if (urlBersih.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)/i) || 
+           (urlBersih.includes("drive.google.com") && (urlBersih.includes("t=image") || urlBersih.includes("image") || !urlBersih.match(/\.(mp4|mkv|mov|avi|webm|flv)/i) && urlBersih.includes("/file/d/")) && !urlBersih.includes("usp=sharing_eip"))) {
+            
+            // Cek sekali lagi apakah ini benar-benar diarahkan untuk gambar
+            let idFileDrive = ambilIdDrive(urlBersih);
+            
+            if (idFileDrive && urlBersih.includes("drive.google.com")) {
+                textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
+                textLoading.innerText = "Memproses rendering gambar cloud...";
+                boxMateri.style.backgroundColor = "#111111"; 
+                
+                iframeMateri.style.display = "none";  // Matikan iframe agar tidak muncul wajah sedih abu-abu
+                gambarMateri.style.display = "block"; // Aktifkan tag img asli
+                
+                // 🌟 JALUR KHUSUS: Mengubah URL menjadi Direct Endpoint khusus untuk Gambar/Foto
+                urlFinal = `https://docs.google.com/uc?export=view&id=${idFileDrive}`;
+                gambarMateri.src = urlFinal;
+            } else {
+                // Jika gambar link hosting umum luar (Bukan Google Drive)
+                textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
+                textLoading.innerText = "Memuat gambar...";
+                boxMateri.style.backgroundColor = "#111111";
+                iframeMateri.style.display = "none";
+                gambarMateri.style.display = "block";
+                gambarMateri.src = urlBersih;
+            }
+        } 
+        
+        // KONDISI 2: JIKA LINK ADALAH VIDEO GOOGLE DRIVE
+        else if (urlBersih.includes("drive.google.com") && (urlBersih.includes("/file/d/") || urlBersih.match(/\.(mp4|mkv|ogv|webm|mov|avi)/i))) {
+            textJudulHalaman.innerText = "🎬 RUANG VIDEO MATERI";
+            textLoading.innerText = "Menyiapkan pemutar video awan...";
+            boxMateri.style.backgroundColor = "#000000"; 
+            
+            iframeMateri.style.display = "block";
+            gambarMateri.style.display = "none";
 
-        // Masukkan tautan responsif ke iframe
-        iframeMateri.src = linkResponsiveMobile;
+            if (urlBersih.includes('/view')) {
+                urlFinal = urlBersih.split('/view')[0] + '/preview';
+            } else if (urlBersih.includes('/edit')) {
+                urlFinal = urlBersih.split('/edit')[0] + '/preview';
+            } else if (!urlBersih.includes('/preview')) {
+                urlFinal = urlBersih + '/preview';
+            }
+            
+            iframeMateri.src = urlFinal;
+        } 
+        
+        // KONDISI 3: JIKA LINK ADALAH VIDEO YOUTUBE
+        else if (urlBersih.includes("youtube.com") || urlBersih.includes("youtu.be")) {
+            textJudulHalaman.innerText = "🎬 RUANG VIDEO YOUTUBE";
+            textLoading.innerText = "Menghubungkan ke server YouTube...";
+            boxMateri.style.backgroundColor = "#000000";
+            
+            iframeMateri.style.display = "block";
+            gambarMateri.style.display = "none";
+
+            let idVideo = "";
+            if (urlBersih.includes("youtu.be/")) {
+                idVideo = urlBersih.split("youtu.be/")[1].split(/[?#]/)[0];
+            } else if (urlBersih.includes("v=")) {
+                idVideo = urlBersih.split("v=")[1].split("&")[0];
+            } else if (urlBersih.includes("/embed/")) {
+                idVideo = urlBersih.split("/embed/")[1].split(/[?#]/)[0];
+            }
+            
+            urlFinal = `https://www.youtube.com/embed/${idVideo}`;
+            iframeMateri.src = urlFinal;
+        } 
+        
+        // KONDISI 4: DEFAULT (Google Docs, Google Slide, atau PDF Bacaan)
+        else {
+            textJudulHalaman.innerText = "📖 RUANG BACA";
+            textLoading.innerText = "Menyelaraskan dokumen dengan layar HP...";
+            boxMateri.style.backgroundColor = "#ffffff";
+            
+            iframeMateri.style.display = "block";
+            gambarMateri.style.display = "none";
+
+            if (urlBersih.includes('/edit')) {
+                urlBersih = urlBersih.split('/edit')[0];
+            } else if (urlBersih.includes('/view')) {
+                urlBersih = urlBersih.split('/view')[0];
+            } else if (urlBersih.includes('/preview')) {
+                urlBersih = urlBersih.split('/preview')[0];
+            }
+            
+            urlFinal = urlBersih + '/mobilebasic';
+            iframeMateri.src = urlFinal;
+        }
     };
 
-    // Fungsi menghilangkan layar loading saat Google Doc selesai dimuat
     function hilangkanLoading() {
         const loadingSistem = document.getElementById('loadingSistem');
         if(loadingSistem) {
