@@ -3,288 +3,529 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pratinjau Materi Pembelajaran</title>
+    <title>Ruang Siswa - Pengerjaan LKPD</title>
     <link rel="stylesheet" href="../style-shared.css">
-<style>
+    <style>
+        /* 🌟 THEMA PREMIUM DARK & RESPONSIVE HP */
         body {
-            background-color: #0b1a1a;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
             padding: 12px;
             box-sizing: border-box;
+            background-color: #0b1a1a;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            color: #ffffff;
         }
-        .container-materi {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .nav-aksi {
+
+        .header-app {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            background: #032b30;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid #1a5157;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px 10px;
+            border-bottom: 2px solid #bfa15f;
+            margin-bottom: 15px;
+            text-align: center;
         }
-        .judul-halaman {
-            color: #bfa15f; 
-            margin: 0; 
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        .btn-kembali {
-            padding: 6px 14px;
-            background-color: #1a5157;
-            border: 1px solid #bfa15f;
-            color: #bfa15f;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-        .btn-kembali:hover {
-            background-color: #bfa15f;
-            color: #032b30;
-        }
-        
-        /* 📱 DESAIN BINGKAI MOBILE PREMIUM (SUDAH DIPERBAIKI) */
-        .frame-pembungkus {
-            position: relative;
+
+        /* Pembungkus Konten Utama */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             width: 100%;
-            height: calc(100vh - 100px); 
-            background: #ffffff; 
-            border: 3px solid #bfa15f;
-            border-radius: 12px;
-            overflow-y: auto;          /* ✨ Mengaktifkan scroll atas-bawah jika gambar panjang */
-            overflow-x: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;   /* ✨ Gambar dimulai tepat dari baris paling atas */
         }
-        
+
+        /* Iframe Peninjau Berkas LKPD */
+        .lkpd-container {
+            width: 100%;
+            height: 480px;
+            background: #ffffff;
+            border: 2px solid #1a5157;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
         iframe {
             width: 100%;
             height: 100%;
             border: none;
-            background-color: #ffffff;
-            display: block;
         }
 
-        /* 🖼️ PENGATURAN GAMBAR MATERI (SUDAH DIPERBAIKI) */
-        #gambarMateri {
-            width: 100%;               /* ✨ Lebar gambar dipaksa pas dengan lebar HP */
-            height: auto;              /* ✨ Tinggi gambar otomatis menyesuaikan proporsi agar tidak gepeng */
-            display: none; 
-            image-rendering: -webkit-optimize-contrast; /* ✨ Menajamkan tulisan di dalam gambar */
-        }
-        
-        /* Loading Animasi Kreatif */
-        .loading-box {
-            position: absolute;
+        /* 🌟 KOORDINASI POP-UP / MODAL FORM JAWABAN */
+        .modal-overlay {
+            display: none; /* Default tersembunyi */
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #04383e;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            transition: opacity 0.5s ease;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(191, 161, 95, 0.2);
-            border-top: 4px solid #bfa15f;
-            border-radius: 50%;
-            animation: putar 1s linear infinite;
-            margin-bottom: 12px;
-        }
-        @keyframes putar {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 12px;
+            box-sizing: border-box;
         }
 
-        .error-notif {
-            text-align: center;
-            padding: 40px 20px;
-            color: #d9534f;
-            font-weight: bold;
-            background: #04383e;
-            height: 100%;
+        .modal-content {
+            background: #032b30;
+            border: 1px solid #1a5157;
+            border-top: 5px solid #bfa15f;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 10px auto;
+            padding: 20px 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             box-sizing: border-box;
+        }
+
+        .modal-content h3 {
+            color: #bfa15f;
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 1px solid #1a5157;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #bfa15f;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            font-size: 16px !important; /* Blokir Auto-zoom iOS Safari */
+            padding: 10px 12px !important;
+            background-color: #07383d !important;
+            color: #ffffff !important;
+            border: 1px solid #bfa15f !important;
+            border-radius: 8px;
+            box-sizing: border-box;
+            width: 100% !important;
+            height: 45px;
+        }
+        textarea.form-control {
+            height: 90px !important;
+            resize: vertical;
+        }
+
+        .grid-anggota {
+            background: #04383e;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed #1a5157;
+        }
+
+        /* Desain Tombol Aksi */
+        .btn-gold, .btn-secondary, .btn-danger {
+            padding: 14px 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             width: 100%;
+            text-transform: uppercase;
+            font-size: 14px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #bfa15f, #9a7d3e);
+            color: #032b30;
+            box-shadow: 0 4px 12px rgba(191, 161, 95, 0.3);
+        }
+        .btn-secondary {
+            background-color: #1a5157;
+            color: #bfa15f;
+            border: 1px solid #bfa15f;
+            margin-top: 10px;
+        }
+        .btn-danger {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        @media (min-width: 768px) {
+            .header-app {
+                flex-direction: row;
+                text-align: left;
+                justify-content: space-between;
+            }
+            .btn-danger { width: auto; }
         }
     </style>
-    </head>
+</head>
 <body>
 
-    <div class="container-materi">
-        <div class="nav-aksi">
-            <div class="judul-halaman" id="textJudulHalaman">📖 RUANG BACA</div>
-            <a href="javascript:history.back()" class="btn-kembali">← Kembali</a>
+    <div class="header-app">
+        <div>
+            <h1 id="judulHalaman">Lembar Kerja Siswa (LKPD)</h1>
+            <p style="color:#a3b8cc; margin: 0;">Silakan pelajari materi LKPD di bawah, kemudian klik tombol emas untuk mengisi jawaban.</p>
+        </div>
+        <button class="btn-danger" onclick="window.history.back()">← Kembali</button>
+    </div>
+
+    <div class="main-layout">
+        <div class="lkpd-container">
+            <iframe id="iframeLKPD" src="about:blank"></iframe>
         </div>
 
-        <div class="frame-pembungkus" id="boxMateri">
-            <div class="loading-box" id="loadingSistem">
-                <div class="spinner"></div>
-                <div style="color: #bfa15f; font-size: 14px; font-weight: 500;" id="textLoading">Menyelaraskan materi dengan layar HP...</div>
+        <button class="btn-gold" onclick="bukaPopupJawaban()">
+            ✍️ KLIK DISINI UNTUK MENGISI JAWABAN KELOMPOK
+        </button>
+    </div>
+
+
+    <div id="modalJawaban" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Lembar Jawaban Siswa</h3>
+            
+            <div class="form-group">
+                <label>1. Pilih Nama Guru</label>
+                <select id="pilihGuruSiswa" class="form-control" required>
+                    <option value="">-- Memuat Daftar Guru... --</option>
+                </select>
             </div>
-            
-            <iframe id="iframeMateri" src="" allow="autoplay; encrypted-media" allowfullscreen onload="hilangkanLoading()"></iframe>
-            
-            <img id="gambarMateri" src="" alt="Pratinjau Gambar" onload="hilangkanLoading()">
+
+            <div class="form-group">
+                <label>2. Pilih Kelas Anda</label>
+                <select id="pilihKelasSiswa" class="form-control" onchange="muatSiswaPerKelas(this.value)" required>
+                    <option value="">-- Memuat Daftar Kelas... --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. Nama Kelompok</label>
+                <input type="text" id="namaKelompok" class="form-control" placeholder="Misal: Kelompok 3 / Nusantara" required>
+            </div>
+
+            <div class="form-group">
+    <label>4. Pilih Anggota Kelompok (Maks. 5 Siswa)</label>
+    
+                <div id="kontainerAnggotaDinamis" class="grid-anggota">
+                    <div class="baris-anggota" id="wrapperAnggota_1" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center; width: 100%;">
+                        <select id="anggota1" class="form-control kelas-dropdown-siswa" style="margin-bottom: 0; flex: 1;">
+                            <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+                        </select>
+                        <div style="width: 38px;"></div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-gold" id="btnTambahAnggota" onclick="tambahDropdownAnggota()" style="margin-top: 5px; padding: 6px 12px; font-size: 12px; background: #032b30; color: #bfa15f; border: 1px solid #bfa15f; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    ➕ Tambah Anggota Kelompok
+                </button>
+            </div>
+            <div class="form-group">
+                <label>5. Tulis Lembar Jawaban LKPD</label>
+                <div id="kontainerSoalDinamis">
+                    </div>
+            </div>
+
+            <button class="btn-gold" onclick="prosesKirimDanPeriksaOtomatis()">🚀 SUBMIT JAWABAN</button>
+            <button class="btn-secondary" onclick="tutupPopupJawaban()">BATAL / KEMBALI LIHAT LKPD</button>
         </div>
     </div>
 
-<script>
-    
-    window.onload = function() {
-        const parameterUrl = new URLSearchParams(window.location.search);
-        let linkMateriMentah = parameterUrl.get('doc');
 
-        const boxMateri = document.getElementById('boxMateri');
-        const iframeMateri = document.getElementById('iframeMateri');
-        const gambarMateri = document.getElementById('gambarMateri');
-        const textJudulHalaman = document.getElementById('textJudulHalaman');
-        const textLoading = document.getElementById('textLoading');
-
-        if (!linkMateriMentah) {
-            boxMateri.innerHTML = `<div class="error-notif">❌ Tautan materi tidak valid atau tidak ditemukan!</div>`;
-            return;
-        }
-
-        let urlBersih = linkMateriMentah.trim();
-        let urlFinal = urlBersih;
-
+    <script>
+       // =========================================================================
+        // 🔗 ATRIBUT DATABASE & API (DISELARASKAN DENGAN KODE SPREADSHEET & APPS SCRIPT ANDA)
         // =========================================================================
-        // FUNGSI EKSTRAKSI PINTAR: Mengambil ID Unik File Google Drive (Anti-Macet)
-        // =========================================================================
-        function ambilIdDrive(url) {
-            let id = "";
-            if (url.includes("/d/")) {
-                id = url.split("/d/")[1].split("/")[0].split("?")[0];
-            } else if (url.includes("id=")) {
-                id = url.split("id=")[1].split("&")[0];
-            } else if (url.includes("drive.google.com/open?")) {
-                id = url.split("id=")[1].split("&")[0];
-            }
-            return id;
-        }
+const URL_SPREADSHEET = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit";
+        const SCRIPT_URL_SISTEM = "https://script.google.com/macros/s/AKfycby3rdH9a0kwUNhhduvMKbSCibzAMR5jCsypK2P3sJE2Oq6gbmAlbbLJq6CcCKy93uto/exec";
 
-        // ---------------------------------------------------------------------
-        // ENGINE DETEKSI SINKRONISASI MEDIA (DOKUMEN, VIDEO, & GAMBAR)
-        // ---------------------------------------------------------------------
+        let URL_DOKUMEN_LKPD = "";
+        let jumlahSoalTersedia = 4; // Ini sekarang menjadi nilai default cadangan saja
         
-        // KONDISI 1: JIKA LINK ADALAH GAMBAR (Ekstensi file atau Google Drive Gambar)
-        // Ditambahkan pendeteksi kata 'image' atau 'viewing' untuk mengunci file gambar dari Drive
-        if (urlBersih.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)/i) || 
-           (urlBersih.includes("drive.google.com") && (urlBersih.includes("t=image") || urlBersih.includes("image") || !urlBersih.match(/\.(mp4|mkv|mov|avi|webm|flv)/i) && urlBersih.includes("/file/d/")) && !urlBersih.includes("usp=sharing_eip"))) {
+        // 🌟 Variable pendukung kontrol jumlah anggota dinamis
+        let jumlahAnggotaAktif = 1; 
+        const MAKSIMAL_ANGGOTA = 5;
+
+        window.onload = function() {
+            ambilParameterURL();
+            muatDataAwalDropdown();
+            // Fungsi generateLembarJawabanDinamis dipindahkan ke dalam ambilParameterURL agar menunggu jumlah soal asli terbaca
+        };
+
+        // Membaca parameter tautan file LKPD & Jumlah Soal secara Dinamis
+        function ambilParameterURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let docUrl = urlParams.get('doc');
             
-            // Cek sekali lagi apakah ini benar-benar diarahkan untuk gambar
-            let idFileDrive = ambilIdDrive(urlBersih);
+            // 🌟 DETEKSI DINAMIS: Mengambil parameter jumlah soal dari URL (?soal=3)
+            let querySoal = urlParams.get('soal');
+            if (querySoal && !isNaN(querySoal)) {
+                jumlahSoalTersedia = parseInt(querySoal); // Otomatis mengubah jumlah soal sesuai kiriman halaman utama
+            }
             
-            if (idFileDrive && urlBersih.includes("drive.google.com")) {
-                textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
-                textLoading.innerText = "Memproses rendering gambar cloud...";
-                boxMateri.style.backgroundColor = "#111111"; 
+            // Jalankan pencetakan kotak esai sesuai jumlah soal yang berhasil dideteksi
+            generateLembarJawabanDinamis(jumlahSoalTersedia);
+            
+            if (docUrl) {
+                docUrl = decodeURIComponent(docUrl).trim();
+                URL_DOKUMEN_LKPD = docUrl;
                 
-                iframeMateri.style.display = "none";  // Matikan iframe agar tidak muncul wajah sedih abu-abu
-                gambarMateri.style.display = "block"; // Aktifkan tag img asli
-                
-                // 🌟 JALUR KHUSUS: Mengubah URL menjadi Direct Endpoint khusus untuk Gambar/Foto
-                urlFinal = `https://docs.google.com/uc?export=view&id=${idFileDrive}`;
-                gambarMateri.src = urlFinal;
+                let embedUrl = docUrl;
+                if (docUrl.includes("/edit")) {
+                    embedUrl = docUrl.split("/edit")[0] + "/preview";
+                } else if (docUrl.includes("/view")) {
+                    embedUrl = docUrl.split("/view")[0] + "/preview";
+                } else if (!docUrl.includes("/preview") && docUrl.includes("docs.google.com")) {
+                    embedUrl = docUrl + "/preview";
+                }
+                document.getElementById('iframeLKPD').src = embedUrl;
             } else {
-                // Jika gambar link hosting umum luar (Bukan Google Drive)
-                textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
-                textLoading.innerText = "Memuat gambar...";
-                boxMateri.style.backgroundColor = "#111111";
-                iframeMateri.style.display = "none";
-                gambarMateri.style.display = "block";
-                gambarMateri.src = urlBersih;
+                document.getElementById('iframeLKPD').srcdoc = `
+                    <div style="color:#ffffff; text-align:center; padding-top:100px; font-family:sans-serif;">
+                        <h3>⚠️ Berkas LKPD Tidak Ditemukan</h3>
+                    </div>
+                `;
             }
-        } 
-        
-        // KONDISI 2: JIKA LINK ADALAH VIDEO GOOGLE DRIVE
-        else if (urlBersih.includes("drive.google.com") && (urlBersih.includes("/file/d/") || urlBersih.match(/\.(mp4|mkv|ogv|webm|mov|avi)/i))) {
-            textJudulHalaman.innerText = "🎬 RUANG VIDEO MATERI";
-            textLoading.innerText = "Menyiapkan pemutar video awan...";
-            boxMateri.style.backgroundColor = "#000000"; 
-            
-            iframeMateri.style.display = "block";
-            gambarMateri.style.display = "none";
-
-            if (urlBersih.includes('/view')) {
-                urlFinal = urlBersih.split('/view')[0] + '/preview';
-            } else if (urlBersih.includes('/edit')) {
-                urlFinal = urlBersih.split('/edit')[0] + '/preview';
-            } else if (!urlBersih.includes('/preview')) {
-                urlFinal = urlBersih + '/preview';
-            }
-            
-            iframeMateri.src = urlFinal;
-        } 
-        
-        // KONDISI 3: JIKA LINK ADALAH VIDEO YOUTUBE
-        else if (urlBersih.includes("youtube.com") || urlBersih.includes("youtu.be")) {
-            textJudulHalaman.innerText = "🎬 RUANG VIDEO YOUTUBE";
-            textLoading.innerText = "Menghubungkan ke server YouTube...";
-            boxMateri.style.backgroundColor = "#000000";
-            
-            iframeMateri.style.display = "block";
-            gambarMateri.style.display = "none";
-
-            let idVideo = "";
-            if (urlBersih.includes("youtu.be/")) {
-                idVideo = urlBersih.split("youtu.be/")[1].split(/[?#]/)[0];
-            } else if (urlBersih.includes("v=")) {
-                idVideo = urlBersih.split("v=")[1].split("&")[0];
-            } else if (urlBersih.includes("/embed/")) {
-                idVideo = urlBersih.split("/embed/")[1].split(/[?#]/)[0];
-            }
-            
-            urlFinal = `https://www.youtube.com/embed/${idVideo}`;
-            iframeMateri.src = urlFinal;
-        } 
-        
-     // KONDISI 4: DEFAULT (Google Docs untuk LKPD Interaktif)
-        else {
-            textJudulHalaman.innerText = "📖 RUANG BACA DOKUMEN";
-            textLoading.innerText = "Menyelaraskan dokumen dengan layar HP...";
-            boxMateri.style.backgroundColor = "#ffffff";
-            
-            iframeMateri.style.display = "block";
-            gambarMateri.style.display = "none";
-
-            if (urlBersih.includes('/edit')) {
-                urlBersih = urlBersih.split('/edit')[0];
-            } else if (urlBersih.includes('/view')) {
-                urlBersih = urlBersih.split('/view')[0];
-            } else if (urlBersih.includes('/preview')) {
-                urlBersih = urlBersih.split('/preview')[0];
-            }
-            
-            // ✨ KITA KEMBALIKAN KE MOBILEBASIC: Agar kotak jawaban LKPD muncul lagi demi siswa
-            urlFinal = urlBersih + '/mobilebasic';
-            iframeMateri.src = urlFinal;
         }
-    };
 
-    function hilangkanLoading() {
-        const loadingSistem = document.getElementById('loadingSistem');
-        if(loadingSistem) {
-            loadingSistem.style.opacity = '0';
-            setTimeout(() => {
-                loadingSistem.style.display = 'none';
-            }, 500);
+        // 🔄 MENYELARASKAN FUNGSI AKSES AWAL DROPDOWN (MENEMBAK 'GET_INITIAL_DATA' DI APPS SCRIPT)
+        function muatDataAwalDropdown() {
+            fetch(SCRIPT_URL_SISTEM, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: "GET_INITIAL_DATA",
+                    urlSpreadsheet: URL_SPREADSHEET
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // 1. Isi Dropdown Guru
+                const selectGuru = document.getElementById('pilihGuruSiswa');
+                selectGuru.innerHTML = '<option value="">-- Pilih Guru --</option>';
+                if(data.guru && data.guru.length > 0) {
+                    data.guru.forEach(g => {
+                        selectGuru.innerHTML += `<option value="${g}">${g}</option>`;
+                    });
+                }
+
+                // 2. Isi Dropdown Kelas
+                const selectKelas = document.getElementById('pilihKelasSiswa');
+                selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                if(data.kelas && data.kelas.length > 0) {
+                    data.kelas.forEach(k => {
+                        selectKelas.innerHTML += `<option value="${k}">${k}</option>`;
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Koneksi database awal gagal:", err);
+                document.getElementById('pilihKelasSiswa').innerHTML = '<option value="">Gagal memuat kelas</option>';
+                document.getElementById('pilihGuruSiswa').innerHTML = '<option value="">Gagal memuat guru</option>';
+            });
         }
-    }
-</script>
 
+        // 🔄 MENYELARASKAN PENYARINGAN SISWA (SUDAH AMAN DARI ERROR ELEMENT NULL)
+        function muatSiswaPerKelas(kelasTerpilih) {
+            if (!kelasTerpilih) return;
+
+            // Bersihkan dulu baris tambahan jika user sempat klik tambah "+" di kelas sebelumnya
+            for (let i = 2; i <= MAKSIMAL_ANGGOTA; i++) {
+                let sisaBaris = document.getElementById(`wrapperAnggota_${i}`);
+                if (sisaBaris) sisaBaris.remove();
+            }
+            jumlahAnggotaAktif = 1;
+
+            // Beri status loading sementara pada input anggota 1 yang aktif saat ini
+            document.getElementById('anggota1').innerHTML = '<option value="">Memuat nama siswa...</option>';
+
+            fetch(SCRIPT_URL_SISTEM, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: "GET_SISWA_KELAS",
+                    urlSpreadsheet: URL_SPREADSHEET,
+                    kelasTerpilih: kelasTerpilih
+                })
+            })
+            .then(res => res.json())
+            .then(daftarSiswa => {
+                const selectAnggota1 = document.getElementById('anggota1');
+                selectAnggota1.innerHTML = '<option value="">-- Pilih Anggota 1 --</option>';
+                
+                if(daftarSiswa && daftarSiswa.length > 0) {
+                    daftarSiswa.forEach(s => {
+                        selectAnggota1.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+                    });
+                } else {
+                    selectAnggota1.innerHTML = '<option value="">Tidak ada siswa di kelas ini</option>';
+                }
+            })
+            .catch(err => {
+                console.error("Gagal memuat data siswa per kelas:", err);
+                alert("Gagal mengambil daftar siswa, silakan coba lagi.");
+            });
+        }
+
+        // =========================================================================
+        // ➕ FUNGSI TAMBAH & HAPUS DROPDOWN ANGGOTA KELOMPOK SECARA DINAMIS
+        // =========================================================================
+        function tambahDropdownAnggota() {
+            // Cari angka ID yang belum digunakan di halaman (antara range 2 sampai 5)
+            let idNomorBaru = 0;
+            for (let i = 2; i <= MAKSIMAL_ANGGOTA; i++) {
+                if (!document.getElementById(`anggota${i}`)) {
+                    idNomorBaru = i;
+                    break;
+                }
+            }
+
+            if (idNomorBaru === 0 || jumlahAnggotaAktif >= MAKSIMAL_ANGGOTA) {
+                alert("Batas maksimal anggota kelompok adalah " + MAKSIMAL_ANGGOTA + " siswa!");
+                return;
+            }
+
+            jumlahAnggotaAktif++;
+            const kontainer = document.getElementById('kontainerAnggotaDinamis');
+            
+            const barisBaru = document.createElement('div');
+            barisBaru.className = 'baris-anggota';
+            barisBaru.id = `wrapperAnggota_${idNomorBaru}`;
+            barisBaru.style.display = 'flex';
+            barisBaru.style.gap = '8px';
+            barisBaru.style.marginBottom = '8px';
+            barisBaru.style.alignItems = 'center';
+            barisBaru.style.width = '100%';
+
+            // Salin daftar opsi nama siswa yang sukses ter-load dari anggota1
+            const templateOpsiSiswa = document.getElementById('anggota1').innerHTML;
+
+            barisBaru.innerHTML = `
+                <select id="anggota${idNomorBaru}" class="form-control kelas-dropdown-siswa" style="margin-bottom: 0; flex: 1;">
+                    ${templateOpsiSiswa}
+                </select>
+                <button type="button" onclick="hapusDropdownAnggota(${idNomorBaru})" style="background: #d9534f; color: white; border: none; width: 38px; height: 38px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center;" title="Hapus Anggota">✕</button>
+            `;
+
+            kontainer.appendChild(barisBaru);
+            
+            // Atur agar tampilan dropdown baru kembali kosong (pilihan awal instruksi)
+            document.getElementById(`anggota${idNomorBaru}`).value = "";
+        }
+
+        function hapusDropdownAnggota(idNomor) {
+            const elemenGrup = document.getElementById(`wrapperAnggota_${idNomor}`);
+            if (elemenGrup) {
+                elemenGrup.remove();
+                jumlahAnggotaAktif--;
+            }
+        }
+
+        // Membuat kolom pengisian jawaban esai secara otomatis
+        function generateLembarJawabanDinamis(jumlah) {
+            const kontainer = document.getElementById('kontainerSoalDinamis');
+            kontainer.innerHTML = "";
+            
+            for (let i = 1; i <= jumlah; i++) {
+                kontainer.innerHTML += `
+                    <div style="margin-bottom: 12px;">
+                        <span style="font-size: 13px; font-weight: bold; color: #a3b8cc; display:block; margin-bottom:4px;">Jawaban No. ${i}:</span>
+                        <textarea id="jawabanSoal${i}" class="form-control" placeholder="Ketik isi jawaban hasil diskusi soal nomor ${i} disini..."></textarea>
+                    </div>
+                `;
+            }
+        }
+
+        // Manajemen Trigger Pop-up
+        function bukaPopupJawaban() {
+            document.getElementById('modalJawaban').style.display = 'block';
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        // Fungsi Penutup Pop-up modal
+        function tutupPopupJawaban() {
+            document.getElementById('modalJawaban').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Fungsi Kirim Jawaban Akhir Tanpa Koreksi Otomatis Sistem
+        function prosesKirimDanPeriksaOtomatis() {
+            const guru = document.getElementById('pilihGuruSiswa').value;
+            const kelas = document.getElementById('pilihKelasSiswa').value;
+            const kelompok = document.getElementById('namaKelompok').value;
+            
+            if(!guru || !kelas || !kelompok) {
+                alert("Mohon lengkapi pilihan Guru, Kelas, dan Nama Kelompok Anda!");
+                return;
+            }
+
+            // 🔄 MODIFIKASI DINAMIS: Membaca seluruh dropdown anggota aktif tanpa dipatok angka kaku
+            let daftarAnggota = [];
+            for (let i = 1; i <= 5; i++) {
+                let elemenAnggota = document.getElementById(`anggota${i}`);
+                if(elemenAnggota) {
+                    let val = elemenAnggota.value;
+                    if(val && !val.includes("-- Pilih Anggota") && !val.includes("-- Pilih Kelas")) {
+                        // Fitur Pengaman: Mencegah nama yang sama dimasukkan berulang
+                        if (!daftarAnggota.includes(val)) {
+                            daftarAnggota.push(val);
+                        }
+                    }
+                }
+            }
+
+            if(daftarAnggota.length === 0) {
+                alert("Pilih minimal 1 nama anggota kelompok!");
+                return;
+            }
+
+            // Merangkai isi jawaban esai berurutan
+            let isiJawabanEsai = [];
+            let batasSoal = (typeof jumlahSoalTersedia !== 'undefined' && jumlahSoalTersedia > 0) ? jumlahSoalTersedia : 5; 
+            
+            for (let i = 1; i <= batasSoal; i++) {
+                let elemenJawaban = document.getElementById(`jawabanSoal${i}`);
+                let textJawab = elemenJawaban ? elemenJawaban.value : "-";
+                isiJawabanEsai.push(`[No.${i}] ${textJawab}`);
+            }
+
+            alert("🔄 Sedang mengirimkan lembar jawaban kelompok ke database guru...");
+
+            // Mengirim data ke server backend dengan format array terpisah
+            fetch(SCRIPT_URL_SISTEM, {
+                method: 'POST',
+                body: JSON.stringify({
+                    aksi: "SIMPAN_JAWABAN_LKPD", 
+                    urlSpreadsheet: URL_SPREADSHEET,
+                    linkLkpdDoc: URL_DOKUMEN_LKPD,
+                    guru: guru,
+                    kelas: kelas,
+                    kelompok: kelompok,
+                    anggotaArray: daftarAnggota, // Dikirim berupa array murni ke Code.gs
+                    jawaban: isiJawabanEsai.join("\n\n")
+                })
+            })
+            .then(res => res.text())
+            .then(responSistem => {
+                alert("🎉 " + responSistem);
+                tutupPopupJawaban();
+                
+                // Bersihkan kembali form isian esai agar bisa digunakan kelompok berikutnya
+                document.getElementById('namaKelompok').value = "";
+                for(let i = 1; i <= batasSoal; i++) {
+                    let elemenJawaban = document.getElementById(`jawabanSoal${i}`);
+                    if(elemenJawaban) elemenJawaban.value = "";
+                }
+                
+                // Kembalikan dropdown anggota kelompok ke posisi awal (1 dropdown saja)
+                for (let i = 2; i <= MAKSIMAL_ANGGOTA; i++) {
+                    let sisaBaris = document.getElementById(`wrapperAnggota_${i}`);
+                    if (sisaBaris) sisaBaris.remove();
+                }
+                jumlahAnggotaAktif = 1;
+                document.getElementById('anggota1').selectedIndex = 0;
+            })
+            .catch(err => {
+                alert("Gagal mengirim data ke server: " + err);
+            });
+        }
+    </script>
 </body>
 </html>
