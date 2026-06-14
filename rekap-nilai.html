@@ -325,6 +325,7 @@
     }
 
     // ✨ FUNGSI BARU: Mengonversi khusus area tabel menjadi berkas PDF murni yang rapi di HP & Laptop
+    // ✨ FUNGSI FIX: Mengonversi seluruh data siswa tanpa terpotong di HP
     function unduhLaporanPDF() {
         // 1. Ambil nama filter untuk menyusun judul berkas dinamis
         const guru = document.getElementById("pilihGuru").value;
@@ -348,25 +349,44 @@
         // 4. Bidik area kotak yang dibungkus oleh bungkusan PDF putih
         const elemenTarget = document.getElementById("areaCetakPDF");
         
-        // 5. Ubah paksa style ke mode cetak kertas putih (menghapus background gelap web)
+        // 5. [PENTING UNTUK HP] Ubah gaya bungkusan & tabel menjadi statis total agar tidak terpotong tinggi layar HP
         elemenTarget.classList.add("pdf-mode");
+        const wrapperTabel = elemenTarget.querySelector(".table-responsive-wrapper");
+        if (wrapperTabel) {
+            wrapperTabel.style.overflow = "visible"; // Matikan fungsi scroll internal
+            wrapperTabel.style.maxHeight = "none";    // Buka batas tinggi tabel
+        }
         
-        // 6. Pengaturan kualitas konversi agar tulisan tidak blur/pecah di Android/iOS
+        // 6. Pengaturan kualitas konversi agar tulisan tidak blur dan mencakup semua data
         const opsiPdf = {
             margin:       [15, 10, 15, 10], // Batas kertas atas, kiri, bawah, kanan (mm)
             filename:     `Buku_Nilai_${namaKelas}_${namaMapel}_${namaGuru}`.replace(/\s+/g, '_') + '.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, // Skala ditingkatkan agar teks tajam
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, 
+                letterRendering: true,
+                scrollY: 0, // Kunci posisi scroll di koordinat 0 agar tangkapan layar dari atas
+                windowHeight: elemenTarget.scrollHeight // Paksa tinggi canvas mengikuti tinggi total data tabel asli
+            }, 
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // Format kertas standar A4 tegak
         };
         
         // 7. Proses konversi berjalan di latar belakang, otomatis terunduh saat selesai
         html2pdf().set(opsiPdf).from(elemenTarget).save().then(function() {
-            // Kembalikan tampilan halaman web ke warna normal setelah PDF sukses diunduh
+            // Kembalikan tampilan halaman web ke kondisi responsif semula setelah PDF sukses diunduh
             elemenTarget.classList.remove("pdf-mode");
+            if (wrapperTabel) {
+                wrapperTabel.style.overflow = "";
+                wrapperTabel.style.maxHeight = "";
+            }
         }).catch(function(error) {
             console.error("Terjadi kendala unduhan:", error);
             elemenTarget.classList.remove("pdf-mode");
+            if (wrapperTabel) {
+                wrapperTabel.style.overflow = "";
+                wrapperTabel.style.maxHeight = "";
+            }
         });
     }
 </script>
