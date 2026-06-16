@@ -6,7 +6,6 @@
     <title>Ruang Belajar Siswa - Sistem Otentik</title>
     <link rel="stylesheet" href="../style-shared.css">
     <style>
-        /* Optimasi pembungkus agar ramah padding layar HP */
         body {
             padding: 15px;
             box-sizing: border-box;
@@ -14,47 +13,72 @@
         .filter-panel { background-color: #032b30; border: 1px solid #bfa15f; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
         .filter-panel label { display: block; font-size: 14px; color: #bfa15f; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Menaikkan ukuran font kartu materi agar terbaca jelas di HP */
+        /* STYLE BARU: Panel Utama Menuju Ujian Sumatif */
+        .asesmen-panel { 
+            background: linear-gradient(135deg, #04383e 0%, #022024 100%); 
+            border: 2px dashed #bfa15f; 
+            border-radius: 12px; 
+            padding: 22px; 
+            margin-bottom: 25px; 
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .asesmen-panel h3 { color: #bfa15f; font-size: 18px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .asesmen-panel p { color: #a3b8cc; font-size: 13.5px; margin-bottom: 16px; line-height: 1.5; }
+        .btn-asesmen-akses { 
+            display: inline-block; 
+            padding: 12px 28px; 
+            background-color: #bfa15f; 
+            color: #032b30; 
+            border: none; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            transition: 0.2s ease-in-out; 
+            box-shadow: 0 4px 12px rgba(191, 161, 95, 0.3);
+        }
+        .btn-asesmen-akses:hover { background-color: #dfbc73; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(191, 161, 95, 0.5); }
+        .btn-asesmen-akses:active { transform: translateY(0); }
+
         .mapel-card { cursor: default; transition: transform 0.2s, box-shadow 0.2s; background: #04383e; border: 1px solid #1a5157; padding: 20px; border-radius: 8px; margin-bottom: 15px;}
         .mapel-card h3 { font-size: 18px; margin-top: 0; }
         .mapel-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(196, 154, 35, 0.15); border-color: #bfa15f; }
         
-        /* Memperbesar teks informasi materi pokok & kelas */
         .meta-info { font-size: 14px; color: #a3b8cc; margin-bottom: 10px; line-height: 1.6; }
         .meta-info strong { color: #fff; }
         
-        /* Jarak antar tombol diatur agar pas disentuh jari */
         .link-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         
-        /* Memperbesar ukuran tombol agar mudah diklik di HP tanpa salah tekan */
         .btn-link { padding: 8px 16px; background-color: #1a5157; border: 1px solid #bfa15f; color: #bfa15f; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s; }
         .btn-link:hover { background-color: #bfa15f; color: #032b30; }
         .btn-disabled { padding: 8px 16px; background-color: #222; border: 1px solid #444; color: #666; border-radius: 6px; font-size: 13px; cursor: not-allowed; }
         
         .btn-danger-3d {
-        position: relative;
-        display: inline-block;
-        cursor: pointer;
-        outline: none;
-        border: none;
-        vertical-align: middle;
-        text-decoration: none;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 12px;
-        font-weight: bold;
-        color: #ffffff;
-        text-transform: uppercase;
-        padding: 8px 24px;
-        background-color: #d9534f; /* Warna utama merah */
-        border-radius: 8px;}
-
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            outline: none;
+            border: none;
+            vertical-align: middle;
+            text-decoration: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            background-color: #d9534f;
+            border-radius: 8px;
+        }
 
         .info-text { text-align: center; color: #a3b8cc; font-style: italic; padding: 30px; width: 100%; box-sizing: border-box; font-size: 14px; }
         .tag-pertemuan { background: #bfa15f; color: #032b30; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; margin-left: 5px; text-transform: uppercase; display: inline-block; vertical-align: middle;}
         
-        /* Responsivitas Tambahan Khusus Header */
         .header-app { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-        .header-app h1 { font-size: 20px; margin: 0; }
+        .header-app h1 { font-size: 24px; margin: 0; }
     </style>
 </head>
 <body>
@@ -62,16 +86,21 @@
     <div class="header-app">
         <div>
             <h1>Ruang Belajar Siswa</h1>
-            <p style="color:#a3b8cc; margin: 5px 0 0 0;">Pengelolaan Pembelajaran</p>
+            <p style="color:#a3b8cc; margin: 5px 0 0 0;">Aplikasi Sistem Pengelolaan Pembelajaran</p>
         </div>
-        <button class="btn-danger-3d" onclick="window.location.href='index.html'">Keluar</button>
+        <button class="btn-danger-3d" onclick="window.location.href='../index.html'">Keluar</button>
     </div>
 
     <div class="filter-panel">
         <label for="pilihGuru">Silakan Pilih Guru Pengampu:</label>
-        <select class="form-control" id="pilihGuru" style="margin-bottom: 0; font-size: 12px; font-weight: 600; padding: 6px; height: auto;" onchange="muatMateriPerGuru()">
-            <option value="">-- Menghubungkan... --</option>
+        <select class="form-control" id="pilihGuru" style="margin-bottom: 0; font-size: 16px; font-weight: 600; padding: 8px; height: auto;" onchange="muatMateriPerGuru()">
+            <option value="">-- Menghubungkan ke database akademik... --</option>
         </select>
+    </div>
+
+    <div class="asesmen-panel">
+        <h3>📝 Ruang Evaluasi &amp; Ujian</h3>
+        <a href="tampil-asesmen.html" class="btn-asesmen-akses">Masuk Ruang Asesmen Sumatif</a>
     </div>
 
     <h3 style="color: #bfa15f; margin-bottom: 15px; font-size: 15px; letter-spacing: 0.5px; text-transform: uppercase;">
@@ -83,35 +112,20 @@
     </div>
 
 <script>
-    // =========================================================================
-    // 🔗 ALAMAT DATABASE SPREADSHEET (PASTIKAN SUDAH SESUAI)
-    // =========================================================================
     const URL_SS_SUMBER = "https://docs.google.com/spreadsheets/d/15EkcBGfvDKD1lI2rtXb107IDqQUWsk6sEIzydrFZjv0/edit";
     const URL_SS_TUJUAN = "https://docs.google.com/spreadsheets/d/1_Sq1YBH2tiGXXp4MovSQ9ErGpSYCGDZqXKzTE0JU3HU/edit";
-
-    // =========================================================================
-    // 🌐 URL WEB APP GOOGLE APPS SCRIPT
-    // =========================================================================
     const SCRIPT_URL_MATERI = "https://script.google.com/macros/s/AKfycbwsnZKsdIOIF3RlY6iG-8yv9PH2f-ZTbst14MKT3AyILDer6z2CNSZtHX5WspCZmL6-iA/exec";
 
-    // Pemicu awal saat halaman dimuat dengan pembaca memori
     window.onload = async function() {
-        // 1. Muat dulu semua daftar guru ke dropdown seperti biasa
         await muatDaftarGuruDariSheet();
         
-        // 2. Cek apakah ada nama guru yang tersimpan di memori browser
         const guruTersimpan = localStorage.getItem('guruTerakhir');
         if (guruTersimpan) {
-            // Otomatis pilih nama guru tersebut di dropdown
             document.getElementById('pilihGuru').value = guruTersimpan;
-            // Otomatis panggil data materinya tanpa menyuruh siswa klik lagi
             muatMateriPerGuru();
         }
     };
 
-    // =========================================================================
-    // 🔄 FUNGSI 1: MEMUAT DAFTAR GURU KE DROPDOWN
-    // =========================================================================
     async function muatDaftarGuruDariSheet() {
         const selectGuru = document.getElementById('pilihGuru');
         try {
@@ -122,14 +136,12 @@
 
             let respon = await fetch(SCRIPT_URL_MATERI, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8'
-                },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(parameterPayload)
             });
             
             let dataKonf = await respon.json();
-            selectGuru.innerHTML = `<option value="">-- Klik Nama Guru --</option>`;
+            selectGuru.innerHTML = `<option value="">-- Klik untuk Memilih Nama Guru --</option>`;
             
             if(!dataKonf || dataKonf.length === 0 || dataKonf.error) {
                 selectGuru.innerHTML = `<option value="">Belum ada data di tab Konfigurasi.</option>`;
@@ -146,7 +158,7 @@
             listNamaGuruUnik.forEach(namaGuru => {
                 let opsi = document.createElement('option');
                 opsi.value = namaGuru;
-                opsi.innerText = namaGuru;
+                opsi.textContent = namaGuru;
                 selectGuru.appendChild(opsi);
             });
 
@@ -156,9 +168,6 @@
         }
     }
 
-    // =========================================================================
-    // 🔄 FUNGSI 2: MEMUAT ISI MATERI BERDASARKAN GURU YANG DIPILIH
-    // =========================================================================
     async function muatMateriPerGuru() {
         const guruDipilih = document.getElementById('pilihGuru').value;
         const containerMapel = document.getElementById('containerMapel');
@@ -181,9 +190,7 @@
 
             let respon = await fetch(SCRIPT_URL_MATERI, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8'
-                },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(parameterPayload)
             });
             
@@ -200,27 +207,24 @@
                     ? `<a href="tampilkan_materi.html?doc=${encodeURIComponent(materi.bahanAjar.trim())}" class="btn-link">📖 Bahan Ajar</a>` 
                     : `<span class="btn-disabled">📖 Bahan Ajar (Kosong)</span>`;
                     
-                // 🌟 PERUBAHANNYA ADA DI SINI (Baris 214 pada kode di atas):
                 let btnLkpd = (materi.lkpd && materi.lkpd.trim() !== "-") 
-                ? `<a href="tampilkan_lkpd.html?doc=${encodeURIComponent(materi.lkpd.trim())}" class="btn-link">📝 LKPD Berkas</a>` 
-                : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
+                    ? `<a href="tampilkan_lkpd.html?doc=${encodeURIComponent(materi.lkpd.trim())}" class="btn-link">📝 LKPD Berkas</a>` 
+                    : `<span class="btn-disabled">📝 LKPD (Kosong)</span>`;
                 
                 let guruAktif = encodeURIComponent(guruDipilih);
-                let linkSoalMentah = encodeURIComponent(materi.latihanSoal.trim());
-
-                let btnSoal = (materi.latihanSoal && materi.latihanSoal.trim() !== "-") 
-                    ? `<a href="tampilkan_soal.html?doc=${linkSoalMentah}&guru=${guruAktif}" class="btn-link">✍️ Latihan Soal</a>` 
+                
+                let linkSoalMentah = (materi.latihanSoal) ? materi.latihanSoal.trim() : "-";
+                let btnSoal = (linkSoalMentah !== "-") 
+                    ? `<a href="tampilkan_soal.html?doc=${encodeURIComponent(linkSoalMentah)}&guru=${guruAktif}" class="btn-link">✍️ Latihan Soal</a>` 
                     : `<span class="btn-disabled">✍️ Latihan Soal (Kosong)</span>`;
 
                 let htmlCard = `
                     <div class="mapel-card">
                         <h3 style="color: #bfa15f; margin-bottom: 8px;">📌 ${materi.mapel} <span class="tag-pertemuan">Pertemuan ${materi.pertemuan}</span></h3>
-                        
                         <div class="meta-info">
                             <strong>Materi Pokok:</strong> ${materi.judul}<br>
                             <strong>Target Kelas:</strong> ${materi.kelas}
                         </div>
-
                         <div class="link-buttons">
                             ${btnBahan}
                             ${btnLkpd}

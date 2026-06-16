@@ -94,7 +94,7 @@
             <h1>Ruang Kontrol Pendidik</h1>
             <p style="color:#a3b8cc;">Selamat datang kembali, Guru/Admin Sekolah</p>
         </div>
-        <button class="btn-danger" onclick="localStorage.removeItem('guruIn'); window.location.href='index.html'">Keluar</button>
+        <button class="btn-danger" onclick="localStorage.removeItem('guruIn'); window.location.href='../index.html'">Keluar</button>
     </div>
 
     <div class="grid-menu">
@@ -118,23 +118,26 @@
             <p>Periksa hasil pengerjaan LKPD siswa, berikan penilaian massal kelompok, dan kirim masukan langsung ke siswa.</p>
         </div>
 
+        <div class="card" style="cursor:pointer; border-top-color: #d9534f;" onclick="window.location.href='asesmen_sumatif.html'">
+            <h3 style="color: #d9534f;">🎯 5. Asesmen Sumatif</h3>
+            <p>Kelola pembuatan paket soal STS, SAS, dan SAT, atur durasi token, serta tinjau hasil analisis butir soal ujian.</p>
+        </div>
 
         <div class="card" style="cursor:pointer;" onclick="window.location.href='rekap-nilai.html'">
-            <h3>📊 5. Monitoring & Nilai</h3>
+            <h3>📊 6. Rekap Nilai</h3>
             <p>Lihat rekap seluruh rata-rata kompetensi nilai dan estimasi raport.</p>
         </div>
         
         <div class="card" style="cursor:pointer;" onclick="window.location.href='monitoring-ujian.html'">
-            <h3>🛡️ 6. Pengawas Ruang (Live)</h3>
+            <h3>🛡️ 7. Pengawas Ruang (Live)</h3>
             <p>Pantau status real-time, validasi koordinat GPS siswa, catat indikasi kecurangan, dan unduh rekapan excel.</p>
         </div>
-
-       </div>
+    </div>
 
     <script>
         if (localStorage.getItem("guruIn") !== "true") {
             alert("Akses Terlarang! Masukkan kata sandi terlebih dahulu.");
-            window.location.href = "index.html";
+            window.location.href = "login-guru.html";
         }
     </script>
 </body>

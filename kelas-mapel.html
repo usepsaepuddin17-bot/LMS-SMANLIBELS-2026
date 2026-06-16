@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Ruang Belajar Dinamis Akhir</title>
+    <link rel="stylesheet" href="../style-shared.css">
+    <style>
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: #07383d; color: #fff; border: 1px solid #1a5157; border-radius: 8px; cursor: pointer; font-weight: bold; text-align: center; }
+        .tab-btn.active { background: #c49a23; color: #0c1a1c; }
+        .item-list { background: #07383d; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #bfa15f; }
+        .loading { text-align: center; padding: 30px; color: #bfa15f; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="header-app">
+        <div>
+            <h1 id="txtJudulMapel">Mata Pelajaran: -</h1>
+            <p id="txtSubKelas">Kelas: -</p>
+        </div>
+        <button class="btn-danger" onclick="window.location.href='dashboard.html'">← Kembali</button>
+    </div>
+
+    <div class="tabs">
+        <div class="tab-btn active" onclick="bukaPilar('tugas', this)">1. Tugas Harian</div>
+        <div class="tab-btn" onclick="bukaPilar('lkpd', this)">2. LKPD</div>
+        <div class="tab-btn" onclick="bukaPilar('asesmen', this)">3. Asesmen Sumatif</div>
+    </div>
+
+    <div id="tugas" class="pilar-konten card">
+        <h3>Daftar Latihan Pertemuan (Live Database)</h3>
+        <div id="boxTugas"></div>
+    </div>
+
+    <div id="lkpd" class="pilar-konten card hidden">
+        <h3>Lembar Kerja Siswa (Word Google Drive)</h3>
+        <div id="boxLkpd"></div>
+    </div>
+
+    <div id="asesmen" class="pilar-konten card hidden">
+        <h3>Asesmen Sumatif</h3>
+        <p style="color:#a3b8cc; font-size:14px;">Instrumen pengerjaan terkunci oleh Token Pengawas Ruang.</p>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHghWaOg1J5dyag9uOlg49aUD-L6t1U5qfsSNafptGXjURvq47lglqTcHQxXXqcm94cQ/exec";
+        
+        // Ambil data parameter dari URL alamat web
+        const urlParams = new URLSearchParams(window.location.search);
+        const mapelTarget = urlParams.get('mapel');
+        const kelasTarget = urlParams.get('kelas');
+
+        document.getElementById('txtJudulMapel').innerText = "Mata Pelajaran: " + mapelTarget.toUpperCase();
+        document.getElementById('txtSubKelas').innerText = "Kelas: " + kelasTarget;
+
+        window.onload = function() { muatKontenPilarDinamis(); };
+
+        function bukaPilar(id, btn) {
+            document.querySelectorAll('.pilar-konten').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.remove('hidden');
+            btn.classList.add('active');
+        }
+
+        async function muatKontenPilarDinamis() {
+            const bTugas = document.getElementById('boxTugas');
+            const bLkpd = document.getElementById('boxLkpd');
+            bTugas.innerHTML = "<div class='loading'>Memuat tugas...</div>";
+            bLkpd.innerHTML = "<div class='loading'>Memuat berkas LKPD...</div>";
+
+            try {
+                let r = await fetch(`${SCRIPT_URL}?fitur=ambil_materi_per_mapel&mapel=${encodeURIComponent(mapelTarget)}`);
+                let data = await r.json();
+                
+                bTugas.innerHTML = ""; bLkpd.innerHTML = "";
+                if(data.length === 0) {
+                    bTugas.innerHTML = "<p class='loading'>Belum ada tugas.</p>";
+                    bLkpd.innerHTML = "<p class='loading'>Belum ada berkas LKPD.</p>";
+                    return;
+                }
+
+                data.forEach(m => {
+                    bTugas.innerHTML += `
+                        <div class="item-list">
+                            <h4>Pertemuan ${m.pertemuan}: ${m.judul}</h4>
+                            <p style="font-size:13px; margin-top:5px; white-space:pre-line;">${m.soal}</p>
+                        </div>`;
+                    
+                    if(m.link_lkpd) {
+                        bLkpd.innerHTML += `
+                            <div class="item-list">
+                                <h4>LKPD Pertemuan ${m.pertemuan}</h4>
+                                <p style="font-size:13px; margin-bottom:8px;">Topik: ${m.judul}</p>
+                                <a href="${m.link_lkpd}" target="_blank" class="btn-gold" style="display:inline-block; width:auto; text-decoration:none; padding:6px 12px; font-size:12px;">📂 Buka Berkas Word Drive</a>
+                            </div>`;
+                    }
+                });
+            } catch(e) { alert("Error sinkronisasi konten."); }
+        }
+    </script>
+</body>
+</html>

@@ -156,7 +156,7 @@
 
         <div class="action-bar">
             <button class="btn-cbt btn-nav" id="btnSblm" onclick="pindahSoal(-1)">⬅️ Sebelum</button>
-            <button class="btn-cbt btn-kembali" onclick=""window.location.href='dashboard-siswa.html'"">Keluar</button>
+            <button class="btn-cbt btn-kembali" onclick="window.location.href='dashboard-siswa.html'">Keluar</button>
             <button class="btn-cbt btn-nav" id="btnSld" onclick="pindahSoal(1)">Berikutnya ➡️</button>
             <button class="btn-cbt btn-selesai" id="btnFinish" onclick="prosesSelesaiUjian()" style="display: none;">Kirim Nilai</button>
         </div>
@@ -496,7 +496,7 @@ async function prosesSelesaiUjian() {
         // 🌟 PERBAIKAN BARU: Setelah siswa melihat nilai dan klik "OK" pada alert, halaman otomatis berpindah
         setTimeout(() => {
             alert(`Latihan selesai! Skor Anda: ${skorAkhir}. Klik OK untuk kembali ke halaman utama.`);
-            window.location.href = "index.html";
+            window.location.href = "../index.html";
         }, 500); // Diberi jeda 500ms agar teks status rekap sukses sempat terbaca di layar sebelum pop-up muncul
     }    
 </script>

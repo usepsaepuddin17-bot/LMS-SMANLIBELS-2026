@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Ujian CBT Interaktif</title>
+    <style>
+        :root { --bg-main: #f4f6f9; --bg-card: #ffffff; --kemdikbud-blue: #1e3a8a; --cbt-blue: #1a73e8; --cbt-blue-hover: #155cb4; --text-dark: #202124; --text-muted: #5f6368; --success: #137333; --danger: #c5221f; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background-color: var(--bg-main); color: var(--text-dark); padding: 12px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .header-soal { width: 100%; max-width: 100%; display: none; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--kemdikbud-blue); color: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-bottom: 4px solid #facc15; }
+        .meta-info { font-size: 0.9rem; line-height: 1.5; }
+        .meta-info b { font-size: 1.1rem; letter-spacing: 0.3px; }
+        .meta-info span { color: #cbd5e1; }
+        .meta-info small { display: inline-block; margin-top: 4px; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; }
+        .btn-keluar { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; }
+        .btn-keluar:hover { background: #b01f1c; }
+        .portal-container { background-color: var(--bg-card); border-top: 6px solid var(--kemdikbud-blue); border-radius: 8px; padding: 24px; width: 100%; max-width: 650px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-top: 40px; border: 1px solid #e0e0e0; }
+        h2 { text-align: center; color: var(--kemdikbud-blue); font-size: 1.25rem; font-weight: bold; border-bottom: 1px solid #e0e0e0; padding-bottom: 12px; margin-bottom: 20px; }
+        .form-row { display: flex; gap: 16px; margin-bottom: 14px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 0.85rem; font-weight: bold; color: var(--text-dark); }
+        select, input[type="text"] { background-color: #fafafa; border: 1px solid #dadce0; border-radius: 6px; padding: 0 12px; color: var(--text-dark); font-size: 0.9rem; outline: none; width: 100%; height: 44px; }
+        input[readonly], select[disabled] { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
+        select:focus, input:focus { border-color: var(--cbt-blue); background-color: #ffffff; }
+        .select-wrapper { position: relative; width: 100%; }
+        .select-wrapper::after { content: "▼"; font-size: 8px; color: #757575; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+        .btn-akses { background-color: var(--cbt-blue); color: #ffffff; border: none; border-radius: 6px; height: 46px; font-size: 0.95rem; font-weight: bold; text-transform: uppercase; width: 100%; margin-top: 10px; cursor: pointer; box-shadow: 0 2px 4px rgba(26, 115, 232, 0.2); transition: background 0.2s; }
+        .btn-akses:hover { background-color: var(--cbt-blue-hover); }
+        .btn-verifikasi { background-color: #34a853; color: white; border: none; border-radius: 6px; height: 44px; padding: 0 15px; font-weight: bold; cursor: pointer; font-size: 0.85rem; text-transform: uppercase; margin-top: auto; }
+        
+        /* STYLE BARU: Tombol Kembali Ke Dashboard */
+        .btn-kembali-dashboard { background-color: #5f6368; color: #ffffff; border: none; border-radius: 6px; height: 46px; font-size: 0.95rem; font-weight: bold; text-transform: uppercase; width: 100%; margin-top: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;}
+        .btn-kembali-dashboard:hover { background-color: #45474a; }
+        .btn-kembali-dashboard:active { transform: scale(0.99); }
+
+        #pesanSistem { margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; font-size: 0.9rem; display: none; }
+        .gagal { background-color: #fce8e6; border: 1px solid #f98b80; color: #a51d24; }
+        .sukses-notif { background-color: #e6f4ea; border: 1px solid #81c995; color: #137333; }
+        #quizArea { display: none; width: 100%; max-width: 750px; background: #ffffff; margin-top: 15px; padding: 24px; border-radius: 8px; border: 1px solid #dadce0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .text-soal-tampil { font-size: 1.1rem; line-height: 1.6; font-weight: 500; margin-bottom: 20px; white-space: pre-wrap; color: var(--text-dark); }
+        .opsi-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        .opsi-box { display: flex; align-items: center; padding: 14px 16px; border: 1px solid #dadce0; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: #fafafa; font-size: 1rem; }
+        .opsi-box:hover { background: #f1f3f4; border-color: #bdc1c6; }
+        .opsi-box.selected { background: #e8f0fe; border-color: var(--cbt-blue); color: var(--cbt-blue); font-weight: bold; }
+        .opsi-huruf { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #bdc1c6; display: flex; align-items: center; justify-content: center; margin-right: 14px; font-weight: bold; background: #ffffff; color: var(--text-dark); flex-shrink: 0; }
+        .opsi-box.selected .opsi-huruf { background: var(--cbt-blue); color: #ffffff; border-color: var(--cbt-blue); }
+        .nav-button-row { display: flex; justify-content: space-between; border-top: 1px solid #e0e0e0; padding-top: 18px; }
+        .btn-nav { padding: 12px 24px; font-size: 0.95rem; font-weight: bold; border: 1px solid #dadce0; border-radius: 6px; cursor: pointer; background: #ffffff; color: var(--text-dark); }
+        .btn-nav:hover { background: #f8f9fa; }
+        .btn-nav.primary { background: var(--cbt-blue); color: white; border: none; }
+        .btn-nav.primary:hover { background: var(--cbt-blue-hover); }
+        .btn-nav.success { background: var(--success); color: white; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="header-soal" id="metaHeader">
+    <div class="meta-info">
+        <b id="txtJudul" style="color: #ffffff;">Memuat...</b><br>
+        <span id="txtSub">Mata Pelajaran</span><br>
+        <small id="txtSiswa" style="color: #ffffff; font-weight: bold;">Siswa:</small>
+    </div>
+    <div id="countdownTimer" style="background: #facc15; color: #202124; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 1.1rem; text-align: center;">Sisa Waktu: --:--</div>
+    <button class="btn-keluar" onclick="tutupLembarSoal()">Keluar</button>
+</div>
+
+<div id="quizArea">
+    <div id="nomorJudul" style="font-weight: bold; color: var(--cbt-blue); margin-bottom: 10px; font-size: 1.1rem;">SOAL NO: 1</div>
+    <div class="text-soal-tampil" id="isiSoalTeks">Memuat isi teks soal...</div>
+    <div class="opsi-container" id="boxKumpulanOpsi"></div>
+    <div class="nav-button-row">
+        <button class="btn-nav" id="btnSblm" onclick="pindahSoal(-1)">Sebelumnya</button>
+        <button class="btn-nav primary" id="btnLanjut" onclick="pindahSoal(1)">Selanjutnya</button>
+    </div>
+</div>
+
+<div class="portal-container" id="kotakLoginPortal">
+    <h2>Portal Validasi Identitas &amp; Token</h2>
+    <form id="formAksesSiswa" onsubmit="handleBukaSoal(event)">
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Pilih Guru Pengampu</label>
+                <div class="select-wrapper"><select id="selectGuru" required><option value="">-- Memuat Daftar Guru... --</option></select></div>
+            </div>
+            <div class="form-group">
+                <label>Masukkan Token Ujian</label>
+                <input type="text" id="inputToken" placeholder="Contoh: PANCASILA01" style="text-transform: uppercase;" required>
+            </div>
+            <button type="button" class="btn-verifikasi" id="btnCekToken" onclick="verifikasiTokenAwal()">Periksa Token</button>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Jenis Asesmen</label><input type="text" id="tampilJenis" placeholder="Otomatis Terisi" readonly></div>
+            <div class="form-group"><label>Mata Pelajaran</label><input type="text" id="tampilMapel" placeholder="Otomatis Terisi" readonly></div>
+            <div class="form-group"><label>Kelas Target</label><input type="text" id="tampilKelas" placeholder="Otomatis Terisi" readonly></div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+            <label>Pilih Nama Lengkap Anda</label>
+            <div class="select-wrapper">
+                <select id="selectNamaSiswa" disabled required>
+                    <option value="">-- Jalankan Periksa Token Terlebih Dahulu --</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-akses" id="btnProses" disabled>Mulai Ujian</button>
+        
+        <a href="dashboard-siswa.html" class="btn-kembali-dashboard">⬅️ Kembali ke Dashboard</a>
+    </form>
+    <div id="pesanSistem"></div>
+</div>
+
+<script>
+const URL_WEB_APP_SUMBER = "https://script.google.com/macros/s/AKfycbznemtsu_toH9Nq3CwKrDGVfrZg4QvBxciimScY6a6qWhQWOfYJyfBL6M5ne0NDRAcB/exec";
+const URL_WEB_APP_TUJUAN = "https://script.google.com/macros/s/AKfycbzPk-RMaIoIPF5rFYMBK2ks4ojVBzjOtyJG_hIXv5fPGlhVEtskLK5KdycMon31H_YOBw/exec";
+const URL_WEB_APP_SIMPAN_NILAI = "https://script.google.com/macros/s/AKfycbzRv0ZnoZ3bQZVIHOxKBtqZEIGXheGbavsjEo_zZyttI8J7yGPQB0uhJPA4xJXhCuhf/exec";
+
+let databaseSiswaGlobal = [];
+let listSoalInteraktif = [];
+let indexSoalAktif = 0;
+let lembarJawabanSiswa = {};
+let dataUjianAktif = {};
+let intervalTimerUjian = null; 
+let sedangMengirimNilai = false;
+
+window.onload = function() { muatDataMasterSiswa(); };
+
+async function muatDataMasterSiswa() {
+    try {
+        let respons = await fetch(URL_WEB_APP_SUMBER + "?aksi=AMBIL_DATA_MASTER&_ts=" + Date.now(), { method: "GET" });
+        let dataHasil = await respons.json();
+        if (dataHasil.status === "sukses") {
+            databaseSiswaGlobal = dataHasil.rawSiswa;
+            const elGuru = document.getElementById("selectGuru"); elGuru.innerHTML = `<option value="">-- Pilih Guru Pengampu --</option>`;
+            dataHasil.daftarGuru.forEach(item => { if(item) elGuru.innerHTML += `<option value="${item}">${item}</option>`; });
+        }
+    } catch (error) { console.error(error); tampilkanPesanEror("Gagal terhubung ke gerbang server data master sekolah."); }
+}
+
+function verifikasiTokenAwal() {
+    const guru = document.getElementById("selectGuru").value;
+    const token = document.getElementById("inputToken").value.trim().toUpperCase();
+    const btnCek = document.getElementById("btnCekToken");
+    const msg = document.getElementById("pesanSistem");
+    
+    if(!guru) { alert("Silakan pilih Guru Pengampu terlebih dahulu!"); return; }
+    if(!token) { alert("Silakan masukkan token ujian!"); return; }
+    
+    btnCek.disabled = true;
+    btnCek.textContent = "Mengecek...";
+    msg.style.display = "none";
+
+    const cbName = "jsonp_token_awal_" + Math.round(100000 * Math.random());
+    window[cbName] = function(hasil) {
+        document.getElementById(cbName).remove();
+        delete window[cbName];
+        btnCek.disabled = false;
+        btnCek.textContent = "Periksa Token";
+
+        if(hasil.status === "sukses") {
+            document.getElementById("tampilJenis").value = htmlDecode(hasil.data.jenisAsesmen);
+            document.getElementById("tampilMapel").value = htmlDecode(hasil.data.mataPelajaran);
+            document.getElementById("tampilKelas").value = htmlDecode(hasil.data.kelasTarget);
+            
+            filterNamaSiswaOtomatis(hasil.data.kelasTarget);
+            
+            msg.className = "sukses-notif";
+            msg.textContent = "Token Terverifikasi Secepat Kilat! Silakan tentukan nama Anda dan Mulai Ujian.";
+            msg.style.display = "block";
+            document.getElementById("btnProses").disabled = false;
+        } else {
+            tampilkanPesanEror(hasil.pesan);
+            resetFormLocked();
+        }
+    };
+
+    const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=PRA_CEK_TOKEN&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&callback=${cbName}`;
+    const script = document.createElement("script");
+    script.src = targetUrl;
+    script.id = cbName;
+    document.body.appendChild(script);
+}
+
+function filterNamaSiswaOtomatis(kelasTarget) {
+    const elNamaSiswa = document.getElementById("selectNamaSiswa");
+    elNamaSiswa.disabled = false;
+    
+    const siswaTerfilter = databaseSiswaGlobal.filter(siswa => siswa.kelas.toLowerCase() === kelasTarget.toLowerCase());
+    siswaTerfilter.sort((a, b) => a.nama.localeCompare(b.nama));
+    
+    if(siswaTerfilter.length === 0) {
+        elNamaSiswa.innerHTML = `<option value="">-- Siswa kelas ${kelasTarget} tidak ditemukan --</option>`;
+        document.getElementById("btnProses").disabled = true;
+        return;
+    }
+    
+    elNamaSiswa.innerHTML = `<option value="">-- Pilih Nama Lengkap Anda --</option>`;
+    siswaTerfilter.forEach(siswa => { elNamaSiswa.innerHTML += `<option value="${siswa.nama}">${siswa.nama}</option>`; });
+}
+
+function resetFormLocked() {
+    document.getElementById("tampilJenis").value = "";
+    document.getElementById("tampilMapel").value = "";
+    document.getElementById("tampilKelas").value = "";
+    const elNama = document.getElementById("selectNamaSiswa");
+    elNama.innerHTML = `<option value="">-- Jalankan Periksa Token Terlebih Dahulu --</option>`;
+    elNama.disabled = true;
+    document.getElementById("btnProses").disabled = true;
+}
+
+function handleBukaSoal(event) {
+    event.preventDefault(); 
+    const btn = document.getElementById("btnProses"); 
+    const namaSiswa = document.getElementById("selectNamaSiswa").value; 
+    const kelasSiswa = document.getElementById("tampilKelas").value; 
+    const guru = document.getElementById("selectGuru").value; 
+    const token = document.getElementById("inputToken").value.trim().toUpperCase();
+    
+    if(!namaSiswa) { alert("Pilih Nama Lengkap Anda!"); return; }
+    
+    btn.disabled = true; 
+    btn.textContent = "Memuat Lembar Soal..."; 
+    document.getElementById("pesanSistem").style.display = "none";
+    
+    const namaCallbackUnik = "jsonp_callback_" + Math.round(100000 * Math.random());
+    window[namaCallbackUnik] = function(hasil) {
+        document.getElementById(namaCallbackUnik).remove();
+        delete window[namaCallbackUnik];
+        
+        if (hasil.status === "sukses") {
+            dataUjianAktif = { guru: guru, siswa: namaSiswa, kelas: kelasSiswa, token: token, jenis: hasil.jenisAsesmen, mapel: hasil.mataPelajaran };
+            prosesPecahTeksGoogleDoc(hasil.teksSoal);
+            
+            if (listSoalInteraktif.length === 0) { 
+                tampilkanPesanEror("Format Google Doc tidak sesuai standar kaku [Soal] dan [KUNCI] A."); 
+                btn.disabled = false; btn.textContent = "Mulai Ujian"; 
+                return; 
+            }
+            
+            document.getElementById("txtJudul").textContent = hasil.jenisAsesmen; 
+            document.getElementById("txtSub").textContent = `${hasil.mataPelajaran} | Kelas: ${hasil.kelas}`; 
+            document.getElementById("txtSiswa").textContent = `Peserta: ${namaSiswa} (${kelasSiswa})`;
+            
+            document.getElementById("kotakLoginPortal").style.display = "none"; 
+            document.getElementById("metaHeader").style.display = "flex"; 
+            document.getElementById("quizArea").style.display = "block";
+            
+            indexSoalAktif = 0; sedangMengirimNilai = false;
+            let durasiMenit = hasil.waktuUjian ? parseInt(hasil.waktuUjian) : 60;
+            mulaiTimerUjianSiswa(durasiMenit); 
+            tampilkanButirSoalKeLayar();
+        } else { 
+            tampilkanPesanEror(hasil.pesan); 
+        }
+        btn.disabled = false; btn.textContent = "Mulai Ujian";
+    };
+
+    const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=CEK_TOKEN_SISWA&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&namaSiswa=${encodeURIComponent(namaSiswa)}&kelasSiswa=${encodeURIComponent(kelasSiswa)}&callback=${namaCallbackUnik}`;
+    const scriptBypass = document.createElement("script");
+    scriptBypass.src = targetUrl;
+    scriptBypass.id = namaCallbackUnik;
+    document.body.appendChild(scriptBypass);
+}
+
+function mulaiTimerUjianSiswa(menit) {
+    if (intervalTimerUjian) clearInterval(intervalTimerUjian);
+    let totalDetik = menit * 60; 
+    const elemenTimer = document.getElementById("countdownTimer"); 
+    intervalTimerUjian = setInterval(function() {
+        let hitungMenit = Math.floor(totalDetik / 60); let hitungDetik = totalDetik % 60;
+        hitungMenit = hitungMenit < 10 ? "0" + hitungMenit : hitungMenit;
+        hitungDetik = hitungDetik < 10 ? "0" + hitungDetik : hitungDetik;
+        if (elemenTimer) elemenTimer.textContent = hitungMenit + ":" + hitungDetik;
+        if (totalDetik <= 0) {
+            clearInterval(intervalTimerUjian);
+            if (elemenTimer) elemenTimer.textContent = "00:00";
+            evaluasiDanKirimNilaiAkhirSelesaiWaktu(); 
+            alert("Waktu pengerjaan telah habis! Jawaban Anda otomatis terkirim.");
+        }
+        totalDetik--; 
+    }, 1000);
+}
+
+function ambilOpsiMurni(sisiTeks, hurufTarget, hurufLain) { 
+    let pola = new RegExp("(?:^|\\s|\\n)" + hurufTarget + "\\.\\s*([\\s\\S]*?)(?=(?:^|\\s|\\n)(?:" + hurufLain + ")\\.\\s*|$)", "i"); 
+    let cocok = sisiTeks.match(pola); return cocok ? cocok[1].trim() : ""; 
+}
+
+function prosesPecahTeksGoogleDoc(teks) {
+    listSoalInteraktif = []; 
+    if (!teks) return;
+    
+    let parts = teks.split(/\[Soal(?:\s*\d+)?\]/i);
+    
+    for (let i = 1; i < parts.length; i++) {
+        let rawChunk = parts[i]; 
+        if (!rawChunk) continue;
+        
+        let penandaKunci = rawChunk.match(/\[KUNCI\]/i);
+        if (!penandaKunci) continue;
+        
+        let subParts = rawChunk.split(/\[KUNCI\]/i); 
+        let teksSoalDanOpsi = subParts[0] ? subParts[0].trim() : ""; 
+        let sisaKunci = subParts[1] ? subParts[1].trim() : ""; 
+        let kunciJawaban = sisaKunci ? sisaKunci.charAt(0).toUpperCase() : "";
+        
+        let opsiA = "", opsiB = "", opsiC = "", opsiD = "", opsiE = ""; 
+        let pertanyaanMurni = "";
+        
+        let cekManual = teksSoalDanOpsi.match(/(?:^|\s|\n)[A-E]\.\s*/i);
+        if (cekManual) {
+            opsiA = ambilOpsiMurni(teksSoalDanOpsi, "A", "B|C|D|E"); 
+            opsiB = ambilOpsiMurni(teksSoalDanOpsi, "B", "A|C|D|E"); 
+            opsiC = ambilOpsiMurni(teksSoalDanOpsi, "C", "A|B|D|E"); 
+            opsiD = ambilOpsiMurni(teksSoalDanOpsi, "D", "A|B|C|E"); 
+            opsiE = ambilOpsiMurni(teksSoalDanOpsi, "E", "A|B|C|D");
+            
+            let qParts = teksSoalDanOpsi.split(/(?:^|\s|\n)A\.\s*/i); 
+            pertanyaanMurni = qParts[0] ? qParts[0].trim() : teksSoalDanOpsi.trim();
+        } else {
+            let baris = teksSoalDanOpsi.split(/\n+/).map(b => b.trim()).filter(b => b !== "");
+            if (baris.length >= 5) {
+                opsiE = baris.pop(); 
+                opsiD = baris.pop(); 
+                opsiC = baris.pop(); 
+                opsiB = baris.pop(); 
+                opsiA = baris.pop();
+                pertanyaanMurni = baris.join("\n").trim();
+            } else { 
+                pertanyaanMurni = teksSoalDanOpsi; 
+            }
+        }
+        
+        if (pertanyaanMurni) { 
+            listSoalInteraktif.push({ 
+                nomor: listSoalInteraktif.length + 1, 
+                pertanyaan: pertanyaanMurni, 
+                opsi: { A: opsiA, B: opsiB, C: opsiC, D: opsiD, E: opsiE }, 
+                kunci: kunciJawaban || "A"
+            }); 
+        }
+    }
+}
+
+function tampilkanButirSoalKeLayar() {
+    let soal = listSoalInteraktif[indexSoalAktif]; 
+    document.getElementById("nomorJudul").textContent = `SOAL NO: ${soal.nomor} dari ${listSoalInteraktif.length}`; 
+    document.getElementById("isiSoalTeks").innerHTML = soal.pertanyaan;
+    let boxOpsi = document.getElementById("boxKumpulanOpsi"); boxOpsi.innerHTML = ""; let listHurufOpsi = ["A", "B", "C", "D", "E"];
+    listHurufOpsi.forEach(huruf => {
+        let teksOpsi = soal.opsi[huruf]; if (!teksOpsi) return;
+        let dipilih = lembarJawabanSiswa[soal.nomor] === huruf ? "selected" : "";
+        boxOpsi.innerHTML += `<div class="opsi-box ${dipilih}" onclick="pilihJawabanSiswa('${huruf}')"><div class="opsi-huruf">${huruf}</div><div>${teksOpsi}</div></div>`;
+    });
+    document.getElementById("btnSblm").style.visibility = indexSoalAktif === 0 ? "hidden" : "visible"; let btnLanjut = document.getElementById("btnLanjut");
+    if (indexSoalAktif === listSoalInteraktif.length - 1) { btnLanjut.textContent = "Selesai & Kirim Ujian"; btnLanjut.className = "btn-nav success"; } else { btnLanjut.textContent = "Selanjutnya"; btnLanjut.className = "btn-nav primary"; }
+}
+
+function pilihJawabanSiswa(huruf) { let soal = listSoalInteraktif[indexSoalAktif]; lembarJawabanSiswa[soal.nomor] = huruf; tampilkanButirSoalKeLayar(); }
+function pindahSoal(arah) { if (arah === 1 && indexSoalAktif === listSoalInteraktif.length - 1) { evaluasiDanKirimNilaiAkhir(); return; } indexSoalAktif += arah; tampilkanButirSoalKeLayar(); }
+
+function evaluasiDanKirimNilaiAkhir() {
+    if (sedangMengirimNilai) return; 
+    if (!confirm("Apakah Anda yakin ingin menyelesaikan ujian dan mengirimkan jawaban?")) return;
+    sedangMengirimNilai = true;
+    let totalBenar = 0; let totalSalah = 0;
+    listSoalInteraktif.forEach(soal => { if ((lembarJawabanSiswa[soal.nomor] || "") === soal.kunci) { totalBenar++; } else { totalSalah++; } });
+    let nilaiAkhir = Math.round((totalBenar / listSoalInteraktif.length) * 100); 
+    const btnLanjut = document.getElementById("btnLanjut"); btnLanjut.disabled = true; btnLanjut.textContent = "Mengirim Nilai...";
+    
+    const cbNilaiName = "jsonp_cb_nilai_" + Math.round(100000 * Math.random());
+    window[cbNilaiName] = function(hasil) {
+        document.getElementById(cbNilaiName).remove(); delete window[cbNilaiName];
+        sedangMengirimNilai = false;
+        if (hasil.status === "sukses") {
+            alert(`Ujian Selesai!\nJawaban Berhasil Dikirim.\n\nBenar: ${totalBenar}\nSalah: ${totalSalah}\nNilai Anda: ${nilaiAkhir}`);
+            tutupLembarSoal();
+        } else { alert("Gagal menyimpan rekap nilai: " + hasil.pesan); btnLanjut.disabled = false; btnLanjut.textContent = "Selesai & Kirim Ujian"; }
+    };
+    let sendUrl = URL_WEB_APP_SIMPAN_NILAI + `?aksi=SIMPAN_NILAI_SISWA&guru=${encodeURIComponent(dataUjianAktif.guru)}&siswa=${encodeURIComponent(dataUjianAktif.siswa)}&kelas=${encodeURIComponent(dataUjianAktif.kelas)}&mapel=${encodeURIComponent(dataUjianAktif.mapel)}&jenis=${encodeURIComponent(dataUjianAktif.jenis)}&token=${encodeURIComponent(dataUjianAktif.token)}&benar=${totalBenar}&salah=${totalSalah}&nilai=${nilaiAkhir}&callback=${cbNilaiName}`;
+    const scriptNilai = document.createElement("script"); scriptNilai.src = sendUrl; scriptNilai.id = cbNilaiName; document.body.appendChild(scriptNilai);
+}
+
+function tutupLembarSoal() { 
+    if (document.getElementById("quizArea").style.display === "block" && !sedangMengirimNilai) {
+        if (!confirm("Peringatan! Anda sedang dalam sesi ujian. Jika keluar sekarang, jawaban sementara Anda akan hilang. Apakah Anda yakin ingin keluar?")) {
+            return;
+        }
+    }
+
+    if (intervalTimerUjian) clearInterval(intervalTimerUjian); 
+    document.getElementById("quizArea").style.display = "none"; 
+    document.getElementById("metaHeader").style.display = "none"; 
+    document.getElementById("kotakLoginPortal").style.display = "block"; 
+    document.getElementById("formAksesSiswa").reset(); 
+    resetFormLocked();
+    lembarJawabanSiswa = {}; listSoalInteraktif = []; dataUjianAktif = {}; indexSoalAktif = 0; sedangMengirimNilai = false;
+    muatDataMasterSiswa(); 
+}
+
+function tampilkanPesanEror(pesan) { const box = document.getElementById("pesanSistem"); box.className = "gagal"; box.textContent = pesan; box.style.display = "block"; }
+
+function htmlDecode(input) { const doc = new DOMParser().parseFromString(input, "text/html"); return doc.documentElement.textContent; }
+
+function evaluasiDanKirimNilaiAkhirSelesaiWaktu() {
+    if (sedangMengirimNilai) return; sedangMengirimNilai = true;
+    if (intervalTimerUjian) clearInterval(intervalTimerUjian); 
+    let totalBenar = 0; listSoalInteraktif.forEach(soal => { if ((lembarJawabanSiswa[soal.nomor] || "") === soal.kunci) totalBenar++; });
+    let nilaiAkhir = Math.round((totalBenar / listSoalInteraktif.length) * 100); 
+    const cbNilaiName = "jsonp_cb_nilai_auto_" + Math.round(100000 * Math.random());
+    window[cbNilaiName] = function() { document.getElementById(cbNilaiName).remove(); delete window[cbNilaiName]; sedangMengirimNilai = false; tutupLembarSoal(); };
+    let sendUrl = URL_WEB_APP_SIMPAN_NILAI + `?aksi=SIMPAN_NILAI_SISWA&guru=${encodeURIComponent(dataUjianAktif.guru)}&siswa=${encodeURIComponent(dataUjianAktif.siswa)}&kelas=${encodeURIComponent(dataUjianAktif.kelas)}&mapel=${encodeURIComponent(dataUjianAktif.mapel)}&jenis=${encodeURIComponent(dataUjianAktif.jenis)}&token=${encodeURIComponent(dataUjianAktif.token)}&benar=${totalBenar}&nilai=${nilaiAkhir}&callback=${cbNilaiName}`;
+    const scriptNilai = document.createElement("script"); scriptNilai.src = sendUrl; scriptNilai.id = cbNilaiName; document.body.appendChild(scriptNilai);
+}
+
+// Anti-Cheat Engine Activation
+let jumlahPelanggaranSiswa = 0;
+const MAKSIMAL_PELANGGARAN = 3;
+
+window.addEventListener('blur', function() {
+    if (document.getElementById("quizArea").style.display === "block" && !sedangMengirimNilai) {
+        jumlahPelanggaranSiswa++;
+        if (jumlahPelanggaranSiswa >= MAKSIMAL_PELANGGARAN) {
+            if (intervalTimerUjian) clearInterval(intervalTimerUjian);
+            alert("PERINGATAN KERAS!\nAnda telah keluar dari halaman ujian sebanyak " + jumlahPelanggaranSiswa + " kali.\nSistem otomatis mengunci ujian Anda dan mengirimkan nilai apa adanya!");
+            evaluasiDanKirimNilaiSanksiCurang();
+        } else {
+            let sisaKesempatan = MAKSIMAL_PELANGGARAN - jumlahPelanggaranSiswa;
+            alert("DILARANG MENINGGALKAN HALAMAN UJIAN!\nSistem mendeteksi Anda membuka tab/aplikasi lain.\n\nPelanggaran: " + jumlahPelanggaranSiswa + "x\nJika melanggar " + sisaKesempatan + "x lagi, ujian Anda akan KELUAR OTOMATIS!");
+        }
+    }
+});
+
+function evaluasiDanKirimNilaiSanksiCurang() {
+    sedangMengirimNilai = true;
+    let totalBenar = 0;
+    listSoalInteraktif.forEach(soal => { if ((lembarJawabanSiswa[soal.nomor] || "") === soal.kunci) totalBenar++; });
+    let nilaiAkhir = Math.round((totalBenar / listSoalInteraktif.length) * 100); 
+    const cbNilaiCurang = "jsonp_cb_curang_" + Math.round(100000 * Math.random());
+    window[cbNilaiCurang] = function() { document.getElementById(cbNilaiCurang).remove(); delete window[cbNilaiCurang]; sedangMengirimNilai = false; tutupLembarSoal(); };
+    let jenisUjianPenanda = "[TERKUNCI/CURANG] " + dataUjianAktif.jenis;
+    let sendUrl = URL_WEB_APP_SIMPAN_NILAI + `?aksi=SIMPAN_NILAI_SISWA&guru=${encodeURIComponent(dataUjianAktif.guru)}&siswa=${encodeURIComponent(dataUjianAktif.siswa)}&kelas=${encodeURIComponent(dataUjianAktif.kelas)}&mapel=${encodeURIComponent(dataUjianAktif.mapel)}&jenis=${encodeURIComponent(jenisUjianPenanda)}&token=${encodeURIComponent(dataUjianAktif.token)}&benar=${totalBenar}&nilai=${nilaiAkhir}&callback=${cbNilaiCurang}`;
+    const scriptNilai = document.createElement("script"); scriptNilai.src = sendUrl; scriptNilai.id = cbNilaiCurang; document.body.appendChild(scriptNilai);
+}
+
+document.addEventListener('contextmenu', function(e) { if (document.getElementById("quizArea").style.display === "block") e.preventDefault(); });
+document.addEventListener('keydown', function(e) {
+    if (document.getElementById("quizArea").style.display === "block") {
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 's' || e.key === 'C' || e.key === 'V' || e.key === 'U' || e.key === 'S')) e.preventDefault();
+        if (e.key === 'F12') e.preventDefault();
+    }
+});
+document.addEventListener('selectstart', function(e) { if (document.getElementById("quizArea").style.display === "block") e.preventDefault(); });
+</script>
+</body>
+</html>
