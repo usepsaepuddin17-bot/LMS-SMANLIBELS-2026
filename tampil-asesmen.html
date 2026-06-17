@@ -56,29 +56,18 @@
         .btn-nav.primary:hover { background: var(--cbt-blue-hover); }
         .btn-nav.success { background: var(--success); color: white; border: none; }
 
-        /* ========================================== */
-        /* 📱 OPTIMALISASI RESPONSIVE LAYOUT HP     */
-        /* ========================================== */
         @media (max-width: 600px) {
             body { padding: 8px; }
             .portal-container { padding: 16px; margin-top: 15px; border-radius: 6px; }
             h2 { font-size: 1.15rem; margin-bottom: 15px; }
-            
-            /* Membuat baris form pecah menjadi vertikal di HP */
             .form-row { flex-direction: column; gap: 12px; margin-bottom: 12px; }
             .form-group { width: 100%; }
-            
-            /* Penyesuaian tombol periksa token saat mode vertikal */
             .btn-verifikasi { width: 100%; height: 44px; margin-top: 4px; justify-content: center; }
-            
-            /* Penyesuaian area pengerjaan soal di HP */
             #quizArea { padding: 16px; }
             .text-soal-tampil { font-size: 1rem; margin-bottom: 15px; }
             .opsi-box { padding: 10px 12px; font-size: 0.95rem; }
             .opsi-huruf { width: 26px; height: 26px; margin-right: 10px; font-size: 0.9rem; }
             .btn-nav { padding: 10px 16px; font-size: 0.9rem; }
-            
-            /* Penyesuaian Header Atas saat Ujian Aktif */
             .header-soal { flex-direction: column; gap: 10px; align-items: stretch; text-align: center; padding: 12px; }
             #countdownTimer { width: 100%; font-size: 1rem; }
             .btn-keluar { width: 100%; padding: 8px; }
@@ -94,7 +83,7 @@
         <small id="txtSiswa" style="color: #ffffff; font-weight: bold;">Siswa:</small>
     </div>
     <div id="countdownTimer" style="background: #facc15; color: #202124; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 1.1rem; text-align: center;">Sisa Waktu: --:--</div>
-    <button class="btn-keluar" onclick="tutupLembarSoal()">Keluar</button>
+    <button class="btn-keluar" onclick="tutupLembarSoalUjian()">Keluar</button>
 </div>
 
 <div id="quizArea">
@@ -110,7 +99,6 @@
 <div class="portal-container" id="kotakLoginPortal">
     <h2>Portal Validasi Identitas &amp; Token</h2>
     <form id="formAksesSiswa" onsubmit="handleBukaSoal(event)">
-        
         <div class="form-row">
             <div class="form-group">
                 <label>Pilih Guru Pengampu</label>
@@ -141,7 +129,6 @@
         </div>
 
         <button type="submit" class="btn-akses" id="btnProses" disabled>Mulai Ujian</button>
-        
         <a href="dashboard-siswa.html" class="btn-kembali-dashboard">⬅️ Kembali ke Dashboard</a>
     </form>
     <div id="pesanSistem"></div>
@@ -163,7 +150,22 @@ let memblokirEventBlur = false;
 let jumlahPelanggaranSiswa = 0;
 const MAKSIMAL_PELANGGARAN = 3;
 
-// 1. Inisialisasi Aplikasi (Kompatibel HP & Laptop)
+// VARIABEL GPS BARU
+let koordinatRuanganGuru = ""; 
+const RADIUS_MAKSIMAL_METER = 50; 
+
+function htmlDecode(input) {
+    var doc = new DOMParser().parseFromString(input, "text/html");
+    return doc.documentElement.textContent;
+}
+
+function tampilkanPesanEror(pesan) {
+    const msg = document.getElementById("pesanSistem");
+    msg.className = "gagal";
+    msg.textContent = pesan;
+    msg.style.display = "block";
+}
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", muatDataMasterSiswa);
 } else {
@@ -188,12 +190,10 @@ async function muatDataMasterSiswa() {
     }
 }
 
-// 2. Verifikasi Token Masuk Ujian
 async function verifikasiTokenAwal() {
     const guru = document.getElementById("selectGuru").value;
     const tokenInput = document.getElementById("inputToken");
     const token = tokenInput ? tokenInput.value.toString().trim().toUpperCase() : "";
-    
     const btnCek = document.getElementById("btnCekToken");
     const msg = document.getElementById("pesanSistem");
     
@@ -205,7 +205,7 @@ async function verifikasiTokenAwal() {
     msg.style.display = "none";
 
     try {
-        const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=PRA_CEK_TOKEN&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&_ts=${Date.now()}`;
+        const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=VERIFIKASI_TOKEN_DAN_SISWA&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&_ts=${Date.now()}`;
         const respons = await fetch(targetUrl, { method: "GET" });
         const hasil = await respons.json();
         
@@ -213,11 +213,27 @@ async function verifikasiTokenAwal() {
         btnCek.textContent = "Periksa Token";
 
         if(hasil.status === "sukses") {
-            document.getElementById("tampilJenis").value = htmlDecode(hasil.data.jenisAsesmen);
-            document.getElementById("tampilMapel").value = htmlDecode(hasil.data.mataPelajaran);
-            document.getElementById("tampilKelas").value = htmlDecode(hasil.data.kelasTarget);
+            // Mengambil koordinat dari Kolom H (Jika ada di index hasil)
+            koordinatRuanganGuru = hasil.koordinat || ""; 
             
-            filterNamaSiswaOtomatis(hasil.data.kelasTarget);
+            // Mencoba alternatif jika aksi PRA_CEK_TOKEN dipanggil ulang
+            if(!koordinatRuanganGuru) {
+                const altUrl = URL_WEB_APP_TUJUAN + `?aksi=PRA_CEK_TOKEN&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&_ts=${Date.now()}`;
+                const resAlt = await fetch(altUrl, { method: "GET" });
+                const hasilAlt = await resAlt.json();
+                if(hasilAlt.status === "sukses") {
+                    document.getElementById("tampilJenis").value = htmlDecode(hasilAlt.data.jenisAsesmen);
+                    document.getElementById("tampilMapel").value = htmlDecode(hasilAlt.data.mataPelajaran);
+                    document.getElementById("tampilKelas").value = htmlDecode(hasilAlt.data.kelasTarget);
+                    koordinatRuanganGuru = hasilAlt.data.koordinat || ""; 
+                    filterNamaSiswaOtomatis(hasilAlt.data.kelasTarget);
+                }
+            } else {
+                document.getElementById("tampilJenis").value = htmlDecode(hasil.jenisAsesmen || "");
+                document.getElementById("tampilMapel").value = htmlDecode(hasil.mapel || "");
+                document.getElementById("tampilKelas").value = htmlDecode(hasil.kelas || "");
+                filterNamaSiswaOtomatis(hasil.kelas || "");
+            }
             
             msg.className = "sukses-notif";
             msg.textContent = "Token Terverifikasi Secepat Kilat! Silakan tentukan nama Anda dan Mulai Ujian.";
@@ -233,6 +249,43 @@ async function verifikasiTokenAwal() {
         btnCek.textContent = "Periksa Token";
         tampilkanPesanEror("Gagal terhubung ke gerbang server. Gunakan browser Chrome/Safari bawaan HP.");
     }
+}
+
+// FUNGSI HITUNG RADIUS HAVERSINE (GPS MATHEMATICS)
+function hitungJarakMeter(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; 
+    const phi1 = lat1 * Math.PI / 180;
+    const phi2 = lat2 * Math.PI / 180;
+    const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+    const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
+              Math.cos(phi1) * Math.cos(phi2) *
+              Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; 
+}
+
+function dapatkanLokasiSiswa() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject("Fitur GPS tidak didukung oleh browser Anda.");
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                (posisi) => resolve(posisi.coords),
+                (error) => {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED: reject("Izin GPS ditolak. Anda wajib mengizinkan akses lokasi untuk ujian."); break;
+                        case error.POSITION_UNAVAILABLE: reject("Informasi lokasi tidak tersedia."); break;
+                        case error.TIMEOUT: reject("Waktu permintaan lokasi habis."); break;
+                        default: reject("Gagal mendeteksi GPS.");
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+    });
 }
 
 function filterNamaSiswaOtomatis(kelasTarget) {
@@ -263,9 +316,9 @@ function resetFormLocked() {
     elNama.innerHTML = `<option value="">-- Jalankan Periksa Token Terlebih Dahulu --</option>`;
     elNama.disabled = true;
     document.getElementById("btnProses").disabled = true;
+    koordinatRuanganGuru = "";
 }
 
-// 3. Proses Memuat Lembar Soal
 async function handleBukaSoal(event) {
     event.preventDefault(); 
     const btn = document.getElementById("btnProses"); 
@@ -277,8 +330,36 @@ async function handleBukaSoal(event) {
     if(!namaSiswa) { alert("Pilih Nama Lengkap Anda!"); return; }
     
     btn.disabled = true; 
-    btn.textContent = "Memuat Lembar Soal..."; 
+    btn.textContent = "Memvalidasi Radius GPS..."; 
     document.getElementById("pesanSistem").style.display = "none";
+    
+    // --- PROSES VALIDASI RADIUS GEOLOCATION ---
+    if (koordinatRuanganGuru && koordinatRuanganGuru.includes(",")) {
+        try {
+            const koordinatSiswa = await dapatkanLokasiSiswa();
+            const partGuru = koordinatRuanganGuru.split(",");
+            const latGuru = parseFloat(partGuru[0].trim());
+            const lonGuru = parseFloat(partGuru[1].trim());
+            
+            const jarakSiswaKeRuangan = hitungJarakMeter(koordinatSiswa.latitude, koordinatSiswa.longitude, latGuru, lonGuru);
+            
+            if (jarakSiswaKeRuangan > RADIUS_MAKSIMAL_METER) {
+                alert(`AKSES DITOLAK!\nAnda berada di luar ruang ujian.\nJarak Anda: ${Math.round(jarakSiswaKeRuangan)} meter dari ruang ujian (Maksimal ${RADIUS_MAKSIMAL_METER} meter).`);
+                btn.disabled = false;
+                btn.textContent = "Mulai Ujian";
+                tampilkanPesanEror(`Akses Ditolak: Anda berada di luar radius lokasi ujian (${Math.round(jarakSiswaKeRuangan)}m).`);
+                return;
+            }
+        } catch (errorGps) {
+            alert(`Akses Ditolak! Gagal memverifikasi lokasi:\n${errorGps}\n\nPastikan GPS HP Anda aktif dan izin browser diizinkan.`);
+            btn.disabled = false;
+            btn.textContent = "Mulai Ujian";
+            tampilkanPesanEror(`Gagal memverifikasi GPS: ${errorGps}`);
+            return;
+        }
+    }
+    
+    btn.textContent = "Memuat Lembar Soal..."; 
     
     try {
         const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=CEK_TOKEN_SISWA&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&namaSiswa=${encodeURIComponent(namaSiswa)}&kelasSiswa=${encodeURIComponent(kelasSiswa)}&_ts=${Date.now()}`;
@@ -296,6 +377,19 @@ async function handleBukaSoal(event) {
                 tampilkanPesanEror("Format Google Doc tidak sesuai standar kaku [Soal] dan [KUNCI]."); 
                 return; 
             }
+            
+            try {
+                await fetch(URL_WEB_APP_SIMPAN_NILAI, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        aksi: 'ABSEN_AWAL',
+                        guru: dataUjianAktif.guru,
+                        siswa: dataUjianAktif.siswa,
+                        kelas: dataUjianAktif.kelas,
+                        jenis: dataUjianAktif.jenis
+                    })
+                });
+            } catch(e) { console.log("Gagal log absen awal, dilanjutkan."); }
             
             document.getElementById("txtJudul").textContent = hasil.jenisAsesmen; 
             document.getElementById("txtSub").textContent = `${hasil.mataPelajaran} | Kelas: ${hasil.kelas}`; 
@@ -344,7 +438,6 @@ function mulaiTimerUjianSiswa(menit) {
     }, 1000);
 }
 
-// 4. Parser Mesin Soal (Sederhana & Cepat)
 function ambilOpsiMurni(sisiTeks, hurufTarget, hurufLain) { 
     let pola = new RegExp("(?:^|\\s|\\n)" + hurufTarget + "\\.\\s*([\\s\\S]*?)(?=(?:^|\\s|\\n)(?:" + hurufLain + ")\\.\\s*|$)", "i"); 
     let cocok = sisiTeks.match(pola); 
@@ -371,7 +464,7 @@ function prosesPecahTeksGoogleDoc(teks) {
             opsiA = ambilOpsiMurni(teksSoalDanOpsi, "A", "B|C|D|E"); 
             opsiB = ambilOpsiMurni(teksSoalDanOpsi, "B", "A|C|D|E"); 
             opsiC = ambilOpsiMurni(teksSoalDanOpsi, "C", "A|B|D|E"); 
-            opsxD = ambilOpsiMurni(teksSoalDanOpsi, "D", "A|B|C|E"); 
+            opsiD = ambilOpsiMurni(teksSoalDanOpsi, "D", "A|B|C|E"); 
             opsiE = ambilOpsiMurni(teksSoalDanOpsi, "E", "A|B|C|D");
             let qParts = teksSoalDanOpsi.split(/(?:^|\s|\n)A\.\s*/i); 
             pertanyaanMurni = qParts[0] ? qParts[0].trim() : teksSoalDanOpsi.trim();
@@ -393,7 +486,6 @@ function prosesPecahTeksGoogleDoc(teks) {
     }
 }
 
-// 5. Render Layar On-Demand (Hemat Suku Cadang RAM HP/Laptop)
 function tampilkanButirSoalKeLayar() {
     let soal = listSoalInteraktif[indexSoalAktif]; 
     document.getElementById("nomorJudul").textContent = `SOAL NO: ${soal.nomor} dari ${listSoalInteraktif.length}`; 
@@ -436,7 +528,6 @@ function pindahSoal(arah) {
     tampilkanButirSoalKeLayar(); 
 }
 
-// 6. SATU-SATUNYA FUNGSI SIMPAN NILAI RESMI (Murni Async Fetch POST - Anti Macet)
 async function evaluasiDanKirimNilaiAkhir(isOtomatisSelesaiWaktu = false) {
     if (sedangMengirimNilai) return; 
     
@@ -468,12 +559,8 @@ async function evaluasiDanKirimNilaiAkhir(isOtomatisSelesaiWaktu = false) {
                 guru: dataUjianAktif.guru || "Umum",
                 siswa: dataUjianAktif.siswa || "Siswa Ujian",
                 kelas: dataUjianAktif.kelas || "Umum",
-                mapel: dataUjianAktif.mapel || "Umum",
                 jenis: dataUjianAktif.jenis || "Ujian",
-                token: dataUjianAktif.token || "",
-                benar: totalBenar,
-                salah: totalSalah,
-                nilai: parseInt(nilaiAkhir, 10)
+                nilai: parseInt(nilaiAkhir, 10) 
             })
         });
 
@@ -489,7 +576,7 @@ async function evaluasiDanKirimNilaiAkhir(isOtomatisSelesaiWaktu = false) {
         }
     } catch (err) {
         console.error("Gagal mengirim data via POST:", err);
-        alert("Koneksi internet lambat/terkendala. Sinyal Anda tidak stabil. Silakan klik tombol 'Selesai & Kirim Ujian' sekali lagi.");
+        alert("Koneksi internet lambat. Silakan klik tombol 'Selesai & Kirim Ujian' sekali lagi.");
         if (btnLanjut) { btnLanjut.disabled = false; btnLanjut.textContent = "Selesai & Kirim Ujian"; }
     } finally {
         sedangMengirimNilai = false;
@@ -497,7 +584,6 @@ async function evaluasiDanKirimNilaiAkhir(isOtomatisSelesaiWaktu = false) {
     }
 }
 
-// 7. Penghenti Sesi & Reset State Aplikasi secara Bersih
 function tutupLembarSoalUjian() { 
     if (intervalTimerUjian) clearInterval(intervalTimerUjian); 
     
@@ -517,29 +603,51 @@ function tutupLembarSoalUjian() {
     sedangMengirimNilai = false;
     memblokirEventBlur = false;
     
-    // Dipanggil bertahap agar tidak tabrakan di memori runtime browser
     setTimeout(muatDataMasterSiswa, 300);
 }
 
-// 8. Mekanisme Anti-Cheat Fleksibel (Aman dari Infinite Alert Loop)
 window.addEventListener('blur', function() {
     if (document.getElementById("quizArea").style.display === "block" && !sedangMengirimNilai && !memblokirEventBlur) {
-        memblokirEventBlur = true; // Kunci total gerbang blur agar tidak memicu alert ganda
+        memblokirEventBlur = true; 
         jumlahPelanggaranSiswa++;
         
-        setTimeout(() => {
+        setTimeout(async () => {
             if (jumlahPelanggaranSiswa >= MAKSIMAL_PELANGGARAN) {
                 if (intervalTimerUjian) clearInterval(intervalTimerUjian);
+                
+                await kirimLogPelanggaranKeServer(jumlahPelanggaranSiswa);
+                
                 alert("PERINGATAN KERAS!\nAnda telah keluar dari halaman ujian sebanyak " + jumlahPelanggaranSiswa + " kali.\nSistem mengunci lembar ujian Anda otomatis!");
                 evaluasiDanKirimNilaiSanksiCurang();
             } else {
                 let sisaKesempatan = MAKSIMAL_PELANGGARAN - jumlahPelanggaranSiswa;
+                
                 alert("DILARANG MENINGGALKAN HALAMAN UJIAN!\nSistem mendeteksi Anda membuka tab/aplikasi lain.\n\nPelanggaran: " + jumlahPelanggaranSiswa + "x\nJika melanggar " + sisaKesempatan + "x lagi, ujian akan dikunci otomatis!");
-                memblokirEventBlur = false; // Hanya dibuka kembali SETELAH alert ditutup siswa secara sadar
+                
+                await kirimLogPelanggaranKeServer(jumlahPelanggaranSiswa);
+                memblokirEventBlur = false; 
             }
         }, 100);
     }
 });
+
+async function kirimLogPelanggaranKeServer(angkaPelanggaran) {
+    try {
+        await fetch(URL_WEB_APP_SIMPAN_NILAI, {
+            method: 'POST',
+            body: JSON.stringify({
+                aksi: 'CATAT_PELANGGARAN',
+                guru: dataUjianAktif.guru,
+                siswa: dataUjianAktif.siswa,
+                kelas: dataUjianAktif.kelas,
+                jenis: dataUjianAktif.jenis,
+                pelanggaranKe: angkaPelanggaran
+            })
+        });
+    } catch(err) {
+        console.error("Gagal mengirim log pelanggaran:", err);
+    }
+}
 
 async function evaluasiDanKirimNilaiSanksiCurang() {
     sedangMengirimNilai = true;
@@ -549,7 +657,7 @@ async function evaluasiDanKirimNilaiSanksiCurang() {
     });
     
     let nilaiAkhir = Math.round((totalBenar / listSoalInteraktif.length) * 100); 
-    let jenisUjianPenanda = "[TERKUNCI/CURANG] " + (dataUjianAktif.jenis || "Ujian");
+    let nilaiPenandaCurang = "[CURANG] " + parseInt(nilaiAkhir, 10);
 
     try {
         await fetch(URL_WEB_APP_SIMPAN_NILAI, {
@@ -559,12 +667,8 @@ async function evaluasiDanKirimNilaiSanksiCurang() {
                 guru: dataUjianAktif.guru || "Umum",
                 siswa: dataUjianAktif.siswa || "Siswa",
                 kelas: dataUjianAktif.kelas || "Umum",
-                mapel: dataUjianAktif.mapel || "Umum",
-                jenis: jenisUjianPenanda,
-                token: dataUjianAktif.token || "",
-                benar: totalBenar,
-                salah: listSoalInteraktif.length - totalBenar,
-                nilai: parseInt(nilaiAkhir, 10)
+                jenis: dataUjianAktif.jenis || "Ujian",
+                nilai: nilaiPenandaCurang 
             })
         });
     } catch (error) {
@@ -575,31 +679,11 @@ async function evaluasiDanKirimNilaiSanksiCurang() {
     }
 }
 
-// 9. Sistem Pengaman Konten Tambahan (Anti-Copy & Inspect)
-document.addEventListener('contextmenu', function(e) { 
-    if (document.getElementById("quizArea").style.display === "block") e.preventDefault(); 
-});
-
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 document.addEventListener('keydown', function(e) {
-    if (document.getElementById("quizArea").style.display === "block") {
-        if (e.ctrlKey && ['c', 'v', 'u', 's', 'p'].includes(e.key.toLowerCase())) { e.preventDefault(); }
-        if (e.key === 'F12') e.preventDefault();
-    }
+    if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 'j')) { e.preventDefault(); }
+    if (e.key === 'F12') { e.preventDefault(); }
 });
-
-document.addEventListener('selectstart', function(e) { 
-    if (document.getElementById("quizArea").style.display === "block") e.preventDefault(); 
-});
-
-function tampilkanPesanEror(pesan) { 
-    const box = document.getElementById("pesanSistem"); 
-    box.className = "gagal"; box.textContent = pesan; box.style.display = "block"; 
-}
-
-function htmlDecode(input) { 
-    const doc = new DOMParser().parseFromString(input, "text/html"); 
-    return doc.documentElement.textContent; 
-}
 </script>
 </body>
 </html>
