@@ -161,8 +161,12 @@ let intervalTimerUjian = null;
 let sedangMengirimNilai = false;
 let memblokirEventBlur = false;
 
-window.onload = function() { muatDataMasterSiswa(); };
-
+// Perbaikan mandiri untuk HP: Menggunakan pendengar event yang jauh lebih peka di browser mobile
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", muatDataMasterSiswa);
+} else {
+    muatDataMasterSiswa();
+}
 async function muatDataMasterSiswa() {
     try {
         let respons = await fetch(URL_WEB_APP_SUMBER + "?aksi=AMBIL_DATA_MASTER&_ts=" + Date.now(), { method: "GET" });
