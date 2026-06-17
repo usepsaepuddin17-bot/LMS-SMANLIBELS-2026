@@ -6,71 +6,115 @@
     <title>Monitoring Pelaksanaan Ujian (Pengawas)</title>
     <link rel="stylesheet" href="../style-shared.css">
     <style>
+        /* =========================================================================
+           🎨 FORCE COLOR THEME ENGINE (MEMAKSA WARNA TETAP GELAP/KEREN DI HP & LAPTOP)
+           ========================================================================= */
+        html, body {
+            background-color: #031c1f !important; 
+            color: #ffffff !important; 
+        }
+
+        .card {
+            background-color: #092c30 !important; 
+            border: 1px solid #144348 !important;
+            color: #ffffff !important;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .form-control, select.form-control, input[type="text"].form-control {
+            background-color: #0c353a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a5157 !important;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .form-control::placeholder {
+            color: #537175 !important;
+        }
+        select.form-control option {
+            background-color: #092c30 !important;
+            color: #ffffff !important;
+        }
+
         /* --- UTILITY & BADGES --- */
         .badge { padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
-        .bg-belum { background-color: #7f8c8d; color: white; }
-        .bg-ujian { background-color: #2980b9; color: white; animation: pulse 1.5s infinite; }
-        .bg-selesai { background-color: #27ae60; color: white; }
-        .bg-curang { background-color: #c0392b; color: white; }
+        .bg-belum { background-color: #7f8c8d !important; color: white !important; }
+        .bg-ujian { background-color: #2980b9 !important; color: white !important; animation: pulse 1.5s infinite; }
+        .bg-selesai { background-color: #27ae60 !important; color: white !important; }
+        .bg-curang { background-color: #c0392b !important; color: white !important; }
         @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
         
-        /* --- LAYOUT BOXES --- */
-        .gps-box { background: #07383d; border: 1px dashed #bfa15f; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; line-height: 1.4; }
-        .flex-filter { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-        .flex-filter > div { flex: 1; min-width: 200px; }
-        .indikator-sync { font-size: 12px; color: #a3b8cc; display: flex; align-items: center; gap: 5px; margin-top: 4px; }
-        .info-ujian-box { background: #11292d; border-left: 4px solid #bfa15f; padding: 10px 15px; border-radius: 4px; margin-bottom: 20px; display: none; font-size: 14px; }
+        .gps-box { background: #07383d !important; border: 1px dashed #bfa15f !important; color: #ffffff !important; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; line-height: 1.4; }
+        .indikator-sync { font-size: 12px; color: #a3b8cc !important; display: flex; align-items: center; gap: 5px; margin-top: 4px; white-space: normal; }
+        .info-ujian-box { background: #11292d !important; border-left: 4px solid #bfa15f !important; padding: 10px 15px; border-radius: 4px; margin-bottom: 20px; display: none; font-size: 14px; color: #ffffff !important; }
 
         /* =========================================================================
-           📱 RESPONSIVE TABLE ENGINE (MENGUBAH TABEL MENJADI KARTU DI LAYAR HP)
+           🔧 LAYOUT KONFIGURASI (OTOMATIS MENYESUAIKAN LAPTOP & HP)
            ========================================================================= */
+        /* Default di Laptop: Berjejer rapi 4 kolom, tidak tumpang tindih */
+        .flex-filter { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px; 
+            margin-bottom: 20px; 
+        }
+        .flex-filter > div { 
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .flex-filter label {
+            white-space: normal;
+        }
+
+        /* Khusus di HP (Layar dibawah 768px): Berubah jadi bisa di-scroll samping */
         @media screen and (max-width: 768px) {
-            #tabelUjian thead { display: none; }
-            #tabelUjian, #tabelUjian tbody, #tabelUjian tr, #tabelUjian td { 
-                display: block; 
-                width: 100%; 
-                box-sizing: border-box;
+            .flex-filter { 
+                display: flex !important; 
+                overflow-x: auto !important; 
+                white-space: nowrap !important; 
+                padding-bottom: 10px;
+                -webkit-overflow-scrolling: touch; 
             }
-            #tabelUjian tr {
-                background: #11292d;
-                border: 1px solid #1a5157;
-                border-radius: 8px;
-                margin-bottom: 12px;
-                padding: 12px 15px;
-                position: relative;
+            .flex-filter > div { 
+                flex: 0 0 240px !important; 
             }
-            #tabelUjian td {
-                text-align: left !important;
-                padding: 6px 0 !important;
-                border: none !important;
-                font-size: 13px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 1px dashed rgba(191, 161, 95, 0.1) !important;
-            }
-            #tabelUjian td:last-child { border-bottom: none !important; }
-            #tabelUjian td::before {
-                content: attr(data-label);
-                font-weight: bold;
-                color: #bfa15f;
-                font-size: 12px;
-                text-transform: uppercase;
-                margin-right: 15px;
-            }
-            #tabelUjian td.cell-nama {
-                font-size: 15px !important;
-                border-bottom: 2px solid #1a5157 !important;
-                padding-bottom: 8px !important;
-                margin-bottom: 4px;
-            }
-            #tabelUjian td.cell-nama::before { font-size: 14px; }
-            #tabelUjian td[colspan="7"] {
-                text-align: center !important;
-                display: block;
-                padding: 30px 10px !important;
-            }
-            #tabelUjian td[colspan="7"]::before { display: none; }
+        }
+
+        /* --- PEMBUNGKUS TABEL BIAR BISA SCROLL SAMPING --- */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+            border-radius: 4px;
+        }
+
+        #tabelUjian {
+            width: 100%;
+            min-width: 800px; 
+            border-collapse: collapse;
+            background-color: transparent !important;
+        }
+        #tabelUjian th {
+            background-color: #052225 !important;
+            color: #bfa15f !important;
+            padding: 12px 10px;
+            border-bottom: 2px solid #1a5157 !important;
+        }
+        #tabelUjian td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #144348 !important;
+            color: #ffffff !important;
+        }
+        #tabelUjian td.cell-nama {
+            text-align: left !important;
+            font-weight: bold;
+            color: #ffffff !important;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -79,14 +123,14 @@
 
     <div class="header-app">
         <div>
-            <h1>Panel Pengawas Ruang - Monitoring Real-Time</h1>
-            <p style="color:#a3b8cc;">Pelaksanaan Evaluasi & Asesmen Sumatif Terkendali</p>
+            <h1 style="color: #ffffff !important;">Panel Pengawas Ruang - Monitoring Real-Time</h1>
+            <p style="color:#a3b8cc !important;">Pelaksanaan Evaluasi & Asesmen Sumatif Terkendali</p>
         </div>
         <button class="btn-danger" style="width:auto; min-width:120px;" onclick="window.location.href='dashboard.html'">← Kembali</button>
     </div>
 
     <div class="gps-box">
-        📍 <strong>Validasi Radius Lokasi Pengawas:</strong> <br>
+        📍 <strong style="color: #bfa15f !important;">Validasi Radius Lokasi Pengawas:</strong> <br>
         <span id="gpsStatus">Mengambil data koordinat pengawas...</span>
         <br><span style="font-size:11px; color:#657e82; display:block; margin-top:4px;">*Siswa wajib berada dalam radius maksimal 50 meter dari titik pengawas.</span>
     </div>
@@ -97,8 +141,8 @@
         Kelas Target: <span id="infoKelas" style="color:#fff; font-weight:bold;">-</span>
     </div>
 
-    <div class="card" style="margin-bottom:25px;">
-        <h3>Konfigurasi Pengawasan</h3>
+    <div class="card">
+        <h3 style="color: #bfa15f !important; margin-top: 0;">Konfigurasi Pengawasan</h3>
         <div class="flex-filter">
             <div>
                 <label style="font-size:13px; color:#a3b8cc;">Nama Pengawas Ruang</label>
@@ -124,34 +168,32 @@
 
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-            <h3>Status Pengerjaan Siswa Real-Time</h3>
+            <h3 style="color: #bfa15f !important; margin-top: 0;">Status Pengerjaan Siswa Real-Time</h3>
             <button class="btn-gold" style="width:auto; padding:8px 16px;" onclick="eksporKeExcel()">📊 Unduh Excel</button>
         </div>
         
-        <table class="table-data" id="tabelUjian">
-            <thead>
-                <tr>
-                    <th>Waktu Masuk</th>
-                    <th>NISN</th>
-                    <th>Nama Siswa</th>
-                    <th>Kelas</th>
-                    <th>Jawaban Berjalan</th>
-                    <th>Jumlah Keluar/Curang</th> 
-                    <th>Status Sistem</th>
-                </tr>
-            </thead>
-            <tbody id="bodyTabelSiswa">
-                <tr>
-                    <td colspan="7" style="text-align:center; color:#a3b8cc; padding:30px;">Silakan tentukan Pilihan Guru di atas untuk memuat daftar siswa.</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table-data" id="tabelUjian">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">NISN</th>
+                        <th style="width: 35%; text-align: left;">Nama Siswa</th>
+                        <th style="width: 10%;">Kelas</th>
+                        <th style="width: 15%;">Nilai Ujian</th>
+                        <th style="width: 12%;">Keluar Aplikasi</th> 
+                        <th style="width: 13%;">Status Sistem</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyTabelSiswa">
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:#a3b8cc; padding:30px;">Silakan tentukan Pilihan Guru di atas untuk memuat daftar siswa.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // =========================================================================
-        // ⚙️ KONFIGURASI ADAPTIF MULTI-SERVER 
-        // =========================================================================
         const API_MASTER_URL = "https://script.google.com/macros/s/AKfycbznemtsu_toH9Nq3CwKrDGVfrZg4QvBxciimScY6a6qWhQWOfYJyfBL6M5ne0NDRAcB/exec"; 
         const API_TOKEN_URL  = "https://script.google.com/macros/s/AKfycbzPk-RMaIoIPF5rFYMBK2ks4ojVBzjOtyJG_hIXv5fPGlhVEtskLK5KdycMon31H_YOBw/exec";
         const API_LOG_BARU_URL = "https://script.google.com/macros/s/AKfycbzRv0ZnoZ3bQZVIHOxKBtqZEIGXheGbavsjEo_zZyttI8J7yGPQB0uhJPA4xJXhCuhf/exec";
@@ -159,9 +201,8 @@
         let autoRefreshInterval = null;
         let koordinatPengawas = { lat: null, lon: null };
         let databaseSiswaPusat = []; 
-        let jenisSumatifAktif = "Sumatif 1"; // Variabel penentu kolom log nilai secara dinamis
+        let jenisSumatifAktif = "Sumatif 1";
 
-        // 1. TIMING & AUTH VALIDASI
         if (localStorage.getItem("guruIn") !== "true") {
             alert("Akses Terlarang!");
             window.location.href = "../login-guru.html";
@@ -172,7 +213,6 @@
             document.getElementById('jamServer').innerText = sekarang.toLocaleTimeString('id-ID') + " WIT";
         }, 1000);
 
-        // 2. GPS TRACKER
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (posisi) => {
@@ -186,7 +226,6 @@
             );
         }
 
-        // 3. LOAD GURU UTAMA DARI SHEET 'Database Guru' & REKAM DATA RAW SISWA
         window.onload = async function() {
             try {
                 let respon = await fetch(`${API_MASTER_URL}?aksi=AMBIL_DATA_MASTER&_=${new Date().getTime()}`);
@@ -216,11 +255,10 @@
             }
         }
 
-        // 4. RENDERING RESPONSIF TABEL SISWA
         function renderDaftarSiswaAwal(arraySiswa, kelas) {
             const tbody = document.getElementById("bodyTabelSiswa");
             if (!arraySiswa || arraySiswa.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a3b8cc; padding:20px;">Tidak ada siswa terdaftar di kelas ${kelas}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#a3b8cc; padding:20px;">Tidak ada siswa terdaftar di kelas ${kelas}.</td></tr>`;
                 return;
             }
 
@@ -229,20 +267,18 @@
                 let nomorIdentitas = siswa.nisn || siswa.id || "1210" + Math.floor(100 + Math.random() * 900);
                 htmlContent += `
                     <tr id="row-${nomorIdentitas}" data-kelas="${kelas}">
-                        <td class="cell-waktu" data-label="Waktu Masuk" style="color:#7f8c8d; text-align:center;">--:--:--</td>
-                        <td class="cell-nisn" data-label="NISN" style="text-align:center;">${nomorIdentitas}</td>
-                        <td class="cell-nama" data-label="Siswa" style="font-weight:bold; color:#ffffff;">${siswa.nama}</td>
-                        <td class="cell-kelas" data-label="Kelas" style="text-align:center;">${kelas}</td>
-                        <td class="cell-jawaban" data-label="Jawaban Berjalan" style="color:#7f8c8d; text-align:center; font-family:monospace;">-</td>
-                        <td class="cell-curang" data-label="Keluar Aplikasi" style="text-align:center; color:#e74c3c; font-weight:bold;">0x</td> 
-                        <td class="cell-status" data-label="Status Sistem" style="text-align:center;"><span class="badge bg-belum">Belum Masuk</span></td>
+                        <td class="cell-nisn" style="text-align:center;">${nomorIdentitas}</td>
+                        <td class="cell-nama" style="font-weight:bold; color:#ffffff !important; text-align:left;">${siswa.nama}</td>
+                        <td class="cell-kelas" style="text-align:center;">${kelas}</td>
+                        <td class="cell-jawaban" style="color:#7f8c8d; text-align:center; font-family:monospace; font-weight:bold;">-</td>
+                        <td class="cell-curang" style="text-align:center; color:#7f8c8d; font-weight:bold;">0x</td> 
+                        <td class="cell-status" style="text-align:center;"><span class="badge bg-belum">Belum Masuk</span></td>
                     </tr>
                 `;
             });
             tbody.innerHTML = htmlContent;
         }
 
-        // 5. ENGINE VERIFIKASI TOKEN UTAMA
         async function mintaTokenPopUp() {
             const namaGuru = document.getElementById("pilihGuru").value;
             if (!namaGuru) return;
@@ -272,13 +308,12 @@
                     document.getElementById("statusSync").innerText = "❌ Token Tidak Sesuai / Tidak Ditemukan";
                     document.getElementById("infoUjianBox").style.display = "none";
                     document.getElementById("tokenAktif").value = "";
-                    document.getElementById("bodyTabelSiswa").innerHTML = `<tr><td colspan="7" style="text-align:center; color:#e74c3c; padding:20px;">${hasil.pesan || hasil.error}</td></tr>`;
+                    document.getElementById("bodyTabelSiswa").innerHTML = `<tr><td colspan="6" style="text-align:center; color:#e74c3c; padding:20px;">${hasil.pesan || hasil.error}</td></tr>`;
                     document.getElementById("pilihGuru").value = "";
                     if(autoRefreshInterval) clearInterval(autoRefreshInterval);
                     return;
                 }
 
-                // Deteksi Dinamis Kolom Sumatif dari properti jenisAsesmen (Contoh: "Asesmen Sumatif 1" -> "Sumatif 1")
                 let jenisAsesmenRaw = hasil.jenisAsesmen || "Asesmen Sumatif 1";
                 let nomorSumatif = jenisAsesmenRaw.replace(/^\D+/g, ''); 
                 jenisSumatifAktif = "Sumatif " + (nomorSumatif || "1");
@@ -294,8 +329,7 @@
                     siswaTersaring = hasil.siswa || [];
                 }
 
-                // --- PROSES KUNCI GPS PENGAWAS ---
-                document.getElementById("statusSync").innerText = `⏳ Mengunci lokasi GPS Pengawas ke Kolom H...`;
+                document.getElementById("statusSync").innerText = `⏳ Mengunci lokasi GPS Pengawas...`;
                 try {
                     const posisi = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
@@ -317,7 +351,6 @@
 
                 renderDaftarSiswaAwal(siswaTersaring, hasil.kelas);
 
-                // Jalankan interval pembaruan real-time
                 jalankanSinkronisasiLogRealtime();
                 if(autoRefreshInterval) clearInterval(autoRefreshInterval); 
                 autoRefreshInterval = setInterval(jalankanSinkronisasiLogRealtime, 7000);
@@ -328,9 +361,6 @@
             }
         }
 
-        // =========================================================================
-        // 🔄 ENGINE SINKRONISASI LOG REALTIME TUNGGAL
-        // =========================================================================
         async function jalankanSinkronisasiLogRealtime() {
             const namaGuru = document.getElementById("pilihGuru").value;
             const token = document.getElementById("tokenAktif").value;
@@ -348,7 +378,6 @@
                         const semuaBaris = document.querySelectorAll("#bodyTabelSiswa tr");
                         let barisSiswa = null;
                         
-                        // Pencocokan baris tabel berdasarkan nama siswa
                         for (let tr of semuaBaris) {
                             const cellNama = tr.querySelector(".cell-nama");
                             if (cellNama && cellNama.innerText.trim().toLowerCase() === logSiswa.namaSiswa.trim().toLowerCase()) {
@@ -359,30 +388,24 @@
                         
                         if (barisSiswa) {
                             const cellStatus = barisSiswa.querySelector(".cell-status");
-                            const cellWaktu = barisSiswa.querySelector(".cell-waktu");
                             const cellJawaban = barisSiswa.querySelector(".cell-jawaban");
                             
-                            // Membaca isi kolom sumatif secara dinamis (misal: logSiswa["Sumatif 1"])
                             let statusRaw = logSiswa[jenisSumatifAktif] ? logSiswa[jenisSumatifAktif].toString().trim() : "";
                             
-                            // 1. UPDATE KONDISI STATUS SISTEM & WAKTU MASUK
                             if (statusRaw === "" || statusRaw.toLowerCase() === "belum masuk") {
                                 cellStatus.innerHTML = `<span class="badge bg-belum">Belum Masuk</span>`;
-                                cellWaktu.innerText = "--:--:--";
                                 cellJawaban.innerText = "-";
+                                cellJawaban.style.color = "#7f8c8d";
                             } else if (statusRaw.toLowerCase().includes("sedang ujian")) {
                                 cellStatus.innerHTML = `<span class="badge bg-ujian">Sedang Ujian</span>`;
-                                cellJawaban.innerText = "Aktif";
-                                
-                                if (cellWaktu.innerText === "--:--:--" || cellWaktu.innerText === "") {
-                                    cellWaktu.innerText = new Date().toLocaleTimeString('id-ID');
-                                }
+                                cellJawaban.innerText = "Mengerjakan...";
+                                cellJawaban.style.color = "#2980b9";
                             } else {
                                 cellStatus.innerHTML = `<span class="badge bg-selesai">Selesai</span>`;
-                                cellJawaban.innerText = "Skor: " + statusRaw;
+                                cellJawaban.innerText = statusRaw;
+                                cellJawaban.style.color = "#27ae60";
                             }
                             
-                            // 2. UPDATE KONDISI LOG KECURANGAN
                             const cellCurang = barisSiswa.querySelector(".cell-curang");
                             let logPelanggaran = logSiswa.logPelanggaran ? logSiswa.logPelanggaran.toString().trim() : "";
                             
@@ -417,7 +440,6 @@
             }
         }
 
-        // 6. EXCEL EXPORTER
         function eksporKeExcel() {
             const namaPengawas = document.getElementById('namaPengawas').value || 'Tanpa Nama';
             const token = document.getElementById("tokenAktif").value.trim() || 'TanpaToken';
