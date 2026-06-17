@@ -145,58 +145,53 @@
     }
 
     function muatRiwayatMasingMasingGuru() {
-        const namaGuru = document.getElementById("selectGuru").value;
-        const tbody = document.getElementById("tabelRiwayatBody");
-        
-        if (!namaGuru) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Silakan pilih nama guru untuk melihat riwayat...</td></tr>`;
-            return;
-        }
-        
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
-        
-        // Buat nama callback unik
-        const cbRiwayat = "jsonp_cb_riwayat_" + Math.round(100000 * Math.random());
-        const scriptEl = document.createElement("script");
-        
-        window[cbRiwayat] = function(respons) {
-            // SOLUSI UTAMA HP: Hapus script secara langsung menggunakan referensi objek element (bukan cari ID)
-            if (scriptEl && scriptEl.parentNode) {
-                scriptEl.parentNode.removeChild(scriptEl);
-            }
-            try { delete window[cbRiwayat]; } catch(e) {}
-            
-            if (respons && respons.status === "sukses" && respons.data && respons.data.length > 0) {
-                cacheRiwayatSistem = respons.data;
-                let bufferRows = [];
-                respons.data.forEach(item => {
-                    bufferRows.push(`
-                        <tr>
-                            <td><span class="badge-token">${item.token}</span></td>
-                            <td><strong>${item.jenis}</strong><br><span style="color:var(--text-muted); font-size:0.75rem;">${item.mapel} (${item.kelas})</span></td>
-                            <td>${item.waktu} mnt</td>
-                            <td><button class="btn-edit" onclick="picuAksiEditSistem('${item.token}')">Edit</button></td>
-                        </tr>
-                    `);
-                });
-                tbody.innerHTML = bufferRows.join("");
-            } else {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Guru ini belum menerbitkan soal apa pun.</td></tr>`;
-            }
-        };
-
-        // Cache Buster (_ts) untuk memaksa HP melewati proxy operator seluler
-        let urlAmbil = URL_WEB_APP_TUJUAN + `?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${encodeURIComponent(namaGuru)}&callback=${cbRiwayat}&_ts=${Date.now()}`;
-        scriptEl.src = urlAmbil;
-        
-        scriptEl.onerror = function() {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--danger);">Gagal tersambung ke server Google.</td></tr>`;
-            if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
-            try { delete window[cbRiwayat]; } catch(e) {}
-        };
-        
-        document.body.appendChild(scriptEl);
+    const namaGuru = document.getElementById("selectGuru").value;
+    const tbody = document.getElementById("tabelRiwayatBody");
+    
+    if (!namaGuru) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Silakan pilih nama guru untuk melihat riwayat...</td></tr>`;
+        return;
     }
+    
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
+    
+    // Menggunakan Fetch dengan metode POST (bebas dari batasan URL & script injection)
+    fetch(URL_WEB_APP_TUJUAN, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8" // Menghindari preflight OPTIONS yang berat di HP
+        },
+        body: JSON.stringify({
+            aksi: "AMBIL_RIWAYAT_GURU",
+            namaGuru: namaGuru
+        })
+    })
+    .then(respons => respons.json())
+    .then(dataHasil => {
+        if (dataHasil.status === "sukses" && dataHasil.data && dataHasil.data.length > 0) {
+            cacheRiwayatSistem = dataHasil.data;
+            let bufferRows = [];
+            dataHasil.data.forEach(item => {
+                bufferRows.push(`
+                    <tr>
+                        <td><span class="badge-token">${item.token}</span></td>
+                        <td><strong>${item.jenis}</strong><br><span style="color:var(--text-muted); font-size:0.75rem;">${item.mapel} (${item.kelas})</span></td>
+                        <td>${item.waktu} mnt</td>
+                        <td><button class="btn-edit" onclick="picuAksiEditSistem('${item.token}')">Edit</button></td>
+                    </tr>
+                `);
+            });
+            tbody.innerHTML = bufferRows.join("");
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Guru ini belum menerbitkan soal apa pun.</td></tr>`;
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--danger);">Gagal memuat data lewat jalur POST. Periksa jaringan internet HP.</td></tr>`;
+    });
+}
 
     function picuAksiEditSistem(tokenKunci) {
         const dataTarget = cacheRiwayatSistem.find(x => x.token === tokenKunci);
@@ -230,76 +225,73 @@
     }
 
     function handleSimpanSoal(event) {
-        event.preventDefault();
-        const tombolAksi = document.getElementById("btnAksiSimpan");
-        tombolAksi.disabled = true; 
-        tombolAksi.textContent = "Proses Menyimpan...";
+    event.preventDefault();
+    const tombolAksi = document.getElementById("btnAksiSimpan");
+    tombolAksi.disabled = true; 
+    tombolAksi.textContent = "Proses Menyimpan...";
 
-        const namaGuru = document.getElementById("selectGuru").value;
-        const mataPelajaran = document.getElementById("selectMapel").value;
-        const kelasTarget = document.getElementById("selectKelas").value;
-        const jenisAsesmen = document.getElementById("selectAsesmen").value;
-        const linkGoogleDoc = document.getElementById("inputDoc").value;
-        const waktuPengerjaan = document.getElementById("inputWaktu").value;
-        const tokenDinamis = document.getElementById("inputToken").value.toUpperCase();
-        const modeEdit = document.getElementById("modeEdit").value;
-        const waktuMulaiUjian = document.getElementById("inputWaktuMulai").value;
+    const namaGuru = document.getElementById("selectGuru").value;
+    const mataPelajaran = document.getElementById("selectMapel").value;
+    const kelasTarget = document.getElementById("selectKelas").value;
+    const jenisAsesmen = document.getElementById("selectAsesmen").value;
+    const linkGoogleDoc = document.getElementById("inputDoc").value;
+    const waktuPengerjaan = document.getElementById("inputWaktu").value;
+    const tokenDinamis = document.getElementById("inputToken").value.toUpperCase();
+    const modeEdit = document.getElementById("modeEdit").value;
+    const waktuMulaiUjian = document.getElementById("inputWaktuMulai").value;
 
-        const cbNamaGuru = "jsonp_cb_guru_" + Math.round(100000 * Math.random());
-        const scriptGuru = document.createElement("script");
+    // Membungkus semua input ke dalam objek JSON rapi
+    const payloadData = {
+        aksi: "SIMPAN_SOAL_GURU",
+        namaGuru: namaGuru,
+        mataPelajaran: mataPelajaran,
+        kelasTarget: kelasTarget,
+        jenisAsesmen: jenisAsesmen,
+        linkGoogleDoc: linkGoogleDoc,
+        waktuPengerjaan: waktuPengerjaan,
+        tokenDinamis: tokenDinamis,
+        modeEdit: modeEdit,
+        waktuMulaiUjian: waktuMulaiUjian
+    };
 
-        window[cbNamaGuru] = function(hasil) {
-            if (scriptGuru && scriptGuru.parentNode) {
-                scriptGuru.parentNode.removeChild(scriptGuru);
-            }
-            try { delete window[cbNamaGuru]; } catch(e) {}
-
-            tombolAksi.disabled = false;
-            
-            const inputToken = document.getElementById("inputToken");
-            inputToken.readOnly = false;
-            inputToken.style.backgroundColor = "var(--bg-main)";
-            inputToken.style.border = "1.5px solid #1a5157";
-            document.getElementById("modeEdit").value = "tidak";
-            tombolAksi.textContent = "Simpan ke Bank Soal";
-            tombolAksi.style.backgroundColor = "var(--accent)";
-
-            if (hasil && hasil.status === "sukses") {
-                tampilkanNotifikasi(modeEdit === "ya" ? "Data bank soal berhasil diperbarui!" : "Data sukses terkirim dan disimpan di database!", "sukses");
-                document.getElementById("formAsesmenGuru").reset();
-                setWaktuDefaultSekarang();
-                muatRiwayatMasingMasingGuru();
-            } else {
-                tampilkanNotifikasi("Gagal memproses data: " + (hasil ? hasil.pesan : "Unknown"), "gagal");
-            }
-        };
-
-        let sendUrl = URL_WEB_APP_TUJUAN + 
-            `?aksi=SIMPAN_SOAL_GURU` +
-            `&namaGuru=${encodeURIComponent(namaGuru)}` +
-            `&mataPelajaran=${encodeURIComponent(mataPelajaran)}` +
-            `&kelasTarget=${encodeURIComponent(kelasTarget)}` +
-            `&jenisAsesmen=${encodeURIComponent(jenisAsesmen)}` +
-            `&linkGoogleDoc=${encodeURIComponent(linkGoogleDoc)}` +
-            `&waktuPengerjaan=${encodeURIComponent(waktuPengerjaan)}` +
-            `&waktuMulaiUjian=${encodeURIComponent(waktuMulaiUjian)}` +
-            `&tokenDinamis=${encodeURIComponent(tokenDinamis)}` +
-            `&modeEdit=${modeEdit}` +
-            `&callback=${cbNamaGuru}&_ts=${Date.now()}`;
-
-        scriptGuru.src = sendUrl;
+    // Eksekusi pengiriman menggunakan Fetch POST murni
+    fetch(URL_WEB_APP_TUJUAN, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8" // Menghindari preflight OPTIONS di HP
+        },
+        body: JSON.stringify(payloadData)
+    })
+    .then(respons => respons.json())
+    .then(hasil => {
+        tombolAksi.disabled = false;
         
-        scriptGuru.onerror = function() {
-            tombolAksi.disabled = false;
-            tombolAksi.textContent = "Simpan ke Bank Soal";
-            tampilkanNotifikasi("Koneksi gagal. Gagal menyimpan data.", "gagal");
-            if (scriptGuru && scriptGuru.parentNode) scriptGuru.parentNode.removeChild(scriptGuru);
-            try { delete window[cbNamaGuru]; } catch(e) {}
-        };
+        const inputToken = document.getElementById("inputToken");
+        inputToken.readOnly = false;
+        inputToken.style.backgroundColor = "var(--bg-main)";
+        inputToken.style.border = "1.5px solid #1a5157";
         
-        document.body.appendChild(scriptGuru);
-    }
+        document.getElementById("modeEdit").value = "tidak";
+        tombolAksi.textContent = "Simpan ke Bank Soal";
+        tombolAksi.style.backgroundColor = "var(--accent)";
 
+        if (hasil && hasil.status === "sukses") {
+            tampilkanNotifikasi(modeEdit === "ya" ? "Data bank soal berhasil diperbarui!" : "Data sukses terkirim dan disimpan di database!", "sukses");
+            document.getElementById("formAsesmenGuru").reset();
+            setWaktuDefaultSekarang();
+            muatRiwayatMasingMasingGuru(); // Refresh otomatis tabel riwayat setelah data masuk
+        } else {
+            tampilkanNotifikasi("Gagal memproses data: " + (hasil ? hasil.pesan : "Unknown"), "gagal");
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        tombolAksi.disabled = false;
+        tombolAksi.textContent = "Simpan ke Bank Soal";
+        tampilkanNotifikasi("Koneksi POST gagal. Gagal menyimpan data ke Google Sheets.", "gagal");
+    });
+}
     function tampilkanNotifikasi(teksPesan, tipeNotif) { 
         const areaNotifikasi = document.getElementById("pesanSistem"); 
         areaNotifikasi.className = ``; 
