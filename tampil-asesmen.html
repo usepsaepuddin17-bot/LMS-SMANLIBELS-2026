@@ -188,7 +188,12 @@ function verifikasiTokenAwal() {
 
     const cbName = "jsonp_token_awal_" + Math.round(100000 * Math.random());
     window[cbName] = function(hasil) {
-        document.getElementById(cbName).remove();
+        // PERBAIKAN: Beri pengaman agar HP tidak eror jika script belum siap di-remove
+        const scriptElement = document.getElementById(cbName);
+        if (scriptElement) {
+            scriptElement.remove();
+        }
+        
         delete window[cbName];
         btnCek.disabled = false;
         btnCek.textContent = "Periksa Token";
@@ -260,9 +265,13 @@ function handleBukaSoal(event) {
     
     const namaCallbackUnik = "jsonp_callback_" + Math.round(100000 * Math.random());
     window[namaCallbackUnik] = function(hasil) {
-        document.getElementById(namaCallbackUnik).remove();
-        delete window[namaCallbackUnik];
+        // PERBAIKAN: Pengaman remove untuk tombol Mulai Ujian di HP
+        const scriptBypassElement = document.getElementById(namaCallbackUnik);
+        if (scriptBypassElement) {
+            scriptBypassElement.remove();
+        }
         
+        delete window[namaCallbackUnik];        
         if (hasil.status === "sukses") {
             dataUjianAktif = { guru: guru, siswa: namaSiswa, kelas: kelasSiswa, token: token, jenis: hasil.jenisAsesmen, mapel: hasil.mataPelajaran };
             prosesPecahTeksGoogleDoc(hasil.teksSoal);
