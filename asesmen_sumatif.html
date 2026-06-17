@@ -142,46 +142,47 @@
     }
 
     function muatRiwayatMasingMasingGuru() {
-        const namaGuru = document.getElementById("selectGuru").value;
-        const tbody = document.getElementById("tabelRiwayatBody");
-        
-        if (!namaGuru) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Silakan pilih nama guru untuk melihat riwayat...</td></tr>`;
-            return;
-        }
-        
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
-        
-        const cbRiwayat = "jsonp_cb_riwayat_" + Math.round(100000 * Math.random());
-        window[cbRiwayat] = function(respons) {
-            document.getElementById(cbRiwayat).remove();
-            delete window[cbRiwayat];
-            
-            tbody.innerHTML = "";
-            if (respons.status === "sukses" && respons.data.length > 0) {
-                cacheRiwayatSistem = respons.data;
-                respons.data.forEach(item => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><span class="badge-token">${item.token}</span></td>
-                            <td><strong>${item.jenis}</strong><br><span style="color:var(--text-muted); font-size:0.75rem;">${item.mapel} (${item.kelas})</span></td>
-                            <td>${item.waktu} mnt</td>
-                            <td><button class="btn-edit" onclick="picuAksiEditSistem('${item.token}')">Edit</button></td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Guru ini belum menerbitkan soal apa pun.</td></tr>`;
-            }
-        };
-
-        let urlAmbil = URL_WEB_APP_TUJUAN + `?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${encodeURIComponent(namaGuru)}&callback=${cbRiwayat}`;
-        const scriptEl = document.createElement("script");
-        scriptEl.src = urlAmbil;
-        scriptEl.id = cbRiwayat;
-        document.body.appendChild(scriptEl);
+    const namaGuru = document.getElementById("selectGuru").value;
+    const tbody = document.getElementById("tabelRiwayatBody");
+    
+    if (!namaGuru) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Silakan pilih nama guru untuk melihat riwayat...</td></tr>`;
+        return;
     }
+    
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
+    
+    const cbRiwayat = "jsonp_cb_riwayat_" + Math.round(100000 * Math.random());
+    const scriptEl = document.createElement("script"); // Pindahkan deklarasi ke atas agar terbaca di dalam callback
+    
+    window[cbRiwayat] = function(respons) {
+        // PERBAIKAN UTAMA: Langsung hapus objek variabelnya, tidak cari pakai getElementById lagi
+        if (scriptEl) scriptEl.remove();
+        delete window[cbRiwayat];
+        
+        tbody.innerHTML = "";
+        if (respons.status === "sukses" && respons.data && respons.data.length > 0) {
+            cacheRiwayatSistem = respons.data;
+            respons.data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge-token">${item.token}</span></td>
+                        <td><strong>${item.jenis}</strong><br><span style="color:var(--text-muted); font-size:0.75rem;">${item.mapel} (${item.kelas})</span></td>
+                        <td>${item.waktu} mnt</td>
+                        <td><button class="btn-edit" onclick="picuAksiEditSistem('${item.token}')">Edit</button></td>
+                    </tr>
+                `;
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Guru ini belum menerbitkan soal apa pun.</td></tr>`;
+        }
+    };
 
+    let urlAmbil = URL_WEB_APP_TUJUAN + `?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${encodeURIComponent(namaGuru)}&callback=${cbRiwayat}`;
+    scriptEl.src = urlAmbil;
+    scriptEl.id = cbRiwayat;
+    document.body.appendChild(scriptEl);
+}
     function picuAksiEditSistem(tokenKunci) {
         const dataTarget = cacheRiwayatSistem.find(x => x.token === tokenKunci);
         if (!dataTarget) return;
