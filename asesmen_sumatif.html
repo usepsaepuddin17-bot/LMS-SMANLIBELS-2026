@@ -155,37 +155,44 @@
     
     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
     
-    // Menggunakan Fetch dengan metode POST (bebas dari batasan URL & script injection)
-    // GANTI DENGAN KODE INI:
-const namaGuruEncoded = encodeURIComponent(namaGuru);
-fetch(`${URL_WEB_APP_TUJUAN}?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${namaGuruEncoded}`, {
-    method: "GET",
-    mode: "cors"
-})
-
-    .then(respons => respons.json())
+    const namaGuruEncoded = encodeURIComponent(namaGuru);
+    
+    // Menggunakan metode GET yang sinkron dengan penanganan parameter di Google Apps Script
+    fetch(`${URL_WEB_APP_TUJUAN}?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${namaGuruEncoded}`, {
+        method: "POST",
+        mode: "cors"
+    })
+    .then(respons => {
+        if (!respons.ok) {
+            throw new Error("Respons jaringan tidak menanggapi dengan baik.");
+        }
+        return respons.json();
+    })
     .then(dataHasil => {
-        if (dataHasil.status === "sukses" && dataHasil.data && dataHasil.data.length > 0) {
+        if (dataHasil && dataHasil.status === "sukses" && dataHasil.data && dataHasil.data.length > 0) {
             cacheRiwayatSistem = dataHasil.data;
             let bufferRows = [];
             dataHasil.data.forEach(item => {
                 bufferRows.push(`
                     <tr>
-                        <td><span class="badge-token">${item.token}</span></td>
-                        <td><strong>${item.jenis}</strong><br><span style="color:var(--text-muted); font-size:0.75rem;">${item.mapel} (${item.kelas})</span></td>
-                        <td>${item.waktu} mnt</td>
-                        <td><button class="btn-edit" onclick="picuAksiEditSistem('${item.token}')">Edit</button></td>
+                        <td><span class="badge-token">${item.token || "-"}</span></td>
+                        <td>
+                            <strong>${item.jenis || "Sumatif"}</strong><br>
+                            <span style="color:var(--text-muted); font-size:0.75rem;">${item.mapel || "-"} (${item.kelas || "-"})</span>
+                        </td>
+                        <td>${item.waktu || "0"} mnt</td>
+                        <td><button class="btn-edit" onclick="picuAksiEditSistem('${item.token || ""}')">Edit</button></td>
                     </tr>
                 `);
             });
             tbody.innerHTML = bufferRows.join("");
         } else {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Guru ini belum menerbitkan soal apa pun.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Guru ini belum menerbitkan soal apa pun atau data kosong.</td></tr>`;
         }
     })
     .catch(error => {
-        console.error(error);
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--danger);">Gagal memuat data lewat jalur POST. Periksa jaringan internet HP.</td></tr>`;
+        console.error("Detail Error Riwayat:", error);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--danger);">Gagal memuat data lewat jalur GET. Periksa script dan jaringan internet.</td></tr>`;
     });
 }
 
