@@ -156,17 +156,12 @@
     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
     
     // Menggunakan Fetch dengan metode POST (bebas dari batasan URL & script injection)
-    fetch(URL_WEB_APP_TUJUAN, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-            "Content-Type": "text/plain;charset=utf-8" // Menghindari preflight OPTIONS yang berat di HP
-        },
-        body: JSON.stringify({
-            aksi: "AMBIL_RIWAYAT_GURU",
-            namaGuru: namaGuru
-        })
+    const namaGuruEncoded = encodeURIComponent(namaGuru);
+    fetch(`${URL_WEB_APP_TUJUAN}?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${namaGuruEncoded}`, {
+    method: "GET",
+    mode: "cors"
     })
+
     .then(respons => respons.json())
     .then(dataHasil => {
         if (dataHasil.status === "sukses" && dataHasil.data && dataHasil.data.length > 0) {
