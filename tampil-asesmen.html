@@ -157,6 +157,7 @@ let lembarJawabanSiswa = {};
 let dataUjianAktif = {};
 let intervalTimerUjian = null; 
 let sedangMengirimNilai = false;
+let memblokirEventBlur = false;
 
 window.onload = function() { muatDataMasterSiswa(); };
 
@@ -437,31 +438,65 @@ function tampilkanPesanEror(pesan) { const box = document.getElementById("pesanS
 
 function htmlDecode(input) { const doc = new DOMParser().parseFromString(input, "text/html"); return doc.documentElement.textContent; }
 
-function evaluasiDanKirimNilaiAkhirSelesaiWaktu() {
-    if (sedangMengirimNilai) return; sedangMengirimNilai = true;
-    if (intervalTimerUjian) clearInterval(intervalTimerUjian); 
-    let totalBenar = 0; listSoalInteraktif.forEach(soal => { if ((lembarJawabanSiswa[soal.nomor] || "") === soal.kunci) totalBenar++; });
+function evaluasiDanKirimNilaiAkhir() {
+    if (sedangMengirimNilai) return; 
+    
+    // TAMBAHKAN BARIS INI SEBELUM CONFIRM
+    memblokirEventBlur = true; 
+    
+    if (!confirm("Apakah Anda yakin ingin menyelesaikan ujian dan mengirimkan jawaban?")) {
+        // TAMBAHKAN BARIS INI JIKA SISWA BATAL
+        memblokirEventBlur = false; 
+        return;
+    }
+    
+    sedangMengirimNilai = true;
+    let totalBenar = 0; let totalSalah = 0;
+    listSoalInteraktif.forEach(soal => { if ((lembarJawabanSiswa[soal.nomor] || "") === soal.kunci) { totalBenar++; } else { totalSalah++; } });
     let nilaiAkhir = Math.round((totalBenar / listSoalInteraktif.length) * 100); 
-    const cbNilaiName = "jsonp_cb_nilai_auto_" + Math.round(100000 * Math.random());
-    window[cbNilaiName] = function() { document.getElementById(cbNilaiName).remove(); delete window[cbNilaiName]; sedangMengirimNilai = false; tutupLembarSoal(); };
-    let sendUrl = URL_WEB_APP_SIMPAN_NILAI + `?aksi=SIMPAN_NILAI_SISWA&guru=${encodeURIComponent(dataUjianAktif.guru)}&siswa=${encodeURIComponent(dataUjianAktif.siswa)}&kelas=${encodeURIComponent(dataUjianAktif.kelas)}&mapel=${encodeURIComponent(dataUjianAktif.mapel)}&jenis=${encodeURIComponent(dataUjianAktif.jenis)}&token=${encodeURIComponent(dataUjianAktif.token)}&benar=${totalBenar}&nilai=${nilaiAkhir}&callback=${cbNilaiName}`;
+    const btnLanjut = document.getElementById("btnLanjut"); btnLanjut.disabled = true; btnLanjut.textContent = "Mengirim Nilai...";
+    
+    const cbNilaiName = "jsonp_cb_nilai_" + Math.round(100000 * Math.random());
+    window[cbNilaiName] = function(hasil) {
+        document.getElementById(cbNilaiName).remove(); delete window[cbNilaiName];
+        sedangMengirimNilai = false;
+        
+        // TAMBAHKAN BARIS INI SEBELUM ALERT SUKSES
+        memblokirEventBlur = true; 
+        if (hasil.status === "sukses") {
+            alert(`Ujian Selesai!\nJawaban Berhasil Dikirim.\n\nBenar: ${totalBenar}\nSalah: ${totalSalah}\nNilai Anda: ${nilaiAkhir}`);
+            memblokirEventBlur = false; // BUKA KEMBALI
+            tutupLembarSoal();
+        } else { 
+            alert("Gagal menyimpan rekap nilai: " + hasil.pesan); 
+            memblokirEventBlur = false; // BUKA KEMBALI
+            btnLanjut.disabled = false; 
+            btnLanjut.textContent = "Selesai & Kirim Ujian"; 
+        }
+    };
+    let sendUrl = URL_WEB_APP_SIMPAN_NILAI + `?aksi=SIMPAN_NILAI_SISWA&guru=${encodeURIComponent(dataUjianAktif.guru)}&siswa=${encodeURIComponent(dataUjianAktif.siswa)}&kelas=${encodeURIComponent(dataUjianAktif.kelas)}&mapel=${encodeURIComponent(dataUjianAktif.mapel)}&jenis=${encodeURIComponent(dataUjianAktif.jenis)}&token=${encodeURIComponent(dataUjianAktif.token)}&benar=${totalBenar}&salah=${totalSalah}&nilai=${nilaiAkhir}&callback=${cbNilaiName}`;
     const scriptNilai = document.createElement("script"); scriptNilai.src = sendUrl; scriptNilai.id = cbNilaiName; document.body.appendChild(scriptNilai);
 }
-
 // Anti-Cheat Engine Activation
 let jumlahPelanggaranSiswa = 0;
 const MAKSIMAL_PELANGGARAN = 3;
 
+// GANTI BLOK KODE INI
 window.addEventListener('blur', function() {
-    if (document.getElementById("quizArea").style.display === "block" && !sedangMengirimNilai) {
+    // Perubahan: Menambahkan kondisi "&& !memblokirEventBlur"
+    if (document.getElementById("quizArea").style.display === "block" && !sedangMengirimNilai && !memblokirEventBlur) {
         jumlahPelanggaranSiswa++;
+        memblokirEventBlur = true; // Kunci aktif agar alert di HP tidak memicu loop/stagnan
+        
         if (jumlahPelanggaranSiswa >= MAKSIMAL_PELANGGARAN) {
             if (intervalTimerUjian) clearInterval(intervalTimerUjian);
             alert("PERINGATAN KERAS!\nAnda telah keluar dari halaman ujian sebanyak " + jumlahPelanggaranSiswa + " kali.\nSistem otomatis mengunci ujian Anda dan mengirimkan nilai apa adanya!");
+            memblokirEventBlur = false;
             evaluasiDanKirimNilaiSanksiCurang();
         } else {
             let sisaKesempatan = MAKSIMAL_PELANGGARAN - jumlahPelanggaranSiswa;
             alert("DILARANG MENINGGALKAN HALAMAN UJIAN!\nSistem mendeteksi Anda membuka tab/aplikasi lain.\n\nPelanggaran: " + jumlahPelanggaranSiswa + "x\nJika melanggar " + sisaKesempatan + "x lagi, ujian Anda akan KELUAR OTOMATIS!");
+            memblokirEventBlur = false; // Buka kunci setelah alert ditutup oleh siswa
         }
     }
 });
