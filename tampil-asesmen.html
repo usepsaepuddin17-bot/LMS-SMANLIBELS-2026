@@ -179,7 +179,7 @@ async function muatDataMasterSiswa() {
     } catch (error) { console.error(error); tampilkanPesanEror("Gagal terhubung ke gerbang server data master sekolah."); }
 }
 
-function verifikasiTokenAwal() {
+async function verifikasiTokenAwal() {
     const guru = document.getElementById("selectGuru").value;
     // Pengaman string input untuk HP agar tidak menghasilkan nilai undefined/error
     const tokenInput = document.getElementById("inputToken");
@@ -191,19 +191,20 @@ function verifikasiTokenAwal() {
     if(!guru) { alert("Silakan pilih Guru Pengampu terlebih dahulu!"); return; }
     if(!token) { alert("Silakan masukkan token ujian!"); return; }
     
+    // Set status loading tombol
     btnCek.disabled = true;
     btnCek.textContent = "Mengecek...";
     msg.style.display = "none";
 
-    const cbName = "jsonp_token_awal_" + Math.round(100000 * Math.random());
-    window[cbName] = function(hasil) {
-        // PERBAIKAN UTAMA: Diberi pengaman ekstra agar browser HP tidak crash/stagnan saat menghapus skrip
-        const scriptElement = document.getElementById(cbName);
-        if (scriptElement) {
-            scriptElement.remove();
-        }
+    try {
+        // PERBAIKAN UTAMA: Menggunakan fetch murni & hapus parameter callback agar didukung penuh CORS HP
+        const targetUrl = URL_WEB_APP_TUJUAN + 
+            `?aksi=PRA_CEK_TOKEN&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&_ts=${Date.now()}`;
         
-        delete window[cbName];
+        const respons = await fetch(targetUrl, { method: "GET" });
+        const hasil = await respons.json();
+        
+        // Kembalikan status tombol setelah data berhasil didapat
         btnCek.disabled = false;
         btnCek.textContent = "Periksa Token";
 
@@ -222,14 +223,15 @@ function verifikasiTokenAwal() {
             tampilkanPesanEror(hasil.pesan);
             resetFormLocked();
         }
-    };
-
-    const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=PRA_CEK_TOKEN&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&callback=${cbName}`;
-    const script = document.createElement("script");
-    script.src = targetUrl;
-    script.id = cbName;
-    document.body.appendChild(script);
+    } catch (error) {
+        console.error("Eror Cek Token:", error);
+        // Kembalikan tombol ke kondisi semula jika terjadi kegagalan jaringan/server
+        btnCek.disabled = false;
+        btnCek.textContent = "Periksa Token";
+        tampilkanPesanEror("Gagal terhubung ke gerbang server. Gunakan browser Chrome/Safari bawaan HP jika Anda membuka dari WA.");
+    }
 }
+
 
 function filterNamaSiswaOtomatis(kelasTarget) {
     const elNamaSiswa = document.getElementById("selectNamaSiswa");
