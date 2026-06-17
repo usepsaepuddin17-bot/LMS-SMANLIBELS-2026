@@ -25,17 +25,12 @@
            📱 RESPONSIVE TABLE ENGINE (MENGUBAH TABEL MENJADI KARTU DI LAYAR HP)
            ========================================================================= */
         @media screen and (max-width: 768px) {
-            /* Sembunyikan header tabel bawaan */
             #tabelUjian thead { display: none; }
-            
-            /* Ubah struktur tabel & baris menjadi block/card */
             #tabelUjian, #tabelUjian tbody, #tabelUjian tr, #tabelUjian td { 
                 display: block; 
                 width: 100%; 
                 box-sizing: border-box;
             }
-            
-            /* Desain Kartu Tiap Siswa */
             #tabelUjian tr {
                 background: #11292d;
                 border: 1px solid #1a5157;
@@ -44,8 +39,6 @@
                 padding: 12px 15px;
                 position: relative;
             }
-
-            /* Desain Kolom di Dalam Kartu */
             #tabelUjian td {
                 text-align: left !important;
                 padding: 6px 0 !important;
@@ -56,10 +49,7 @@
                 align-items: center;
                 border-bottom: 1px dashed rgba(191, 161, 95, 0.1) !important;
             }
-            
             #tabelUjian td:last-child { border-bottom: none !important; }
-
-            /* Menambahkan Label Otomatis di Sisi Kiri Lewat Atribut CSS */
             #tabelUjian td::before {
                 content: attr(data-label);
                 font-weight: bold;
@@ -68,8 +58,6 @@
                 text-transform: uppercase;
                 margin-right: 15px;
             }
-
-            /* Kustomisasi khusus untuk data Nama & Status agar terlihat menonjol */
             #tabelUjian td.cell-nama {
                 font-size: 15px !important;
                 border-bottom: 2px solid #1a5157 !important;
@@ -77,8 +65,6 @@
                 margin-bottom: 4px;
             }
             #tabelUjian td.cell-nama::before { font-size: 14px; }
-            
-            /* Jika pesan kosong / error muncul */
             #tabelUjian td[colspan="7"] {
                 text-align: center !important;
                 display: block;
@@ -116,7 +102,7 @@
         <div class="flex-filter">
             <div>
                 <label style="font-size:13px; color:#a3b8cc;">Nama Pengawas Ruang</label>
-                <input type="text" id="namaPengawas" class="form-control" value="Drs. Iwan Setiawan" placeholder="Ketik nama pengawas">
+                <input type="text" id="namaPengawas" class="form-control" value="Usep Saepudin MPd" placeholder="Ketik nama pengawas">
             </div>
             <div>
                 <label style="font-size:13px; color:#a3b8cc;">Pilih Guru Mata Pelajaran</label>
@@ -164,13 +150,16 @@
 
     <script>
         // =========================================================================
-        // ⚙️ KONFIGURASI ADAPTIF MULTI-SERVER
+        // ⚙️ KONFIGURASI ADAPTIF MULTI-SERVER 
         // =========================================================================
         const API_MASTER_URL = "https://script.google.com/macros/s/AKfycbznemtsu_toH9Nq3CwKrDGVfrZg4QvBxciimScY6a6qWhQWOfYJyfBL6M5ne0NDRAcB/exec"; 
         const API_TOKEN_URL  = "https://script.google.com/macros/s/AKfycbzPk-RMaIoIPF5rFYMBK2ks4ojVBzjOtyJG_hIXv5fPGlhVEtskLK5KdycMon31H_YOBw/exec";
+        const API_LOG_BARU_URL = "https://script.google.com/macros/s/AKfycbzRv0ZnoZ3bQZVIHOxKBtqZEIGXheGbavsjEo_zZyttI8J7yGPQB0uhJPA4xJXhCuhf/exec";
         
         let autoRefreshInterval = null;
         let koordinatPengawas = { lat: null, lon: null };
+        let databaseSiswaPusat = []; 
+        let jenisSumatifAktif = "Sumatif 1"; // Variabel penentu kolom log nilai secara dinamis
 
         // 1. TIMING & AUTH VALIDASI
         if (localStorage.getItem("guruIn") !== "true") {
@@ -197,13 +186,17 @@
             );
         }
 
-        // 3. LOAD DAFTAR GURU UTAMA
+        // 3. LOAD GURU UTAMA DARI SHEET 'Database Guru' & REKAM DATA RAW SISWA
         window.onload = async function() {
             try {
                 let respon = await fetch(`${API_MASTER_URL}?aksi=AMBIL_DATA_MASTER&_=${new Date().getTime()}`);
                 let hasil = await respon.json();
                 
                 if(hasil.status === "sukses" || hasil.daftarGuru) {
+                    if (hasil.rawSiswa) {
+                        databaseSiswaPusat = hasil.rawSiswa;
+                    }
+
                     let select = document.getElementById("pilihGuru");
                     select.innerHTML = '<option value="">-- Pilih Guru Mata Pelajaran --</option>';
                     
@@ -215,29 +208,29 @@
                     });
                     document.getElementById("statusSync").innerText = "🔄 Siap. Silakan pilih guru.";
                 } else {
-                    document.getElementById("statusSync").innerText = "❌ Format database master tidak sesuai";
+                    document.getElementById("statusSync").innerText = "❌ Format database master guru tidak sesuai";
                 }
             } catch(e) {
-                console.error("Error Load Master:", e);
-                document.getElementById("statusSync").innerText = "🔺 Gagal memuat database guru.";
+                console.error("Error Load Master Guru:", e);
+                document.getElementById("statusSync").innerText = "🔺 Gagal memuat database guru pusat.";
             }
         }
 
-        // 4. RENDERING RESPONSIF (DENGAN MANIPULASI ATRIBUT data-label UNTUK HP)
+        // 4. RENDERING RESPONSIF TABEL SISWA
         function renderDaftarSiswaAwal(arraySiswa, kelas) {
             const tbody = document.getElementById("bodyTabelSiswa");
-            if (arraySiswa.length === 0) {
+            if (!arraySiswa || arraySiswa.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a3b8cc; padding:20px;">Tidak ada siswa terdaftar di kelas ${kelas}.</td></tr>`;
                 return;
             }
 
             let htmlContent = "";
             arraySiswa.forEach(siswa => {
-                // Di setiap tag <td> disematkan data-label agar CSS bisa mengambil teks judul kolom saat di HP
+                let nomorIdentitas = siswa.nisn || siswa.id || "1210" + Math.floor(100 + Math.random() * 900);
                 htmlContent += `
-                    <tr id="row-${siswa.nisn}" data-kelas="${kelas}">
+                    <tr id="row-${nomorIdentitas}" data-kelas="${kelas}">
                         <td class="cell-waktu" data-label="Waktu Masuk" style="color:#7f8c8d; text-align:center;">--:--:--</td>
-                        <td class="cell-nisn" data-label="NISN" style="text-align:center;">${siswa.nisn}</td>
+                        <td class="cell-nisn" data-label="NISN" style="text-align:center;">${nomorIdentitas}</td>
                         <td class="cell-nama" data-label="Siswa" style="font-weight:bold; color:#ffffff;">${siswa.nama}</td>
                         <td class="cell-kelas" data-label="Kelas" style="text-align:center;">${kelas}</td>
                         <td class="cell-jawaban" data-label="Jawaban Berjalan" style="color:#7f8c8d; text-align:center; font-family:monospace;">-</td>
@@ -267,7 +260,7 @@
             }
 
             token = token.trim().toUpperCase();
-            document.getElementById("statusSync").innerText = `⏳ Memverifikasi token '${token}'...`;
+            document.getElementById("statusSync").innerText = `⏳ Memeriksa kesesuaian token '${token}'...`;
 
             try {
                 let urlVerifikasi = `${API_TOKEN_URL}?aksi=VERIFIKASI_TOKEN_DAN_SISWA&namaGuru=${encodeURIComponent(namaGuru)}&token=${encodeURIComponent(token)}`;
@@ -276,7 +269,7 @@
 
                 if (hasil.status === "gagal" || hasil.error) {
                     alert(hasil.pesan || hasil.error);
-                    document.getElementById("statusSync").innerText = "❌ Verifikasi Gagal";
+                    document.getElementById("statusSync").innerText = "❌ Token Tidak Sesuai / Tidak Ditemukan";
                     document.getElementById("infoUjianBox").style.display = "none";
                     document.getElementById("tokenAktif").value = "";
                     document.getElementById("bodyTabelSiswa").innerHTML = `<tr><td colspan="7" style="text-align:center; color:#e74c3c; padding:20px;">${hasil.pesan || hasil.error}</td></tr>`;
@@ -285,24 +278,142 @@
                     return;
                 }
 
+                // Deteksi Dinamis Kolom Sumatif dari properti jenisAsesmen (Contoh: "Asesmen Sumatif 1" -> "Sumatif 1")
+                let jenisAsesmenRaw = hasil.jenisAsesmen || "Asesmen Sumatif 1";
+                let nomorSumatif = jenisAsesmenRaw.replace(/^\D+/g, ''); 
+                jenisSumatifAktif = "Sumatif " + (nomorSumatif || "1");
+
+                document.getElementById("statusSync").innerText = `⏳ Menyaring daftar siswa untuk kelas ${hasil.kelas}...`;
+                
+                let siswaTersaring = [];
+                if (databaseSiswaPusat && databaseSiswaPusat.length > 0) {
+                    siswaTersaring = databaseSiswaPusat.filter(s => s.kelas && s.kelas.trim().toLowerCase() === hasil.kelas.trim().toLowerCase());
+                }
+
+                if (siswaTersaring.length === 0) {
+                    siswaTersaring = hasil.siswa || [];
+                }
+
+                // --- PROSES KUNCI GPS PENGAWAS ---
+                document.getElementById("statusSync").innerText = `⏳ Mengunci lokasi GPS Pengawas ke Kolom H...`;
+                try {
+                    const posisi = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
+                    });
+                    let latP = posisi.coords.latitude;
+                    let lonP = posisi.coords.longitude;
+                    let stringKoordinat = `${latP},${lonP}`;
+                    let urlKirimGPS = `${API_TOKEN_URL}?aksi=SIMPAN_KOORDINAT_PENGAWAS&namaGuru=${encodeURIComponent(namaGuru)}&token=${encodeURIComponent(token)}&koordinat=${stringKoordinat}`;
+                    await fetch(urlKirimGPS);
+                } catch (errGPS) {
+                    console.warn("Gagal mendapatkan GPS Pengawas:", errGPS);
+                }
+
                 document.getElementById("tokenAktif").value = token;
-                document.getElementById("infoMapel").innerText = hasil.mapel;
+                document.getElementById("infoMapel").innerText = `[${jenisAsesmenRaw.toUpperCase()}] ${hasil.mapel}`;
                 document.getElementById("infoKelas").innerText = hasil.kelas;
                 document.getElementById("infoUjianBox").style.display = "block";
-                document.getElementById("statusSync").innerText = `🟢 Terhubung.`;
+                document.getElementById("statusSync").innerText = `🟢 Terhubung & GPS Terkunci.`;
 
-                renderDaftarSiswaAwal(hasil.siswa, hasil.kelas);
+                renderDaftarSiswaAwal(siswaTersaring, hasil.kelas);
 
-                // Jalankan sinkronisasi realtime jika fungsi jalankanSinkronisasiLogRealtime() tersedia
-                if (typeof jalankanSinkronisasiLogRealtime === "function") {
-                    jalankanSinkronisasiLogRealtime();
-                    if(autoRefreshInterval) clearInterval(autoRefreshInterval); 
-                    autoRefreshInterval = setInterval(jalankanSinkronisasiLogRealtime, 7000);
-                }
+                // Jalankan interval pembaruan real-time
+                jalankanSinkronisasiLogRealtime();
+                if(autoRefreshInterval) clearInterval(autoRefreshInterval); 
+                autoRefreshInterval = setInterval(jalankanSinkronisasiLogRealtime, 7000);
 
             } catch (e) {
                 console.error(e);
-                document.getElementById("statusSync").innerText = "🔺 Gangguan koneksi ke server";
+                document.getElementById("statusSync").innerText = "🔺 Gangguan koneksi saat verifikasi";
+            }
+        }
+
+        // =========================================================================
+        // 🔄 ENGINE SINKRONISASI LOG REALTIME TUNGGAL
+        // =========================================================================
+        async function jalankanSinkronisasiLogRealtime() {
+            const namaGuru = document.getElementById("pilihGuru").value;
+            const token = document.getElementById("tokenAktif").value;
+            
+            if (!namaGuru || !token) return;
+            
+            try {
+                let urlLog = `${API_LOG_BARU_URL}?aksi=AMBIL_LOG_UJIAN_REALTIME&namaGuru=${encodeURIComponent(namaGuru)}&token=${encodeURIComponent(token)}&_ts=${Date.now()}`;
+                let respon = await fetch(urlLog);
+                let hasil = await respon.json();
+                
+                if (hasil && hasil.status === "sukses" && hasil.data) {
+                    
+                    hasil.data.forEach(logSiswa => {
+                        const semuaBaris = document.querySelectorAll("#bodyTabelSiswa tr");
+                        let barisSiswa = null;
+                        
+                        // Pencocokan baris tabel berdasarkan nama siswa
+                        for (let tr of semuaBaris) {
+                            const cellNama = tr.querySelector(".cell-nama");
+                            if (cellNama && cellNama.innerText.trim().toLowerCase() === logSiswa.namaSiswa.trim().toLowerCase()) {
+                                barisSiswa = tr;
+                                break;
+                            }
+                        }
+                        
+                        if (barisSiswa) {
+                            const cellStatus = barisSiswa.querySelector(".cell-status");
+                            const cellWaktu = barisSiswa.querySelector(".cell-waktu");
+                            const cellJawaban = barisSiswa.querySelector(".cell-jawaban");
+                            
+                            // Membaca isi kolom sumatif secara dinamis (misal: logSiswa["Sumatif 1"])
+                            let statusRaw = logSiswa[jenisSumatifAktif] ? logSiswa[jenisSumatifAktif].toString().trim() : "";
+                            
+                            // 1. UPDATE KONDISI STATUS SISTEM & WAKTU MASUK
+                            if (statusRaw === "" || statusRaw.toLowerCase() === "belum masuk") {
+                                cellStatus.innerHTML = `<span class="badge bg-belum">Belum Masuk</span>`;
+                                cellWaktu.innerText = "--:--:--";
+                                cellJawaban.innerText = "-";
+                            } else if (statusRaw.toLowerCase().includes("sedang ujian")) {
+                                cellStatus.innerHTML = `<span class="badge bg-ujian">Sedang Ujian</span>`;
+                                cellJawaban.innerText = "Aktif";
+                                
+                                if (cellWaktu.innerText === "--:--:--" || cellWaktu.innerText === "") {
+                                    cellWaktu.innerText = new Date().toLocaleTimeString('id-ID');
+                                }
+                            } else {
+                                cellStatus.innerHTML = `<span class="badge bg-selesai">Selesai</span>`;
+                                cellJawaban.innerText = "Skor: " + statusRaw;
+                            }
+                            
+                            // 2. UPDATE KONDISI LOG KECURANGAN
+                            const cellCurang = barisSiswa.querySelector(".cell-curang");
+                            let logPelanggaran = logSiswa.logPelanggaran ? logSiswa.logPelanggaran.toString().trim() : "";
+                            
+                            if (logPelanggaran === "" || logPelanggaran === "-") {
+                                cellCurang.innerText = "0x";
+                                cellCurang.style.color = "#7f8c8d";
+                            } else {
+                                let jumlahKeluar = (logPelanggaran.match(/Keluar aplikasi/gi) || []).length;
+                                if (jumlahKeluar > 0) {
+                                    cellCurang.innerText = jumlahKeluar + "x";
+                                    cellCurang.style.color = "#e74c3c"; 
+                                    
+                                    if (jumlahKeluar >= 3 && statusRaw.toLowerCase().includes("sedang ujian")) {
+                                        cellStatus.innerHTML = `<span class="badge bg-curang">⚠️ Terbuka HP</span>`;
+                                    }
+                                } else {
+                                    cellCurang.innerText = "0x";
+                                    cellCurang.style.color = "#7f8c8d";
+                                }
+                            }
+                        }
+                    });
+                    
+                    const waktuSekarang = new Date().toLocaleTimeString('id-ID');
+                    document.getElementById("statusSync").innerText = `🟢 Terkoneksi Log Pusat (${jenisSumatifAktif}). Terakhir sinkronisasi: ${waktuSekarang} WIT`;
+                } else {
+                    document.getElementById("statusSync").innerText = "⚠️ Gagal memperbarui log, periksa respon server Web App.";
+                }
+            } catch (e) {
+                console.error("Error Sync Log Baru:", e);
+                document.getElementById("statusSync").innerText = "🔺 Hubungan ke server log terputus.";
             }
         }
 
