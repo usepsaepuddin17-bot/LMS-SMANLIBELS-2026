@@ -260,7 +260,7 @@ function resetFormLocked() {
     document.getElementById("btnProses").disabled = true;
 }
 
-function handleBukaSoal(event) {
+async function handleBukaSoal(event) {
     event.preventDefault(); 
     const btn = document.getElementById("btnProses"); 
     const namaSiswa = document.getElementById("selectNamaSiswa").value; 
@@ -270,29 +270,46 @@ function handleBukaSoal(event) {
     
     if(!namaSiswa) { alert("Pilih Nama Lengkap Anda!"); return; }
     
+    // Set status tombol menjadi loading
     btn.disabled = true; 
     btn.textContent = "Memuat Lembar Soal..."; 
     document.getElementById("pesanSistem").style.display = "none";
     
-    const namaCallbackUnik = "jsonp_callback_" + Math.round(100000 * Math.random());
-    window[namaCallbackUnik] = function(hasil) {
-        // PERBAIKAN: Pengaman remove untuk tombol Mulai Ujian di HP
-        const scriptBypassElement = document.getElementById(namaCallbackUnik);
-        if (scriptBypassElement) {
-            scriptBypassElement.remove();
-        }
+    try {
+        // PERBAIKAN UTAMA: Menggunakan fetch murni & hapus parameter callback agar tembus blokir HP
+        const targetUrl = URL_WEB_APP_TUJUAN + 
+            `?aksi=CEK_TOKEN_SISWA` +
+            `&namaGuru=${encodeURIComponent(guru)}` +
+            `&token=${encodeURIComponent(token)}` +
+            `&namaSiswa=${encodeURIComponent(namaSiswa)}` +
+            `&kelasSiswa=${encodeURIComponent(kelasSiswa)}` +
+            `&_ts=${Date.now()}`;
         
-        delete window[namaCallbackUnik];        
+        const respons = await fetch(targetUrl, { method: "GET" });
+        const hasil = await respons.json();
+        
+        // Kembalikan tombol ke kondisi semula setelah data berhasil didapat
+        btn.disabled = false; 
+        btn.textContent = "Mulai Ujian";
+        
         if (hasil.status === "sukses") {
-            dataUjianAktif = { guru: guru, siswa: namaSiswa, kelas: kelasSiswa, token: token, jenis: hasil.jenisAsesmen, mapel: hasil.mataPelajaran };
+            dataUjianAktif = { 
+                guru: guru, 
+                siswa: namaSiswa, 
+                kelas: kelasSiswa, 
+                token: token, 
+                jenis: hasil.jenisAsesmen, 
+                mapel: hasil.mataPelajaran 
+            };
+            
             prosesPecahTeksGoogleDoc(hasil.teksSoal);
             
             if (listSoalInteraktif.length === 0) { 
                 tampilkanPesanEror("Format Google Doc tidak sesuai standar kaku [Soal] dan [KUNCI] A."); 
-                btn.disabled = false; btn.textContent = "Mulai Ujian"; 
                 return; 
             }
             
+            // Tampilkan area ujian ke layar HP siswa
             document.getElementById("txtJudul").textContent = hasil.jenisAsesmen; 
             document.getElementById("txtSub").textContent = `${hasil.mataPelajaran} | Kelas: ${hasil.kelas}`; 
             document.getElementById("txtSiswa").textContent = `Peserta: ${namaSiswa} (${kelasSiswa})`;
@@ -301,21 +318,22 @@ function handleBukaSoal(event) {
             document.getElementById("metaHeader").style.display = "flex"; 
             document.getElementById("quizArea").style.display = "block";
             
-            indexSoalAktif = 0; sedangMengirimNilai = false;
+            indexSoalAktif = 0; 
+            sedangMengirimNilai = false;
+            
             let durasiMenit = hasil.waktuUjian ? parseInt(hasil.waktuUjian) : 60;
             mulaiTimerUjianSiswa(durasiMenit); 
             tampilkanButirSoalKeLayar();
         } else { 
             tampilkanPesanEror(hasil.pesan); 
         }
-        btn.disabled = false; btn.textContent = "Mulai Ujian";
-    };
-
-    const targetUrl = URL_WEB_APP_TUJUAN + `?aksi=CEK_TOKEN_SISWA&namaGuru=${encodeURIComponent(guru)}&token=${encodeURIComponent(token)}&namaSiswa=${encodeURIComponent(namaSiswa)}&kelasSiswa=${encodeURIComponent(kelasSiswa)}&callback=${namaCallbackUnik}`;
-    const scriptBypass = document.createElement("script");
-    scriptBypass.src = targetUrl;
-    scriptBypass.id = namaCallbackUnik;
-    document.body.appendChild(scriptBypass);
+    } catch (error) {
+        console.error("Eror Memuat Soal:", error);
+        // Kembalikan tombol ke kondisi semula jika terjadi kegagalan jaringan/server
+        btn.disabled = false; 
+        btn.textContent = "Mulai Ujian";
+        tampilkanPesanEror("Gagal mengambil lembar soal. Pastikan koneksi internet stabil dan silakan coba lagi.");
+    }
 }
 
 function mulaiTimerUjianSiswa(menit) {
