@@ -187,17 +187,8 @@ function verifikasiTokenAwal() {
 
     const cbName = "jsonp_token_awal_" + Math.round(100000 * Math.random());
     window[cbName] = function(hasil) {
-        // PERBAIKAN HP: Dibungkus try-catch agar jika browser HP gagal menghapus element script, proses di bawahnya TIDAK IKUT MANDEK
-        try {
-            const elemenScript Lama = document.getElementById(cbName);
-            if (elemenScriptLama) {
-                elemenScriptLama.parentNode.removeChild(elemenScriptLama);
-            }
-            delete window[cbName];
-        } catch(e) { 
-            console.error("Gagal membersihkan script di HP, lanjut proses data:", e); 
-        }
-
+        document.getElementById(cbName).remove();
+        delete window[cbName];
         btnCek.disabled = false;
         btnCek.textContent = "Periksa Token";
 
@@ -222,15 +213,6 @@ function verifikasiTokenAwal() {
     const script = document.createElement("script");
     script.src = targetUrl;
     script.id = cbName;
-    
-    // PERBAIKAN HP: Jika browser HP memblokir jaringan script luar secara sepihak, tombol otomatis dikembalikan (tidak macet di "Mengecek...")
-    script.onerror = function() {
-        alert("Koneksi ke server terhambat. Silakan coba klik tombol kembali.");
-        btnCek.disabled = false;
-        btnCek.textContent = "Periksa Token";
-        try { delete window[cbName]; } catch(e){}
-    };
-    
     document.body.appendChild(script);
 }
 
