@@ -144,7 +144,6 @@
         dropDownElement.innerHTML = htmlBuffer;
     }
 
-    // Menggunakan pembersihan tangguh aman memori RAM HP
     function muatRiwayatMasingMasingGuru() {
         const namaGuru = document.getElementById("selectGuru").value;
         const tbody = document.getElementById("tabelRiwayatBody");
@@ -156,15 +155,17 @@
         
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
         
+        // Buat nama callback unik
         const cbRiwayat = "jsonp_cb_riwayat_" + Math.round(100000 * Math.random());
+        const scriptEl = document.createElement("script");
         
         window[cbRiwayat] = function(respons) {
-            // Bersihkan sisa script di DOM dengan aman tanpa trigger error null di HP
-            const sEl = document.getElementById(cbRiwayat);
-            if (sEl) sEl.remove();
+            // SOLUSI UTAMA HP: Hapus script secara langsung menggunakan referensi objek element (bukan cari ID)
+            if (scriptEl && scriptEl.parentNode) {
+                scriptEl.parentNode.removeChild(scriptEl);
+            }
             try { delete window[cbRiwayat]; } catch(e) {}
             
-            tbody.innerHTML = "";
             if (respons && respons.status === "sukses" && respons.data && respons.data.length > 0) {
                 cacheRiwayatSistem = respons.data;
                 let bufferRows = [];
@@ -184,15 +185,14 @@
             }
         };
 
+        // Cache Buster (_ts) untuk memaksa HP melewati proxy operator seluler
         let urlAmbil = URL_WEB_APP_TUJUAN + `?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${encodeURIComponent(namaGuru)}&callback=${cbRiwayat}&_ts=${Date.now()}`;
-        const scriptEl = document.createElement("script");
         scriptEl.src = urlAmbil;
-        scriptEl.id = cbRiwayat;
         
-        // Proteksi eror muat script di HP
         scriptEl.onerror = function() {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--danger);">Gagal tersambung ke server Google.</td></tr>`;
-            if (scriptEl) scriptEl.remove();
+            if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+            try { delete window[cbRiwayat]; } catch(e) {}
         };
         
         document.body.appendChild(scriptEl);
@@ -246,10 +246,12 @@
         const waktuMulaiUjian = document.getElementById("inputWaktuMulai").value;
 
         const cbNamaGuru = "jsonp_cb_guru_" + Math.round(100000 * Math.random());
+        const scriptGuru = document.createElement("script");
 
         window[cbNamaGuru] = function(hasil) {
-            const sEl = document.getElementById(cbNamaGuru);
-            if (sEl) sEl.remove();
+            if (scriptGuru && scriptGuru.parentNode) {
+                scriptGuru.parentNode.removeChild(scriptGuru);
+            }
             try { delete window[cbNamaGuru]; } catch(e) {}
 
             tombolAksi.disabled = false;
@@ -275,7 +277,7 @@
         let sendUrl = URL_WEB_APP_TUJUAN + 
             `?aksi=SIMPAN_SOAL_GURU` +
             `&namaGuru=${encodeURIComponent(namaGuru)}` +
-                `&mataPelajaran=${encodeURIComponent(mataPelajaran)}` +
+            `&mataPelajaran=${encodeURIComponent(mataPelajaran)}` +
             `&kelasTarget=${encodeURIComponent(kelasTarget)}` +
             `&jenisAsesmen=${encodeURIComponent(jenisAsesmen)}` +
             `&linkGoogleDoc=${encodeURIComponent(linkGoogleDoc)}` +
@@ -283,17 +285,16 @@
             `&waktuMulaiUjian=${encodeURIComponent(waktuMulaiUjian)}` +
             `&tokenDinamis=${encodeURIComponent(tokenDinamis)}` +
             `&modeEdit=${modeEdit}` +
-            `&callback=${cbNamaGuru}`;
+            `&callback=${cbNamaGuru}&_ts=${Date.now()}`;
 
-        const scriptGuru = document.createElement("script");
         scriptGuru.src = sendUrl;
-        scriptGuru.id = cbNamaGuru;
         
         scriptGuru.onerror = function() {
             tombolAksi.disabled = false;
             tombolAksi.textContent = "Simpan ke Bank Soal";
             tampilkanNotifikasi("Koneksi gagal. Gagal menyimpan data.", "gagal");
-            if (scriptGuru) scriptGuru.remove();
+            if (scriptGuru && scriptGuru.parentNode) scriptGuru.parentNode.removeChild(scriptGuru);
+            try { delete window[cbNamaGuru]; } catch(e) {}
         };
         
         document.body.appendChild(scriptGuru);
