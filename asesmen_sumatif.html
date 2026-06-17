@@ -156,11 +156,12 @@
     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);">Memuat riwayat bank soal...</td></tr>`;
     
     // Menggunakan Fetch dengan metode POST (bebas dari batasan URL & script injection)
-    const namaGuruEncoded = encodeURIComponent(namaGuru);
-    fetch(`${URL_WEB_APP_TUJUAN}?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${namaGuruEncoded}`, {
+    // GANTI DENGAN KODE INI:
+const namaGuruEncoded = encodeURIComponent(namaGuru);
+fetch(`${URL_WEB_APP_TUJUAN}?aksi=AMBIL_RIWAYAT_GURU&namaGuru=${namaGuruEncoded}`, {
     method: "GET",
     mode: "cors"
-    })
+})
 
     .then(respons => respons.json())
     .then(dataHasil => {
