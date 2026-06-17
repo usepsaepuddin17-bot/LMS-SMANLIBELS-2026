@@ -118,7 +118,7 @@
             </div>
             <div class="form-group">
                 <label>Masukkan Token Ujian</label>
-                <input type="text" id="inputToken" placeholder="Contoh: PANCASILA01" style="text-transform: uppercase;" required>
+                <input type="text" id="inputToken" placeholder="Contoh: PANCASILA01" autocapitalize="characters" autocomplete="off" required>
             </div>
         </div>
         <div style="margin-bottom: 14px;">
@@ -181,7 +181,10 @@ async function muatDataMasterSiswa() {
 
 function verifikasiTokenAwal() {
     const guru = document.getElementById("selectGuru").value;
-    const token = document.getElementById("inputToken").value.trim().toUpperCase();
+    // Pengaman string input untuk HP agar tidak menghasilkan nilai undefined/error
+    const tokenInput = document.getElementById("inputToken");
+    const token = tokenInput ? tokenInput.value.toString().trim().toUpperCase() : "";
+    
     const btnCek = document.getElementById("btnCekToken");
     const msg = document.getElementById("pesanSistem");
     
@@ -194,7 +197,7 @@ function verifikasiTokenAwal() {
 
     const cbName = "jsonp_token_awal_" + Math.round(100000 * Math.random());
     window[cbName] = function(hasil) {
-        // PERBAIKAN: Beri pengaman agar HP tidak eror jika script belum siap di-remove
+        // PERBAIKAN UTAMA: Diberi pengaman ekstra agar browser HP tidak crash/stagnan saat menghapus skrip
         const scriptElement = document.getElementById(cbName);
         if (scriptElement) {
             scriptElement.remove();
