@@ -8,6 +8,7 @@
         :root { --bg-main: #f4f6f9; --bg-card: #ffffff; --kemdikbud-blue: #1e3a8a; --cbt-blue: #1a73e8; --cbt-blue-hover: #155cb4; --text-dark: #202124; --text-muted: #5f6368; --success: #137333; --danger: #c5221f; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { font-family: Arial, Helvetica, sans-serif; background-color: var(--bg-main); color: var(--text-dark); padding: 12px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
         .header-soal { width: 100%; max-width: 100%; display: none; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--kemdikbud-blue); color: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-bottom: 4px solid #facc15; }
         .meta-info { font-size: 0.9rem; line-height: 1.5; }
         .meta-info b { font-size: 1.1rem; letter-spacing: 0.3px; }
@@ -15,21 +16,23 @@
         .meta-info small { display: inline-block; margin-top: 4px; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; }
         .btn-keluar { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; }
         .btn-keluar:hover { background: #b01f1c; }
+        
         .portal-container { background-color: var(--bg-card); border-top: 6px solid var(--kemdikbud-blue); border-radius: 8px; padding: 24px; width: 100%; max-width: 650px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-top: 40px; border: 1px solid #e0e0e0; }
         h2 { text-align: center; color: var(--kemdikbud-blue); font-size: 1.25rem; font-weight: bold; border-bottom: 1px solid #e0e0e0; padding-bottom: 12px; margin-bottom: 20px; }
+        
         .form-row { display: flex; gap: 16px; margin-bottom: 14px; }
-        .form-group { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
         label { font-size: 0.85rem; font-weight: bold; color: var(--text-dark); }
         select, input[type="text"] { background-color: #fafafa; border: 1px solid #dadce0; border-radius: 6px; padding: 0 12px; color: var(--text-dark); font-size: 0.9rem; outline: none; width: 100%; height: 44px; }
         input[readonly], select[disabled] { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
         select:focus, input:focus { border-color: var(--cbt-blue); background-color: #ffffff; }
         .select-wrapper { position: relative; width: 100%; }
         .select-wrapper::after { content: "▼"; font-size: 8px; color: #757575; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+        
         .btn-akses { background-color: var(--cbt-blue); color: #ffffff; border: none; border-radius: 6px; height: 46px; font-size: 0.95rem; font-weight: bold; text-transform: uppercase; width: 100%; margin-top: 10px; cursor: pointer; box-shadow: 0 2px 4px rgba(26, 115, 232, 0.2); transition: background 0.2s; }
         .btn-akses:hover { background-color: var(--cbt-blue-hover); }
-        .btn-verifikasi { background-color: #34a853; color: white; border: none; border-radius: 6px; height: 44px; padding: 0 15px; font-weight: bold; cursor: pointer; font-size: 0.85rem; text-transform: uppercase; margin-top: auto; }
+        .btn-verifikasi { background-color: #34a853; color: white; border: none; border-radius: 6px; height: 44px; padding: 0 15px; font-weight: bold; cursor: pointer; font-size: 0.85rem; text-transform: uppercase; margin-top: auto; white-space: nowrap; }
         
-        /* STYLE BARU: Tombol Kembali Ke Dashboard */
         .btn-kembali-dashboard { background-color: #5f6368; color: #ffffff; border: none; border-radius: 6px; height: 46px; font-size: 0.95rem; font-weight: bold; text-transform: uppercase; width: 100%; margin-top: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;}
         .btn-kembali-dashboard:hover { background-color: #45474a; }
         .btn-kembali-dashboard:active { transform: scale(0.99); }
@@ -37,6 +40,7 @@
         #pesanSistem { margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; font-size: 0.9rem; display: none; }
         .gagal { background-color: #fce8e6; border: 1px solid #f98b80; color: #a51d24; }
         .sukses-notif { background-color: #e6f4ea; border: 1px solid #81c995; color: #137333; }
+        
         #quizArea { display: none; width: 100%; max-width: 750px; background: #ffffff; margin-top: 15px; padding: 24px; border-radius: 8px; border: 1px solid #dadce0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .text-soal-tampil { font-size: 1.1rem; line-height: 1.6; font-weight: 500; margin-bottom: 20px; white-space: pre-wrap; color: var(--text-dark); }
         .opsi-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
@@ -51,6 +55,34 @@
         .btn-nav.primary { background: var(--cbt-blue); color: white; border: none; }
         .btn-nav.primary:hover { background: var(--cbt-blue-hover); }
         .btn-nav.success { background: var(--success); color: white; border: none; }
+
+        /* ========================================== */
+        /* 📱 OPTIMALISASI RESPONSIVE LAYOUT HP     */
+        /* ========================================== */
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            .portal-container { padding: 16px; margin-top: 15px; border-radius: 6px; }
+            h2 { font-size: 1.15rem; margin-bottom: 15px; }
+            
+            /* Membuat baris form pecah menjadi vertikal di HP */
+            .form-row { flex-direction: column; gap: 12px; margin-bottom: 12px; }
+            .form-group { width: 100%; }
+            
+            /* Penyesuaian tombol periksa token saat mode vertikal */
+            .btn-verifikasi { width: 100%; height: 44px; margin-top: 4px; justify-content: center; }
+            
+            /* Penyesuaian area pengerjaan soal di HP */
+            #quizArea { padding: 16px; }
+            .text-soal-tampil { font-size: 1rem; margin-bottom: 15px; }
+            .opsi-box { padding: 10px 12px; font-size: 0.95rem; }
+            .opsi-huruf { width: 26px; height: 26px; margin-right: 10px; font-size: 0.9rem; }
+            .btn-nav { padding: 10px 16px; font-size: 0.9rem; }
+            
+            /* Penyesuaian Header Atas saat Ujian Aktif */
+            .header-soal { flex-direction: column; gap: 10px; align-items: stretch; text-align: center; padding: 12px; }
+            #countdownTimer { width: 100%; font-size: 1rem; }
+            .btn-keluar { width: 100%; padding: 8px; }
+        }
     </style>
 </head>
 <body>
