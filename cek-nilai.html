@@ -348,8 +348,8 @@
 
     <!-- ---------------- SCRIPT LOGIKA INTEGRASI SPREADSHEET ---------------- -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwsDLxFuaqHLGfX7Au885Lxsq1wI4oCaZF2QRmQVKYs4H1m757ABOGR8EhLNWDzhPhA/exec";
-        const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1J6YPyiAdL_UO_-YRVP-JU5zmKQ065YUEYsG7FPzowPs/edit?gid=0#gid=0";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxjTEGjAibA2XEmgbCzSLCNzcNwONN9Xrb2UjLvkP2YgsVTjhWpBnOkwS2Cmq1jVDEW/exec";
+        const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1J6YPyiAdL_UO_-YRVP-JU5zmKQ065YUEYsG7FPzowPs/edit";
         const NAMA_SHEET = "Cek Nilai";
         const KKM_SEKOLAH = 75;
 
@@ -495,38 +495,39 @@
                 })
             })
             .then(response => response.json())
-            .then(data => {
-                const namaKey = currentSessionSiswa.nama.toString().trim().toUpperCase();
+                    .then(data => {
+          const namaKey = currentSessionSiswa.nama.toString().trim().toUpperCase();
+          
+          const nT = Number(data.nilaiTugas?.[namaKey]) || 0;
+          const nL = Number(data.nilaiLkpd?.[namaKey]) || 0;
+          const nS = Number(data.nilaiSumatif?.[namaKey]) || 0;
+          const nA = Number(data.nilaiAbsen?.[namaKey]) || 0;
+          const nK = Number(data.nilaiKeaktifan?.[namaKey]) || 0;
+          const nE = Number(data.nilaiEkskul?.[namaKey]) || 0; 
+          
+          setBarisNilai("Tugas", nT);
+          setBarisNilai("Lkpd", nL);
+          setBarisNilai("Sumatif", nS);
+          setBarisNilai("Absen", nA);
+          setBarisNilai("Aktif", nK);
+          setBarisNilai("Ekskul", nE);
+          
+          // PERBAIKAN FATAL: Mengambil hasil kalkulasi bobot (15%, 15%, 30%, 30%, 10%) langsung dari backend Apps Script
+          const nilaiRaporAkhir = Number(data.nilaiRapor?.[namaKey]) || 0;
+          document.getElementById("nEstimasiRapor").innerText = nilaiRaporAkhir.toFixed(1);
+          
+          const badgeRapor = document.getElementById("sEstimasiRapor");
+          if(nilaiRaporAkhir >= KKM_SEKOLAH) {
+            badgeRapor.innerText = "Estimasi: LULUS KKM";
+            badgeRapor.style.borderColor = "#2ec4b6";
+            badgeRapor.style.color = "#2ec4b6";
+          } else {
+            badgeRapor.innerText = "Estimasi: BELUM TUNTAS";
+            badgeRapor.style.borderColor = "#e71d36";
+            badgeRapor.style.color = "#e71d36";
+          }
+        })
 
-                const nT = Number(data.nilaiTugas?.[namaKey]) || 0;
-                const nL = Number(data.nilaiLkpd?.[namaKey]) || 0;
-                const nS = Number(data.nilaiSumatif?.[namaKey]) || 0;
-                const nA = Number(data.nilaiAbsen?.[namaKey]) || 0;
-                const nK = Number(data.nilaiKeaktifan?.[namaKey]) || 0;
-                const nE = Number(data.nilaiEkskul?.[namaKey]) || 0; // Mengambil nilai Ekskul dari DB guru
-
-                setBarisNilai("Tugas", nT);
-                setBarisNilai("Lkpd", nL);
-                setBarisNilai("Sumatif", nS);
-                setBarisNilai("Absen", nA);
-                setBarisNilai("Aktif", nK);
-                setBarisNilai("Ekskul", nE);
-
-                // Pembagi diubah menjadi 6 komponen karena Ekskul masuk hitungan rerata
-                const rerataEstimasi = (nT + nL + nS + nA + nK + nE) / 6;
-                document.getElementById("nEstimasiRapor").innerText = rerataEstimasi.toFixed(1);
-                
-                const badgeRapor = document.getElementById("sEstimasiRapor");
-                if(rerataEstimasi >= KKM_SEKOLAH) {
-                    badgeRapor.innerText = "Estimasi: LULUS KKM";
-                    badgeRapor.style.borderColor = "#2ec4b6";
-                    badgeRapor.style.color = "#2ec4b6";
-                } else {
-                    badgeRapor.innerText = "Estimasi: BELUM TUNTAS";
-                    badgeRapor.style.borderColor = "#e71d36";
-                    badgeRapor.style.color = "#e71d36";
-                }
-            })
             .catch(error => {
                 console.error("Error:", error);
                 alert("Gagal memuat data nilai dari guru ini.");
