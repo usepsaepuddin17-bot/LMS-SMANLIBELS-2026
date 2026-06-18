@@ -5,11 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruang Belajar Siswa - Sistem Otentik</title>
     <link rel="stylesheet" href="../style-shared.css">
-    <style>
+<style>
         body {
             padding: 15px;
             box-sizing: border-box;
+            /* 🛠️ PERBAIKAN: Mengunci warna latar belakang gelap Navy sesuai gambar */
+            background-color: #0b1a30; 
+            color: #ffffff; /* Mengubah teks dasar menjadi putih */
         }
+        
+        /* 🛠️ PERBAIKAN: Menyelaraskan teks judul atas agar berwarna putih terang */
+        .header-app h1 { 
+            font-size: 24px; 
+            margin: 0; 
+            color: #ffffff; 
+        }
+        .header-app p {
+            color: #a3b8cc;
+        }
+
         .filter-panel { background-color: #032b30; border: 1px solid #bfa15f; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
         .filter-panel label { display: block; font-size: 14px; color: #bfa15f; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         
@@ -47,8 +61,9 @@
         .mapel-card h3 { font-size: 18px; margin-top: 0; }
         .mapel-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(196, 154, 35, 0.15); border-color: #bfa15f; }
         
-        .meta-info { font-size: 14px; color: #a3b8cc; margin-bottom: 10px; line-height: 1.6; }
-        .meta-info strong { color: #fff; }
+        /* 🛠️ PERBAIKAN: Memastikan teks informasi di dalam kartu berwarna putih/terang agar terbaca */
+        .meta-info { font-size: 14px; color: #cbd5e1; margin-bottom: 10px; line-height: 1.6; }
+        .meta-info strong { color: #ffffff; }
         
         .link-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         
@@ -78,7 +93,6 @@
         .tag-pertemuan { background: #bfa15f; color: #032b30; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; margin-left: 5px; text-transform: uppercase; display: inline-block; vertical-align: middle;}
         
         .header-app { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-        .header-app h1 { font-size: 24px; margin: 0; }
     </style>
 </head>
 <body>
@@ -92,9 +106,9 @@
     </div>
 
     <div class="filter-panel">
-        <label for="pilihGuru">Pilih Guru :</label>
+        <label for="pilihGuru">Silakan Pilih Guru Pengampu:</label>
         <select class="form-control" id="pilihGuru" style="margin-bottom: 0; font-size: 16px; font-weight: 600; padding: 8px; height: auto;" onchange="muatMateriPerGuru()">
-            <option value="">-- Menghubungkan ... --</option>
+            <option value="">-- Menghubungkan ke database akademik... --</option>
         </select>
     </div>
 
