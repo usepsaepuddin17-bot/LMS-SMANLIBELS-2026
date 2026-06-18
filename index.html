@@ -125,6 +125,21 @@
             background-color: #b0891e;
         }
 
+        /* STYLE BARU CEK NILAI */
+        .btn-cek-nilai {
+            background: linear-gradient(135deg, #0d3d42, #07383d);
+            color: #bfa15f;
+            border: 1px solid #bfa15f;
+            box-shadow: 0 4px 15px rgba(191, 161, 95, 0.15);
+        }
+
+        .btn-cek-nilai:hover {
+            background: linear-gradient(135deg, #134e54, #0d3d42);
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(191, 161, 95, 0.3);
+            transform: translateY(-1px);
+        }
+
         .btn-guru {
             background-color: #07383d;
             color: #ffffff;
@@ -163,12 +178,13 @@
         
         <div class="year-badge">Tahun Pelajaran 2026/2027</div>
 
-        <!-- TAUTAN SISWA -->
         <a href="dashboard-siswa.html" class="btn btn-siswa">
             <span class="icon">🧑‍🎓</span> PINTU MASUK SISWA
         </a>
 
-        <!-- TAUTAN GURU -->
+        <a href="cek-nilai.html" class="btn btn-cek-nilai">
+        <span class="icon" style="font-size: 18px; filter: drop-shadow(0 0 2px #bfa15f);">📊</span> CEK NILAI & ESTIMASI RAPORT
+        </a>
         <a href="login-guru.html" class="btn btn-guru">
             <span class="icon">🔒</span> PINTU MASUK GURU
         </a>
