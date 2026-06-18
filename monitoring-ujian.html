@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Pelaksanaan Ujian (Pengawas)</title>
     <link rel="stylesheet" href="../style-shared.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         /* =========================================================================
            🎨 FORCE COLOR THEME ENGINE (MEMAKSA WARNA TETAP GELAP/KEREN DI HP & LAPTOP)
@@ -449,14 +451,58 @@
             }
         }
 
-        function eksporKeExcel() {
-            const namaPengawas = document.getElementById('namaPengawas').value || 'Tanpa Nama';
-            const token = document.getElementById("tokenAktif").value.trim() || 'TanpaToken';
-            const tabel = document.getElementById("tabelUjian");
-            const wb = XLSX.utils.table_to_book(tabel, { sheet: "Log Ujian Realtime" });
-            const namaFile = `Laporan_CBT_Token_${token}_Pengawas_${namaPengawas.replace(/\s+/g, '_')}.xlsx`;
-            XLSX.writeFile(wb, namaFile);
+        function eksporKePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4'); // Format A4, Portrait
+
+    const namaPengawas = document.getElementById('namaPengawas').value || 'Tanpa Nama';
+    const token = document.getElementById("tokenAktif").value.trim() || 'TanpaToken';
+    const mapel = document.getElementById("infoMapel").innerText;
+    const kelas = document.getElementById("infoKelas").innerText;
+    const waktuCetak = new Date().toLocaleString('id-ID');
+
+    // --- DESAIN HEADER PDF ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("LAPORAN MONITORING REAL-TIME CBT", 40, 50);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Mata Pelajaran : ${mapel}`, 40, 75);
+    doc.text(`Kelas / Token  : ${kelas} / ${token}`, 40, 90);
+    doc.text(`Pengawas Ruang : ${namaPengawas}`, 40, 105);
+    doc.text(`Waktu Cetak    : ${waktuCetak}`, 40, 120);
+
+    // --- GENERATE TABEL OTOMATIS ---
+    // Mengambil elemen tabel #tabelUjian
+    doc.autoTable({
+        html: '#tabelUjian',
+        startY: 140, // Jarak tabel dari header atas
+        theme: 'grid',
+        styles: {
+            fontSize: 9,
+            cellPadding: 6,
+        },
+        headStyles: {
+            fillColor: [5, 34, 37], // Menyamakan warna hijau tua seperti di aplikasi laptop Anda
+            textColor: [191, 161, 95], // Warna emas untuk teks header tabel
+            fontStyle: 'bold',
+            halign: 'center'
+        },
+        columnStyles: {
+            0: { halign: 'center' }, // NISN
+            1: { halign: 'left' },   // Nama Siswa
+            2: { halign: 'center' }, // Kelas
+            3: { halign: 'center' }, // Nilai Ujian
+            4: { halign: 'center' }, // Keluar Aplikasi
+            5: { halign: 'center' }  // Status Sistem
         }
+    });
+
+    // --- PROSES UNDUH ---
+    const namaFile = `Laporan_CBT_Token_${token}_Pengawas_${namaPengawas.replace(/\s+/g, '_')}.pdf`;
+    doc.save(namaFile);
+}
     </script>
 </body>
 </html>
