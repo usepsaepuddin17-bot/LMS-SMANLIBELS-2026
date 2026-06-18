@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Nilai Siswa - SMAN 15 Maluku Tengah</title>
+    <!-- Menggunakan Font Awesome untuk ikon yang cantik -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d1b2a;
+            color: #e6f1f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 15px;
+        }
+
+        .card {
+            background-color: #032b30;
+            border: 2px solid #bfa15f;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* Header Style */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header i {
+            font-size: 40px;
+            color: #bfa15f;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 5px rgba(191,161,95,0.4));
+        }
+        .header h2 {
+            font-size: 20px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 12px;
+            color: #a3b8cc;
+            margin-top: 4px;
+        }
+
+        /* Form & Input Style */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #bfa15f;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #657e82;
+            font-size: 16px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            background-color: #07383d;
+            border: 1px solid #1a5157;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #bfa15f;
+            box-shadow: 0 0 10px rgba(191,161,95,0.2);
+        }
+
+        /* Button Style */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-gold {
+            background-color: #c49a23;
+            color: #0c1a1c;
+            box-shadow: 0 4px 15px rgba(196, 154, 35, 0.2);
+        }
+        .btn-gold:hover { background-color: #b0891e; }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: #a3b8cc;
+            border: 1px solid #1a5157;
+            margin-top: 20px;
+            font-size: 13px;
+            padding: 10px;
+        }
+
+        /* Identity Badge */
+        .siswa-badge {
+            background: linear-gradient(135deg, #0b3d42, #07383d);
+            border: 1px dashed #bfa15f;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .siswa-badge .avatar {
+            width: 45px;
+            height: 45px;
+            background-color: #bfa15f;
+            color: #032b30;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+        .siswa-info h3 { font-size: 16px; color: #fff; }
+        .siswa-info p { font-size: 13px; color: #bfa15f; }
+
+        /* Report & Nilai Section */
+        .nilai-container {
+            margin-top: 5px;
+        }
+        .nilai-card {
+            background-color: #07383d;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 5px solid #657e82;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nilai-card.tuntas { border-left-color: #2ec4b6; }
+        .nilai-card.remedial { border-left-color: #e71d36; }
+
+        .nilai-info h4 { font-size: 14px; color: #ffffff; margin-bottom: 2px;}
+        .nilai-info p { font-size: 11px; color: #a3b8cc; }
+        
+        .score-box {
+            text-align: right;
+        }
+        .score-box .angka {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .score-box.tuntas .angka { color: #2ec4b6; }
+        .score-box.remedial .angka { color: #e71d36; }
+        
+        .status-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 2px;
+        }
+        .tuntas .status-badge { background-color: rgba(46, 196, 182, 0.2); color: #2ec4b6; }
+        .remedial .status-badge { background-color: rgba(231, 29, 54, 0.2); color: #e71d36; }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .alert-info-box {
+            background-color: rgba(191, 161, 95, 0.1);
+            border: 1px solid rgba(191, 161, 95, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 12px;
+            color: #dfcbb5;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .alert-info-box i { color: #bfa15f; margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- ---------------- TAHAP 1: INPUT ID SISWA ---------------- -->
+        <div id="step1">
+            <div class="header">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <h2>Portal Nilai Siswa</h2>
+                <p>SMA Negeri 15 Maluku Tengah</p>
+            </div>
+
+            <div class="form-group">
+                <label for="idSiswa">Masukkan Nomor ID Siswa (Password)</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="idSiswa" class="form-control" placeholder="Contoh: SISWA123" autocomplete="off">
+                </div>
+            </div>
+
+            <button onclick="prosesCekID()" class="btn btn-gold">
+                <i class="fa-solid fa-magnifying-glass"></i> Periksa ID Saya
+            </button>
+            
+            <a href="index.html" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Kembali ke Menu Utama</a>
+        </div>
+
+        <!-- ---------------- TAHAP 2: WAJIB GANTI ID BARU ---------------- -->
+        <div id="step2" class="hidden">
+            <div class="header">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h2>Amankan Akun Anda</h2>
+                <p>Demi privasi, ubah ID standar Anda sekarang</p>
+            </div>
+
+            <div class="siswa-badge">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="siswa-info">
+                    <h3 id="displayNama">Nama Siswa Resmi</h3>
+                    <p id="displayKelas">Kelas XX</p>
+                </div>
+            </div>
+
+            <div class="alert-info-box">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>ID baru harus unik dan rahasia agar nilai Anda tidak dapat diintip atau dilihat oleh teman/siswa lain.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="idBaru">Buat ID / Password Baru Anda</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="text" id="idBaru" class="form-control" placeholder="Kombinasi huruf & angka bebas">
+                </div>
+            </div>
+
+            <button onclick="prosesGantiID()" class="btn btn-gold">
+                <i class="fa-solid fa-square-check"></i> Simpan & Buka Nilai
+            </button>
+        </div>
+
+        <!-- ---------------- TAHAP 3: DISPLAY REKAP NILAI & ESTIMASI RAPOR ---------------- -->
+        <div id="step3" class="hidden">
+            <div class="header" style="margin-bottom: 15px;">
+                <i class="fa-solid fa-chart-line"></i>
+                <h2>Rapor & Estimasi Nilai</h2>
+                <p>Kriteria Ketuntasan Minimal (KKM): <b>75</b></p>
+            </div>
+
+            <div class="siswa-badge" style="padding: 10px 15px; margin-bottom: 15px;">
+                <div class="siswa-info">
+                    <h3 id="raporNama" style="font-size: 15px;">Nama Siswa</h3>
+                    <p id="raporKelas" style="font-size: 12px;">Kelas XX</p>
+                </div>
+            </div>
+
+            <!-- 👨‍🏫 DROPDOWN PILIHAN NAMA GURU -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="pilihGuru" style="color: #ffffff; font-size: 14px;"><i class="fa-solid fa-user-tie"></i> Pilih Guru / Mata Pelajaran</label>
+                <select id="pilihGuru" class="form-control" style="padding: 12px 15px; background: #07383d; font-weight: bold; border: 1px solid #bfa15f;" onchange="pilihNamaGuruBaru()">
+                    <option value="">-- Memuat Daftar Guru... --</option>
+                </select>
+            </div>
+
+            <!-- KOTAK UTAMA: NILAI BARU MUNCUL SETELAH GURU DIPILIH -->
+            <div id="wrapperNilaiUtama" class="hidden">
+                <!-- KOTAK ESTIMASI NILAI RAPOR UTAMA -->
+                <div class="nilai-card tuntas" style="background: linear-gradient(135deg, #0b3d42, #c49a23); border-left: 5px solid #bfa15f; margin-bottom: 20px; padding: 18px 15px;">
+                    <div class="nilai-info">
+                        <h4 style="font-size: 15px; color: #ffffff;"><i class="fa-solid fa-calculator"></i> Estimasi Nilai Rapor</h4>
+                        <p style="color: #e6f1f5;">Rerata Akumulasi Seluruh Komponen</p>
+                    </div>
+                    <div class="score-box">
+                        <span class="angka" id="nEstimasiRapor" style="font-size: 28px; color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.3);">0.0</span><br>
+                        <span class="status-badge" id="sEstimasiRapor" style="background-color: #032b30; color: #bfa15f; border: 1px solid #bfa15f;">-</span>
+                    </div>
+                </div>
+
+                <!-- List Nilai Pecahan -->
+                <div class="nilai-container">
+                    <div class="nilai-card" id="cardTugas">
+                        <div class="nilai-info"><h4>Rata-rata Tugas</h4><p>Bobot Pemahaman Mandiri</p></div>
+                        <div class="score-box" id="boxTugas"><span class="angka" id="nTugas">0.0</span><br><span class="status-badge" id="sTugas">-</span></div>
+                    </div>
+                    <div class="nilai-card" id="cardLkpd">
+                        <div class="nilai-info"><h4>Rata-rata LKPD</h4><p>Lembar Kerja Praktik / Kelompok</p></div>
+                        <div class="score-box" id="boxLkpd"><span class="angka" id="nLkpd">0.0</span><br><span class="status-badge" id="sLkpd">-</span></div>
+                    </div>
+                    <div class="nilai-card" id="cardSumatif">
+                        <div class="nilai-info"><h4>Rata-rata Sumatif</h4><p>Nilai Ujian Blok & Ulangan Harian</p></div>
+                        <div class="score-box" id="boxSumatif"><span class="angka" id="nSumatif">0.0</span><br><span class="status-badge" id="sSumatif">-</span></div>
+                    </div>
+                    <div class="nilai-card" id="cardAbsen">
+                        <div class="nilai-info"><h4>Kehadiran (Presensi)</h4><p>Persentase KBM Tatap Muka</p></div>
+                        <div class="score-box" id="boxAbsen"><span class="angka" id="nAbsen">0.0</span><br><span class="status-badge" id="sAbsen">-</span></div>
+                    </div>
+                    <div class="nilai-card" id="cardAktif">
+                        <div class="nilai-info"><h4>Keaktifan Kelas</h4><p>Partisipasi & Respon Positif</p></div>
+                        <div class="score-box" id="boxAktif"><span class="angka" id="nAktif">0.0</span><br><span class="status-badge" id="sAktif">-</span></div>
+                    </div>
+                    <!-- 🏆 POIN PENILAIAN TERAKHIR PALING BAWAH: EKSTRAKURIKULER -->
+                    <div class="nilai-card" id="cardEkskul">
+                        <div class="nilai-info"><h4>Ekstrakurikuler</h4><p>Nilai Pengembangan Diri & Bakat</p></div>
+                        <div class="score-box" id="boxEkskul"><span class="angka" id="nEkskul">0.0</span><br><span class="status-badge" id="sEkskul">-</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="keluarSesiRapor()" class="btn btn-outline">
+                <i class="fa-solid fa-right-from-bracket"></i> Keluar & Selesai
+            </button>
+        </div>
+    </div>
+
+    <!-- ---------------- SCRIPT LOGIKA INTEGRASI SPREADSHEET ---------------- -->
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwsDLxFuaqHLGfX7Au885Lxsq1wI4oCaZF2QRmQVKYs4H1m757ABOGR8EhLNWDzhPhA/exec";
+        const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1J6YPyiAdL_UO_-YRVP-JU5zmKQ065YUEYsG7FPzowPs/edit?gid=0#gid=0";
+        const NAMA_SHEET = "Cek Nilai";
+        const KKM_SEKOLAH = 75;
+
+        let currentSessionSiswa = null;
+        let currentIDTerinput = "";
+        let dataMentahServer = null; 
+
+        // 🕵️‍♂️ FUNGSI 1: CEK ID SISWA KE SPREADSHEET (REAL-TIME)
+        function prosesCekID() {
+            const inputID = document.getElementById("idSiswa").value.trim();
+            if(!inputID) {
+                alert("Silakan masukkan Nomor ID Siswa Anda!");
+                return;
+            }
+            currentIDTerinput = inputID;
+
+            const btn = document.querySelector("#step1 .btn-gold");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa Database...`;
+            btn.disabled = true;
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    aksi: "GET_REKAP_TOTAL",
+                    urlSpreadsheet: SPREADSHEET_URL
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                dataMentahServer = data; 
+                const daftarSiswa = data.siswa || [];
+                const siswaDitemukan = daftarSiswa.find(s => s.id && s.id.toString().trim().toUpperCase() === inputID.toUpperCase());
+
+                if (siswaDitemukan) {
+                    currentSessionSiswa = {
+                        nama: siswaDitemukan.nama,
+                        kelas: siswaDitemukan.kelas
+                    };
+
+                    document.getElementById("displayNama").innerText = currentSessionSiswa.nama;
+                    document.getElementById("displayKelas").innerText = "Kelas: " + currentSessionSiswa.kelas;
+
+                    document.getElementById("step1").classList.add("hidden");
+                    document.getElementById("step2").classList.remove("hidden");
+                } else {
+                    alert("Nomor ID Siswa tidak ditemukan! Pastikan ID benar atau hubungi Wali Kelas.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Gagal terhubung ke server. Periksa koneksi internet Anda.");
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        // 🔐 FUNGSI 2: KIRIM PERUBAHAN ID BARU KE GOOGLE SHEETS
+        function prosesGantiID() {
+            const idBaru = document.getElementById("idBaru").value.trim();
+            if(idBaru.length < 4) {
+                alert("ID Baru terlalu pendek! Buat minimal 4 karakter.");
+                return;
+            }
+
+            const btn = document.querySelector("#step2 .btn-gold");
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengamankan Akun...`;
+            btn.disabled = true;
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    aksi: "UPDATE_ID_SISWA",
+                    urlSpreadsheet: SPREADSHEET_URL,
+                    namaSheet: NAMA_SHEET,
+                    idLama: currentIDTerinput,
+                    idBaru: idBaru
+                })
+            })
+            .then(response => {
+                alert("ID Berhasil diamankan di Cloud! Menyiapkan data guru...");
+                bukaHalamanRapor();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                bukaHalamanRapor();
+            })
+            .finally(() => {
+                btn.innerHTML = `<i class="fa-solid fa-square-check"></i> Simpan & Buka Nilai`;
+                btn.disabled = false;
+            });
+        }
+
+        // 📊 FUNGSI 3: INITIALIZE HALAMAN RAPOR & BUAT DROPDOWN GURU OTOMATIS
+        function bukaHalamanRapor() {
+            document.getElementById("step2").classList.add("hidden");
+            document.getElementById("step3").classList.remove("hidden");
+
+            document.getElementById("raporNama").innerText = currentSessionSiswa.nama;
+            document.getElementById("raporKelas").innerText = "Kelas: " + currentSessionSiswa.kelas;
+
+            const selectGuru = document.getElementById("pilihGuru");
+            selectGuru.innerHTML = `<option value="">-- Pilih Guru / Mata Pelajaran --</option>`;
+
+            const daftarGuru = dataMentahServer.guru || [];
+            
+            if(daftarGuru.length === 0) {
+                selectGuru.innerHTML = `<option value="">Tidak ada data guru di sheet Database Guru</option>`;
+            } else {
+                daftarGuru.forEach(namaGuru => {
+                    if(namaGuru) {
+                        const opt = document.createElement("option");
+                        opt.value = namaGuru.toString().trim();
+                        opt.innerText = namaGuru.toString().trim();
+                        selectGuru.appendChild(opt);
+                    }
+                });
+            }
+
+            document.getElementById("wrapperNilaiUtama").classList.add("hidden");
+        }
+
+        // 🔄 FUNGSI 4: JALAN SAAT SISWA MEMILIH NAMA GURU TERTENTU
+        function pilihNamaGuruBaru() {
+            const guruTerpilih = document.getElementById("pilihGuru").value;
+            const wrapperNilai = document.getElementById("wrapperNilaiUtama");
+
+            if (!guruTerpilih) {
+                wrapperNilai.classList.add("hidden");
+                return;
+            }
+
+            wrapperNilai.classList.remove("hidden");
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    aksi: "GET_REKAP_TOTAL",
+                    urlSpreadsheet: SPREADSHEET_URL,
+                    guruTerpilih: guruTerpilih 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const namaKey = currentSessionSiswa.nama.toString().trim().toUpperCase();
+
+                const nT = Number(data.nilaiTugas?.[namaKey]) || 0;
+                const nL = Number(data.nilaiLkpd?.[namaKey]) || 0;
+                const nS = Number(data.nilaiSumatif?.[namaKey]) || 0;
+                const nA = Number(data.nilaiAbsen?.[namaKey]) || 0;
+                const nK = Number(data.nilaiKeaktifan?.[namaKey]) || 0;
+                const nE = Number(data.nilaiEkskul?.[namaKey]) || 0; // Mengambil nilai Ekskul dari DB guru
+
+                setBarisNilai("Tugas", nT);
+                setBarisNilai("Lkpd", nL);
+                setBarisNilai("Sumatif", nS);
+                setBarisNilai("Absen", nA);
+                setBarisNilai("Aktif", nK);
+                setBarisNilai("Ekskul", nE);
+
+                // Pembagi diubah menjadi 6 komponen karena Ekskul masuk hitungan rerata
+                const rerataEstimasi = (nT + nL + nS + nA + nK + nE) / 6;
+                document.getElementById("nEstimasiRapor").innerText = rerataEstimasi.toFixed(1);
+                
+                const badgeRapor = document.getElementById("sEstimasiRapor");
+                if(rerataEstimasi >= KKM_SEKOLAH) {
+                    badgeRapor.innerText = "Estimasi: LULUS KKM";
+                    badgeRapor.style.borderColor = "#2ec4b6";
+                    badgeRapor.style.color = "#2ec4b6";
+                } else {
+                    badgeRapor.innerText = "Estimasi: BELUM TUNTAS";
+                    badgeRapor.style.borderColor = "#e71d36";
+                    badgeRapor.style.color = "#e71d36";
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Gagal memuat data nilai dari guru ini.");
+            });
+        }
+
+        // 🛠️ HELPER: KONTROL VISUAL WARNA (TUNTAS / REMEDIAL)
+        function setBarisNilai(idKomponen, score) {
+            document.getElementById("n" + idKomponen).innerText = score.toFixed(1);
+            
+            const cardElement = document.getElementById("card" + idKomponen);
+            const boxElement = document.getElementById("box" + idKomponen);
+            const badgeElement = document.getElementById("s" + idKomponen);
+
+            if(score >= KKM_SEKOLAH) {
+                cardElement.className = "nilai-card tuntas";
+                boxElement.className = "score-box tuntas";
+                badgeElement.innerText = "Tuntas";
+            } else {
+                cardElement.className = "nilai-card remedial";
+                boxElement.className = "score-box remedial";
+                badgeElement.innerText = "Remedial";
+            }
+        }
+
+        // 🚪 FUNGSI 5: LOGOUT / TUTUP SESI LIHAT RAPOR
+        function keluarSesiRapor() {
+            currentSessionSiswa = null;
+            currentIDTerinput = "";
+            dataMentahServer = null;
+            document.getElementById("idSiswa").value = "";
+            document.getElementById("idBaru").value = "";
+            document.getElementById("step3").classList.add("hidden");
+            document.getElementById("step1").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
