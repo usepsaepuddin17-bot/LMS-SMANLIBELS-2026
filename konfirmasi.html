@@ -49,6 +49,10 @@
         .btn-reject { background-color: #e71d36; color: white; }
         .btn-reject:hover { background-color: #b8172b; }
         
+        /* Tambahan CSS tombol edit */
+        .btn-edit { background-color: #bfa15f; color: #0c1a1c; margin-left: 8px; }
+        .btn-edit:hover { background-color: #9e8247; }
+        
         /* Badge Status untuk Tabel Riwayat */
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
         .badge-approve { background-color: rgba(46, 196, 182, 0.2); color: #2ec4b6; border: 1px solid #2ec4b6; }
@@ -165,7 +169,7 @@
         })();
 
         // ====================================================================
-        // 📜 SINTAK LAMA ANDA DI BAWAH INI (SAMA SEKALI TIDAK DIUTAK-ATIK)
+        // 📜 SINTAK UTAMA JAVASCRIPT (DIPERBARUI UNTUK PANEL EDIT STATUS)
         // ====================================================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxgkcany9P1IHJKAHKTct_8oe98Yy3JaKBocNtRaXzqpamse8bnBnbK0Rx7VUNzyZqZ/exec";
 
@@ -185,92 +189,112 @@
         const emptyHistoryDiv = document.getElementById('emptyHistory');
 
         // Load data pengajuan dari spreadsheet
-        // Load data pengajuan dari spreadsheet
-function loadUsulan() {
-    loadingDiv.style.display = "block";
-    
-    // Sembunyikan semua elemen kontainer saat memuat data
-    tableEl.style.display = "none";
-    titleUsulan.style.display = "none";
-    emptyDiv.style.display = "none";
-    
-    historyTableEl.style.display = "none";
-    titleRiwayat.style.display = "none";
-    emptyHistoryDiv.style.display = "none";
-    
-    tbody.innerHTML = "";
-    historyTbody.innerHTML = "";
-
-    fetch(`${WEB_APP_URL}?action=getUsulanData`)
-        .then(res => res.json())
-        .then(data => {
-            // 🌟 FIX DUPLIKASI: Kosongkan ulang isi tabel di sini untuk mengantisipasi fungsi terpanggil 2x bersamaan
+        function loadUsulan() {
+            loadingDiv.style.display = "block";
+            
+            tableEl.style.display = "none";
+            titleUsulan.style.display = "none";
+            emptyDiv.style.display = "none";
+            
+            historyTableEl.style.display = "none";
+            titleRiwayat.style.display = "none";
+            emptyHistoryDiv.style.display = "none";
+            
             tbody.innerHTML = "";
             historyTbody.innerHTML = "";
 
-            loadingDiv.style.display = "none";
-            titleUsulan.style.display = "block";
-            titleRiwayat.style.display = "block";
+            fetch(`${WEB_APP_URL}?action=getUsulanData`)
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = "";
+                    historyTbody.innerHTML = "";
 
-            let jumlahUsulanAktif = 0;
-            let jumlahRiwayat = 0;
+                    loadingDiv.style.display = "none";
+                    titleUsulan.style.display = "block";
+                    titleRiwayat.style.display = "block";
 
-            data.forEach(item => {
-                // Ambil status dari database, jika kosong atau bernilai 'PENDING' anggap usulan baru
-                const statusKini = item.status ? item.status.toString().toUpperCase().trim() : "";
+                    let jumlahUsulanAktif = 0;
+                    let jumlahRiwayat = 0;
 
-                if (statusKini === "DISETUJUI" || statusKini === "DITOLAK") {
-                    // MASUKKAN KE TABEL RIWAYAT
-                    jumlahRiwayat++;
-                    const tr = document.createElement('tr');
-                    const badgeClass = statusKini === "DISETUJUI" ? "badge-approve" : "badge-reject";
-                    
-                    tr.innerHTML = `
-                        <td><b>${item.nama}</b></td>
-                        <td>${item.kelas}</td>
-                        <td><span style="color: #bfa15f">${item.kategori}</span></td>
-                        <td>${item.kegiatan}</td>
-                        <td><span class="badge ${badgeClass}">${statusKini}</span></td>
-                        <td style="color: #a3b8cc;">${item.verifikator || '-'}</td>
-                    `;
-                    historyTbody.appendChild(tr);
-                } else {
-                    // MASUKKAN KE TABEL UTAMA (PENDING/BELUM DIKONSOLIDASI)
-                    jumlahUsulanAktif++;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><b>${item.nama}</b></td>
-                        <td>${item.kelas}</td>
-                        <td><span style="color: #bfa15f">${item.kategori}</span></td>
-                        <td>${item.kegiatan}</td>
-                        <td style="color: #a3b8cc; max-width: 250px;">${item.deskripsi || '-'}</td>
-                        <td>
-                            <button class="btn btn-approve" onclick="prosesStatus(${item.row}, 'DISETUJUI')">Setujui</button>
-                            <button class="btn btn-reject" onclick="prosesStatus(${item.row}, 'DITOLAK')">Tolak</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
+                    data.forEach(item => {
+                        const statusKini = item.status ? item.status.toString().toUpperCase().trim() : "";
 
-            // Atur visibilitas Tampilan Tabel Usulan Utama
-            if(jumlahUsulanAktif === 0) {
-                emptyDiv.style.display = "block";
-            } else {
-                tableEl.style.display = "table";
+                        if (statusKini === "DISETUJUI" || statusKini === "DITOLAK") {
+                            jumlahRiwayat++;
+                            const tr = document.createElement('tr');
+                            const badgeClass = statusKini === "DISETUJUI" ? "badge-approve" : "badge-reject";
+                            
+                            // Ditambahkan ID unik pada cell status agar bisa dimanipulasi saat tombol edit diklik
+                            tr.innerHTML = `
+                                <td><b>${item.nama}</b></td>
+                                <td>${item.kelas}</td>
+                                <td><span style="color: #bfa15f">${item.kategori}</span></td>
+                                <td>${item.kegiatan}</td>
+                                <td id="status-cell-${item.row}">
+                                    <span class="badge ${badgeClass}">${statusKini}</span>
+                                    <button class="btn btn-edit" onclick="aktifkanEditStatus(${item.row}, '${statusKini}')">Edit</button>
+                                </td>
+                                <td style="color: #a3b8cc;">${item.verifikator || '-'}</td>
+                            `;
+                            historyTbody.appendChild(tr);
+                        } else {
+                            jumlahUsulanAktif++;
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><b>${item.nama}</b></td>
+                                <td>${item.kelas}</td>
+                                <td><span style="color: #bfa15f">${item.kategori}</span></td>
+                                <td>${item.kegiatan}</td>
+                                <td style="color: #a3b8cc; max-width: 250px;">${item.deskripsi || '-'}</td>
+                                <td>
+                                    <button class="btn btn-approve" onclick="prosesStatus(${item.row}, 'DISETUJUI')">Setujui</button>
+                                    <button class="btn btn-reject" onclick="prosesStatus(${item.row}, 'DITOLAK')">Tolak</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    });
+
+                    if(jumlahUsulanAktif === 0) {
+                        emptyDiv.style.display = "block";
+                    } else {
+                        tableEl.style.display = "table";
+                    }
+
+                    if(jumlahRiwayat === 0) {
+                        emptyHistoryDiv.style.display = "block";
+                    } else {
+                        historyTableEl.style.display = "table";
+                    }
+                })
+                .catch(err => {
+                    loadingDiv.textContent = "❌ Gagal memuat data. Periksa koneksi internet atau verifikasi deployment script.";
+                    console.error(err);
+                });
+        }
+
+        // Fungsi baru untuk mengubah badge status menjadi tombol pilihan kembali
+        function aktifkanEditStatus(rowId, statusLama) {
+            const cell = document.getElementById(`status-cell-${rowId}`);
+            if (cell) {
+                cell.innerHTML = `
+                    <button class="btn btn-approve" onclick="prosesStatus(${rowId}, 'DISETUJUI')">Setujui</button>
+                    <button class="btn btn-reject" onclick="prosesStatus(${rowId}, 'DITOLAK')">Tolak</button>
+                    <button class="btn" style="background:#555; color:#fff;" onclick="batalEditStatus(${rowId}, '${statusLama}')">Batal</button>
+                `;
             }
+        }
 
-            // Atur visibilitas Tampilan Tabel Riwayat
-            if(jumlahRiwayat === 0) {
-                emptyHistoryDiv.style.display = "block";
-            } else {
-                historyTableEl.style.display = "table";
+        // Fungsi jika user tidak sengaja klik edit dan ingin membatalkan tindakan edit
+        function batalEditStatus(rowId, statusLama) {
+            const cell = document.getElementById(`status-cell-${rowId}`);
+            if (cell) {
+                const badgeClass = statusLama === "DISETUJUI" ? "badge-approve" : "badge-reject";
+                cell.innerHTML = `
+                    <span class="badge ${badgeClass}">${statusLama}</span>
+                    <button class="btn btn-edit" onclick="aktifkanEditStatus(${rowId}, '${statusLama}')">Edit</button>
+                `;
             }
-        })
-        .catch(err => {
-            loadingDiv.textContent = "❌ Gagal memuat data. Periksa koneksi internet atau verifikasi deployment script.";
-            console.error(err);
-        });
         }
 
         // Fungsi Aksi Klik Setujui / Tolak
@@ -296,8 +320,8 @@ function loadUsulan() {
             .then(res => res.json())
             .then(response => {
                 if(response.result === "success") {
-                    alert(`Sukses! Usulan berhasil di-${statusPilihan}.`);
-                    loadUsulan(); // Otomatis refresh memindahkan baris ke tabel riwayat bawah
+                    alert(`Sukses! Usulan berhasil diubah menjadi [${statusPilihan}].`);
+                    loadUsulan(); // Refresh otomatis data sheet ke tabel riwayat bawah
                 } else {
                     alert("Gagal memperbarui status: " + response.error);
                 }
