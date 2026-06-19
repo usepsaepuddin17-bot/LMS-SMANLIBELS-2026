@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Kegiatan Pengembangan Diri</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d1b2a;
+            color: #e6f1f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #032b30;
+            border: 2px solid #bfa15f;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 550px;
+            padding: 30px 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: #bfa15f;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #a3b8cc;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #bfa15f;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #07383d;
+            border: 1px solid #1a5157;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #bfa15f;
+            box-shadow: 0 0 8px rgba(191, 161, 95, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .info-box {
+            background-color: rgba(191, 161, 95, 0.1);
+            border-left: 4px solid #bfa15f;
+            padding: 12px;
+            border-radius: 0 10px 10px 0;
+            font-size: 12px;
+            color: #a3b8cc;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #c49a23;
+            color: #0c1a1c;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(196, 154, 35, 0.3);
+        }
+
+        .btn-submit:hover {
+            background-color: #b0891e;
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            background-color: #4a5d4e;
+            color: #8da491;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #657e82;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            color: #bfa15f;
+        }
+
+        .loading-text {
+            font-size: 11px;
+            color: #c49a23;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Pengembangan Diri</h1>
+            <p>Input kegiatan ekstrakurikuler/non-akademik untuk pertimbangan nilai plus</p>
+        </div>
+
+        <div class="info-box">
+            <strong>Pemberitahuan:</strong> Pilih kelas terlebih dahulu. Setelah mengirimkan data melalui form ini, <b>bukti dukung silakan langsung tunjukkan di bagian kurikulum untuk disetujui</b>.
+        </div>
+
+        <form id="mainForm">
+            
+            <div class="form-group">
+                <label for="filter-kelas">Pilih Kelas</label>
+                <select id="filter-kelas" name="kelas" required>
+                    <option value="" disabled selected>Memuat daftar kelas...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nama-siswa">Nama Siswa</label>
+                <select id="nama-siswa" name="nama_siswa" required disabled>
+                    <option value="" disabled selected>-- Pilih Kelas Terlebih Dahulu --</option>
+                </select>
+                <div id="loading-nama" class="loading-text">Menyaring nama siswa...</div>
+            </div>
+
+            <div class="form-group">
+                <label for="kategori">Kategori Kegiatan</label>
+                <select id="kategori" name="kategori" required>
+                    <option value="" disabled selected>-- Pilih Kategori --</option>
+                    <option value="Krida">Krida (Kepramukaan, PMR, UKS, Paskibra, LKS)</option>
+                    <option value="Karya Ilmiah">Karya Ilmiah (KIR, Penelitian)</option>
+                    <option value="Olah Bakat">Latihan Olah-Bakat/Minat (Olahraga, Seni, Jurnalistik, Teater, TIK)</option>
+                    <option value="Keagamaan">Keagamaan (Pesantren Kilat, Retret, Baca Tulis Kitab Suci)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nama-kegiatan">Nama / Spesifikasi Kegiatan</label>
+                <input type="text" id="nama-kegiatan" name="nama_kegiatan" placeholder="Contoh: Anggota Inti Paskibra" required>
+            </div>
+
+            <div class="form-group">
+                <label for="deskripsi">Deskripsi & Peran Siswa</label>
+                <textarea id="deskripsi" name="deskripsi" placeholder="Jelaskan peran atau capaian Anda dalam kegiatan ini..."></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-submit">KIRIM DATA PENGEMBANGAN DIRI</button>
+        </form>
+
+        <a href="index.html" class="btn-back">← Kembali ke Menu Utama</a>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxgkcany9P1IHJKAHKTct_8oe98Yy3JaKBocNtRaXzqpamse8bnBnbK0Rx7VUNzyZqZ/exec";
+        let masterData = [];
+
+        const kelasSelect = document.getElementById('filter-kelas');
+        const siswaSelect = document.getElementById('nama-siswa');
+        const loadingNama = document.getElementById('loading-nama');
+        const form = document.getElementById('mainForm');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        // 1. Ambil data Kelas dan Siswa saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(`${WEB_APP_URL}?action=getSiswaData`)
+                .then(response => response.json())
+                .then(data => {
+                    masterData = data;
+                    const daftarKelas = [...new Set(data.map(item => item.kelas))].sort();
+                    
+                    kelasSelect.innerHTML = '<option value="" disabled selected>-- Pilih Kelas Anda --</option>';
+                    daftarKelas.forEach(kelas => {
+                        if(kelas) {
+                            const option = document.createElement('option');
+                            option.value = kelas;
+                            option.textContent = `Kelas ${kelas}`;
+                            kelasSelect.appendChild(option);
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error("Gagal memuat data:", err);
+                    kelasSelect.innerHTML = '<option value="" disabled>Gagal memuat data kelas</option>';
+                });
+        });
+
+        // 2. Filter Nama Siswa berdasarkan Kelas yang dipilih
+        kelasSelect.addEventListener('change', () => {
+            const kelasTerpilih = kelasSelect.value;
+            siswaSelect.disabled = true;
+            loadingNama.style.display = 'block';
+
+            const siswaFiltered = masterData.filter(item => item.kelas === kelasTerpilih);
+            siswaFiltered.sort((a, b) => a.nama.localeCompare(b.nama));
+
+            siswaSelect.innerHTML = '<option value="" disabled selected>-- Pilih Nama Anda --</option>';
+            siswaFiltered.forEach(siswa => {
+                if(siswa.nama) {
+                    const option = document.createElement('option');
+                    option.value = siswa.nama;
+                    option.textContent = siswa.nama;
+                    siswaSelect.appendChild(option);
+                }
+            });
+
+            loadingNama.style.display = 'none';
+            siswaSelect.disabled = false;
+        });
+
+        // 3. Proses Submit Form Menggunakan AJAX FETCH JSON
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "SEDANG MENGIRIM DATA...";
+
+            const payload = {
+                kelas: kelasSelect.value,
+                nama_siswa: siswaSelect.value,
+                kategori: document.getElementById('kategori').value,
+                nama_kegiatan: document.getElementById('nama-kegiatan').value,
+                deskripsi: document.getElementById('deskripsi').value
+            };
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if(response.result === "success") {
+                    alert("✅ Data Pengembangan Diri Berhasil Tersimpan! Bukti dukung silakan langsung tunjukkan di bagian kurikulum untuk disetujui.");
+                    form.reset();
+                    siswaSelect.disabled = true;
+                    siswaSelect.innerHTML = '<option value="" disabled selected>-- Pilih Kelas Terlebih Dahulu --</option>';
+                } else {
+                    alert("❌ Gagal menyimpan data: " + response.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("❌ Terjadi kesalahan koneksi internet.");
+            })
+            .finally(() => {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "KIRIM DATA PENGEMBANGAN DIRI";
+            });
+        });
+    </script>
+</body>
+</html>
