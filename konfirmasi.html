@@ -17,7 +17,28 @@
 
         h2.section-title { color: #bfa15f; font-size: 18px; margin: 30px 0 15px 0; text-transform: uppercase; border-left: 4px solid #bfa15f; padding-left: 10px; }
 
-        table { width: 100%; border-collapse: collapse; background-color: #032b30; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        /* ==================================================================== */
+        /* 📱 SINTAK FIX RESPONSIF HP: Pembungkus Tabel Agar Bisa Di-scroll     */
+        /* ==================================================================== */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto; /* Memunculkan scroll bar ke kanan-kiri jika layar sempit */
+            -webkit-overflow-scrolling: touch; /* Biar scroll di HP terasa mulus/smooth */
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        table { width: 100%; border-collapse: collapse; background-color: #032b30; overflow: hidden; }
+        /* memberikan batas lebar minimum tabel di HP agar kolom tidak gepeng */
+        @media screen and (max-width: 768px) {
+            table { min-width: 800px; } 
+            body { padding: 15px; } /* Memperkecil jarak tepi halaman di HP */
+            .admin-box { flex-direction: column; align-items: flex-start; gap: 8px; } /* Form nama menyesuaikan di HP */
+            .admin-box input { width: 100%; }
+        }
+        /* ==================================================================== */
+
         th { background-color: #bfa15f; color: #0c1a1c; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
         td { padding: 15px; border-bottom: 1px solid #1a5157; font-size: 14px; }
         tr:hover { background-color: #053d45; }
@@ -51,35 +72,39 @@
         <div id="loading" class="loading">Memuat data usulan siswa...</div>
 
         <h2 class="section-title" id="titleUsulan" style="display: none;">Daftar Usulan Baru</h2>
-        <table id="targetTable" style="display: none;">
-            <thead>
-                <tr>
-                    <th>Nama Siswa</th>
-                    <th>Kelas</th>
-                    <th>Kategori</th>
-                    <th>Spesifikasi Kegiatan</th>
-                    <th>Deskripsi</th>
-                    <th>Aksi Tindakan</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="targetTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Nama Siswa</th>
+                        <th>Kelas</th>
+                        <th>Kategori</th>
+                        <th>Spesifikasi Kegiatan</th>
+                        <th>Deskripsi</th>
+                        <th>Aksi Tindakan</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
         <div id="empty" class="empty-message" style="display: none;">Maju Jaya! Tidak ada usulan siswa yang perlu disetujui saat ini.</div>
 
         <h2 class="section-title" id="titleRiwayat" style="display: none;">Riwayat Keputusan Kurikulum</h2>
-        <table id="historyTable" style="display: none;">
-            <thead>
-                <tr>
-                    <th>Nama Siswa</th>
-                    <th>Kelas</th>
-                    <th>Kategori</th>
-                    <th>Spesifikasi Kegiatan</th>
-                    <th>Status</th>
-                    <th>Verifikator</th>
-                </tr>
-            </thead>
-            <tbody id="historyTableBody"></tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="historyTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Nama Siswa</th>
+                        <th>Kelas</th>
+                        <th>Kategori</th>
+                        <th>Spesifikasi Kegiatan</th>
+                        <th>Status</th>
+                        <th>Verifikator</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
         <div id="emptyHistory" class="empty-message" style="display: none;">Belum ada riwayat pemrosesan usulan kegiatan.</div>
     </div>
 
