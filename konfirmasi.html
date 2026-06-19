@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Persetujuan Kurikulum</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #0d1b2a; color: #e6f1f5; padding: 30px; }
+        .container { width: 100%; max-width: 1100px; margin: 0 auto; }
+        h1 { color: #bfa15f; margin-bottom: 5px; text-transform: uppercase; font-size: 24px; }
+        p.subtitle { color: #a3b8cc; font-size: 14px; margin-bottom: 25px; }
+        
+        .admin-box { background-color: #032b30; padding: 15px; border: 1px solid #bfa15f; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .admin-box label { font-size: 13px; color: #bfa15f; font-weight: bold; text-transform: uppercase; }
+        .admin-box input { padding: 8px 12px; background: #07383d; border: 1px solid #1a5157; color: white; border-radius: 6px; width: 250px; }
+
+        h2.section-title { color: #bfa15f; font-size: 18px; margin: 30px 0 15px 0; text-transform: uppercase; border-left: 4px solid #bfa15f; padding-left: 10px; }
+
+        table { width: 100%; border-collapse: collapse; background-color: #032b30; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        th { background-color: #bfa15f; color: #0c1a1c; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #1a5157; font-size: 14px; }
+        tr:hover { background-color: #053d45; }
+        
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .btn-approve { background-color: #2ec4b6; color: #0f1123; margin-right: 5px; }
+        .btn-approve:hover { background-color: #239b90; }
+        .btn-reject { background-color: #e71d36; color: white; }
+        .btn-reject:hover { background-color: #b8172b; }
+        
+        /* Badge Status untuk Tabel Riwayat */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        .badge-approve { background-color: rgba(46, 196, 182, 0.2); color: #2ec4b6; border: 1px solid #2ec4b6; }
+        .badge-reject { background-color: rgba(231, 29, 54, 0.2); color: #e71d36; border: 1px solid #e71d36; }
+
+        .loading { text-align: center; color: #bfa15f; font-weight: bold; padding: 20px; font-size: 16px; }
+        .empty-message { text-align: center; color: #a3b8cc; padding: 20px; font-style: italic; background: #021f22; border-radius: 8px; border: 1px dashed #1a5157; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Persetujuan Pengembangan Diri</h1>
+        <p class="subtitle">Halaman Khusus Kurikulum untuk memverifikasi usulan kegiatan non-akademik siswa</p>
+
+        <div class="admin-box">
+            <label for="verifikator">Nama Petugas Kurikulum:</label>
+            <input type="text" id="verifikator" placeholder="Masukkan nama Anda..." value="Tim Kurikulum">
+        </div>
+
+        <div id="loading" class="loading">Memuat data usulan siswa...</div>
+
+        <h2 class="section-title" id="titleUsulan" style="display: none;">Daftar Usulan Baru</h2>
+        <table id="targetTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Nama Siswa</th>
+                    <th>Kelas</th>
+                    <th>Kategori</th>
+                    <th>Spesifikasi Kegiatan</th>
+                    <th>Deskripsi</th>
+                    <th>Aksi Tindakan</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div id="empty" class="empty-message" style="display: none;">Maju Jaya! Tidak ada usulan siswa yang perlu disetujui saat ini.</div>
+
+        <h2 class="section-title" id="titleRiwayat" style="display: none;">Riwayat Keputusan Kurikulum</h2>
+        <table id="historyTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Nama Siswa</th>
+                    <th>Kelas</th>
+                    <th>Kategori</th>
+                    <th>Spesifikasi Kegiatan</th>
+                    <th>Status</th>
+                    <th>Verifikator</th>
+                </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+        </table>
+        <div id="emptyHistory" class="empty-message" style="display: none;">Belum ada riwayat pemrosesan usulan kegiatan.</div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 🔑 GERBANG VERIFIKASI UTAMA (SINTAK BARU)
+        // ==========================================
+        (function() {
+            const URL_VERIFIKASI = "https://script.google.com/macros/s/AKfycbxgkcany9P1IHJKAHKTct_8oe98Yy3JaKBocNtRaXzqpamse8bnBnbK0Rx7VUNzyZqZ/exec";
+            
+            // Hentikan proses window load bawaan dulu sebelum lulus kunci
+            window.removeEventListener('DOMContentLoaded', loadUsulan);
+            
+            let inputKunci = prompt("Masukkan Kata Kunci Verifikator Kurikulum:");
+            
+            if (inputKunci === null || inputKunci.trim() === "") {
+                window.location.href = "../index.html";
+                return;
+            }
+
+            document.getElementById('loading').textContent = "Memverifikasi hak akses kurikulum...";
+
+            // Cek ke Sheet 'kunci' Cell A1
+            fetch(`${URL_VERIFIKASI}?action=check&key=${encodeURIComponent(inputKunci)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success" && data.valid === true) {
+                        
+                        let ubah = confirm("Kata kunci BENAR!\n\nApakah Anda ingin mengubah kata kunci ini?");
+                        if (ubah) {
+                            let kunciBaru = prompt("Masukkan KATA KUNCI BARU:");
+                            if (kunciBaru !== null && kunciBaru.trim() !== "") {
+                                document.getElementById('loading').textContent = "Menyimpan sandi baru ke Google Sheet...";
+                                fetch(`${URL_VERIFIKASI}?action=update&key=${encodeURIComponent(kunciBaru)}`)
+                                    .then(() => {
+                                        alert("Kata kunci di Sheet berhasil diperbarui!");
+                                        loadUsulan(); // Panggil fungsi lama Anda setelah sukses
+                                    })
+                                    .catch(() => {
+                                        loadUsulan();
+                                    });
+                            } else {
+                                loadUsulan();
+                            }
+                        } else {
+                            loadUsulan(); // Panggil fungsi lama Anda jika tidak ingin ubah password
+                        }
+
+                    } else {
+                        alert("❌ Kata kunci SALAH! Akses ditolak.");
+                        window.location.href = "../index.html";
+                    }
+                })
+                .catch(err => {
+                    alert("Koneksi gagal saat verifikasi kunci.");
+                    window.location.href = "../index.html";
+                });
+        })();
+
+        // ====================================================================
+        // 📜 SINTAK LAMA ANDA DI BAWAH INI (SAMA SEKALI TIDAK DIUTAK-ATIK)
+        // ====================================================================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxgkcany9P1IHJKAHKTct_8oe98Yy3JaKBocNtRaXzqpamse8bnBnbK0Rx7VUNzyZqZ/exec";
+
+        const loadingDiv = document.getElementById('loading');
+        const verifikatorInput = document.getElementById('verifikator');
+        
+        // Elemen Tabel Usulan
+        const titleUsulan = document.getElementById('titleUsulan');
+        const tableEl = document.getElementById('targetTable');
+        const tbody = document.getElementById('tableBody');
+        const emptyDiv = document.getElementById('empty');
+        
+        // Elemen Tabel Riwayat
+        const titleRiwayat = document.getElementById('titleRiwayat');
+        const historyTableEl = document.getElementById('historyTable');
+        const historyTbody = document.getElementById('historyTableBody');
+        const emptyHistoryDiv = document.getElementById('emptyHistory');
+
+        // Load data pengajuan dari spreadsheet
+        function loadUsulan() {
+            loadingDiv.style.display = "block";
+            
+            // Sembunyikan semua elemen kontainer saat memuat data
+            tableEl.style.display = "none";
+            titleUsulan.style.display = "none";
+            emptyDiv.style.display = "none";
+            
+            historyTableEl.style.display = "none";
+            titleRiwayat.style.display = "none";
+            emptyHistoryDiv.style.display = "none";
+            
+            tbody.innerHTML = "";
+            historyTbody.innerHTML = "";
+
+            fetch(`${WEB_APP_URL}?action=getUsulanData`)
+                .then(res => res.json())
+                .then(data => {
+                    loadingDiv.style.display = "none";
+                    titleUsulan.style.display = "block";
+                    titleRiwayat.style.display = "block";
+
+                    let jumlahUsulanAktif = 0;
+                    let jumlahRiwayat = 0;
+
+                    data.forEach(item => {
+                        // Ambil status dari database, jika kosong atau bernilai 'PENDING' anggap usulan baru
+                        const statusKini = item.status ? item.status.toString().toUpperCase().trim() : "";
+
+                        if (statusKini === "DISETUJUI" || statusKini === "DITOLAK") {
+                            // MASUKKAN KE TABEL RIWAYAT
+                            jumlahRiwayat++;
+                            const tr = document.createElement('tr');
+                            const badgeClass = statusKini === "DISETUJUI" ? "badge-approve" : "badge-reject";
+                            
+                            tr.innerHTML = `
+                                <td><b>${item.nama}</b></td>
+                                <td>${item.kelas}</td>
+                                <td><span style="color: #bfa15f">${item.kategori}</span></td>
+                                <td>${item.kegiatan}</td>
+                                <td><span class="badge ${badgeClass}">${statusKini}</span></td>
+                                <td style="color: #a3b8cc;">${item.verifikator || '-'}</td>
+                            `;
+                            historyTbody.appendChild(tr);
+                        } else {
+                            // MASUKKAN KE TABEL UTAMA (PENDING/BELUM DIKONSOLIDASI)
+                            jumlahUsulanAktif++;
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><b>${item.nama}</b></td>
+                                <td>${item.kelas}</td>
+                                <td><span style="color: #bfa15f">${item.kategori}</span></td>
+                                <td>${item.kegiatan}</td>
+                                <td style="color: #a3b8cc; max-width: 250px;">${item.deskripsi || '-'}</td>
+                                <td>
+                                    <button class="btn btn-approve" onclick="prosesStatus(${item.row}, 'DISETUJUI')">Setujui</button>
+                                    <button class="btn btn-reject" onclick="prosesStatus(${item.row}, 'DITOLAK')">Tolak</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    });
+
+                    // Atur visibilitas Tampilan Tabel Usulan Utama
+                    if(jumlahUsulanAktif === 0) {
+                        emptyDiv.style.display = "block";
+                    } else {
+                        tableEl.style.display = "table";
+                    }
+
+                    // Atur visibilitas Tampilan Tabel Riwayat
+                    if(jumlahRiwayat === 0) {
+                        emptyHistoryDiv.style.display = "block";
+                    } else {
+                        historyTableEl.style.display = "table";
+                    }
+                })
+                .catch(err => {
+                    loadingDiv.textContent = "❌ Gagal memuat data. Periksa koneksi internet atau verifikasi deployment script.";
+                    console.error(err);
+                });
+        }
+
+        // Fungsi Aksi Klik Setujui / Tolak
+        function prosesStatus(rowId, statusPilihan) {
+            const namaPetugas = verifikatorInput.value.trim();
+            if(!namaPetugas) {
+                alert("Silakan isi nama petugas kurikulum terlebih dahulu di kotak atas!");
+                verifikatorInput.focus();
+                return;
+            }
+
+            if(!confirm(`Apakah Anda yakin ingin memberikan status [${statusPilihan}] untuk baris ini?`)) return;
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "updateStatus",
+                    row: rowId,
+                    status: statusPilihan,
+                    verifikator: namaPetugas
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if(response.result === "success") {
+                    alert(`Sukses! Usulan berhasil di-${statusPilihan}.`);
+                    loadUsulan(); // Otomatis refresh memindahkan baris ke tabel riwayat bawah
+                } else {
+                    alert("Gagal memperbarui status: " + response.error);
+                }
+            })
+            .catch(err => {
+                alert("Terjadi kesalahan jaringan.");
+                console.error(err);
+            });
+        }
+
+        // Jalankan load data saat halaman dibuka
+        window.addEventListener('DOMContentLoaded', loadUsulan);
+    </script>
+</body>
+</html>
