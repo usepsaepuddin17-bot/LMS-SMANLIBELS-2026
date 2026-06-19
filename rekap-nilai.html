@@ -67,7 +67,7 @@
         .pdf-mode td:first-child { min-width: auto !important; white-space: normal !important; }
         .pdf-mode .tanda-tangan-container { display: block !important; float: right !important; text-align: left !important; color: #000000 !important; }
         .pdf-mode .judul-pdf-hanya-cetak { display: block !important; }
-</style>
+    </style>
 </head>
 <body>
     <div class="header-app">
@@ -163,6 +163,7 @@
     let dataNilaiAbsenGlobal = {};      
     let dataNilaiAktifGlobal = {};      
     let statusAbsenAktifGlobal = "OK";  
+    let dataNilaiRaporGlobal = {}; // <--- Variabel baru penampung nilai rapor matang dari backend
 
     window.addEventListener("DOMContentLoaded", function() {
         muatDataAkademik(""); 
@@ -204,6 +205,7 @@
             dataNilaiAbsenGlobal = data.nilaiAbsen || {};
             dataNilaiAktifGlobal = data.nilaiKeaktifan || {};
             statusAbsenAktifGlobal = data.statusAbsenAktif;
+            dataNilaiRaporGlobal = data.nilaiRapor || {}; // <--- Ambil data nilaiRapor dari hasil return doPost
 
             susunTabelSiswa(dataSiswaGlobal);
             saringTabelKelas();
@@ -273,26 +275,31 @@
                 nilaiAktifSiswa = dataNilaiAktifGlobal[namaClean] !== undefined ? dataNilaiAktifGlobal[namaClean] : "0.0";
             }
 
-            // F. Perhitungan Estimasi Raport Berdasarkan Bobot Persentase (15%, 15%, 30%, 10%, 30%)
-            let nTugas = parseFloat(nilaiTugasSiswa) || 0;
-            let nLkpd = parseFloat(nilaiLkpdSiswa) || 0;
-            let nSumatif = parseFloat(nilaiSumatifSiswa) || 0;
-            let nAktif = parseFloat(nilaiAktifSiswa) || 0; 
-            let nAbsen = parseFloat(nilaiAbsenSiswa) || 0; 
-
-            // Menentukan pengali bobot secara dinamis jika statusnya sudah rilis
-            let wTugas = (nilaiTugasSiswa === "Belum Rilis") ? 0 : 0.15;
-            let wLkpd = (nilaiLkpdSiswa === "Belum Rilis") ? 0 : 0.15;
-            let wSumatif = (nilaiSumatifSiswa === "Belum Rilis") ? 0 : 0.30;
-            let wAktif = (nilaiAktifSiswa === "Belum Rilis") ? 0 : 0.10;
-            let wAbsen = (nilaiAbsenSiswa === "Belum Rilis") ? 0 : 0.30;
-
-            let totalBobotTersedia = wTugas + wLkpd + wSumatif + wAktif + wAbsen;
+            // =========================================================================
+            // 🎯 SINKRONISASI TOTAL: LANGSUNG AMBIL HASIL MATANG DARI BACKEND APPS SCRIPT
+            // =========================================================================
             let rerataTotal = "0.0";
+            if (dataNilaiRaporGlobal[namaClean] !== undefined) {
+                rerataTotal = dataNilaiRaporGlobal[namaClean];
+            } else {
+                // Aturan fallback seandainya data backend belum ter-refresh sempurna
+                let nTugas = parseFloat(nilaiTugasSiswa) || 0;
+                let nLkpd = parseFloat(nilaiLkpdSiswa) || 0;
+                let nSumatif = parseFloat(nilaiSumatifSiswa) || 0;
+                let nAktif = parseFloat(nilaiAktifSiswa) || 0; 
+                let nAbsen = parseFloat(nilaiAbsenSiswa) || 0; 
 
-            if (totalBobotTersedia > 0) {
-                let kalkulasiMurni = (nTugas * wTugas) + (nLkpd * wLkpd) + (nSumatif * wSumatif) + (nAktif * wAktif) + (nAbsen * wAbsen);
-                rerataTotal = (kalkulasiMurni / totalBobotTersedia).toFixed(1);
+                let wTugas = (nilaiTugasSiswa === "Belum Rilis") ? 0 : 0.15;
+                let wLkpd = (nilaiLkpdSiswa === "Belum Rilis") ? 0 : 0.15;
+                let wSumatif = (nilaiSumatifSiswa === "Belum Rilis") ? 0 : 0.30;
+                let wAktif = (nilaiAktifSiswa === "Belum Rilis") ? 0 : 0.10;
+                let wAbsen = (nilaiAbsenSiswa === "Belum Rilis") ? 0 : 0.30;
+
+                let totalBobotTersedia = wTugas + wLkpd + wSumatif + wAktif + wAbsen;
+                if (totalBobotTersedia > 0) {
+                    let kalkulasiMurni = (nTugas * wTugas) + (nLkpd * wLkpd) + (nSumatif * wSumatif) + (nAktif * wAktif) + (nAbsen * wAbsen);
+                    rerataTotal = (kalkulasiMurni / totalBobotTersedia).toFixed(1);
+                }
             }
 
             baris.innerHTML = `
@@ -324,10 +331,7 @@
         }
     }
 
-    // ✨ FUNGSI BARU: Mengonversi khusus area tabel menjadi berkas PDF murni yang rapi di HP & Laptop
-    // ✨ FUNGSI FIX: Mengonversi seluruh data siswa tanpa terpotong di HP
     function unduhLaporanPDF() {
-        // 1. Ambil nama filter untuk menyusun judul berkas dinamis
         const guru = document.getElementById("pilihGuru").value;
         const mapel = document.getElementById("pilihMapel").value;
         const kelas = document.getElementById("pilihKelas").value;
@@ -336,45 +340,38 @@
         const namaMapel = (mapel && mapel !== "semua") ? mapel : "Semua Mapel";
         const namaKelas = (kelas && kelas !== "semua") ? kelas : "Semua Kelas";
         
-        // 2. Format Tanggal Indonesia otomatis hari ini
         const opsiTanggal = { year: 'numeric', month: 'long', day: 'numeric' };
         const tanggalHariIni = new Date().toLocaleDateString('id-ID', opsiTanggal);
         
-        // 3. Suntikkan teks ke dalam layout dokumen PDF
         document.getElementById("subJudulPDF").textContent = `Mata Pelajaran: ${namaMapel} | Kelas: ${namaKelas}`;
         document.getElementById("ttdTempatTanggal").textContent = `Maluku Tengah, ${tanggalHariIni}`;
         document.getElementById("ttdMapel").textContent = namaMapel;
         document.getElementById("ttdNamaGuru").textContent = namaGuru;
         
-        // 4. Bidik area kotak yang dibungkus oleh bungkusan PDF putih
         const elemenTarget = document.getElementById("areaCetakPDF");
         
-        // 5. [PENTING UNTUK HP] Ubah gaya bungkusan & tabel menjadi statis total agar tidak terpotong tinggi layar HP
         elemenTarget.classList.add("pdf-mode");
         const wrapperTabel = elemenTarget.querySelector(".table-responsive-wrapper");
         if (wrapperTabel) {
-            wrapperTabel.style.overflow = "visible"; // Matikan fungsi scroll internal
-            wrapperTabel.style.maxHeight = "none";    // Buka batas tinggi tabel
+            wrapperTabel.style.overflow = "visible"; 
+            wrapperTabel.style.maxHeight = "none";    
         }
         
-        // 6. Pengaturan kualitas konversi agar tulisan tidak blur dan mencakup semua data
         const opsiPdf = {
-            margin:       [15, 10, 15, 10], // Batas kertas atas, kiri, bawah, kanan (mm)
+            margin:       [15, 10, 15, 10], 
             filename:     `Buku_Nilai_${namaKelas}_${namaMapel}_${namaGuru}`.replace(/\s+/g, '_') + '.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
                 scale: 2, 
                 useCORS: true, 
                 letterRendering: true,
-                scrollY: 0, // Kunci posisi scroll di koordinat 0 agar tangkapan layar dari atas
-                windowHeight: elemenTarget.scrollHeight // Paksa tinggi canvas mengikuti tinggi total data tabel asli
+                scrollY: 0, 
+                windowHeight: elemenTarget.scrollHeight 
             }, 
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // Format kertas standar A4 tegak
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } 
         };
         
-        // 7. Proses konversi berjalan di latar belakang, otomatis terunduh saat selesai
         html2pdf().set(opsiPdf).from(elemenTarget).save().then(function() {
-            // Kembalikan tampilan halaman web ke kondisi responsif semula setelah PDF sukses diunduh
             elemenTarget.classList.remove("pdf-mode");
             if (wrapperTabel) {
                 wrapperTabel.style.overflow = "";
