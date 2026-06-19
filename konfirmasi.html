@@ -185,87 +185,92 @@
         const emptyHistoryDiv = document.getElementById('emptyHistory');
 
         // Load data pengajuan dari spreadsheet
-        function loadUsulan() {
-            loadingDiv.style.display = "block";
-            
-            // Sembunyikan semua elemen kontainer saat memuat data
-            tableEl.style.display = "none";
-            titleUsulan.style.display = "none";
-            emptyDiv.style.display = "none";
-            
-            historyTableEl.style.display = "none";
-            titleRiwayat.style.display = "none";
-            emptyHistoryDiv.style.display = "none";
-            
+        // Load data pengajuan dari spreadsheet
+function loadUsulan() {
+    loadingDiv.style.display = "block";
+    
+    // Sembunyikan semua elemen kontainer saat memuat data
+    tableEl.style.display = "none";
+    titleUsulan.style.display = "none";
+    emptyDiv.style.display = "none";
+    
+    historyTableEl.style.display = "none";
+    titleRiwayat.style.display = "none";
+    emptyHistoryDiv.style.display = "none";
+    
+    tbody.innerHTML = "";
+    historyTbody.innerHTML = "";
+
+    fetch(`${WEB_APP_URL}?action=getUsulanData`)
+        .then(res => res.json())
+        .then(data => {
+            // 🌟 FIX DUPLIKASI: Kosongkan ulang isi tabel di sini untuk mengantisipasi fungsi terpanggil 2x bersamaan
             tbody.innerHTML = "";
             historyTbody.innerHTML = "";
 
-            fetch(`${WEB_APP_URL}?action=getUsulanData`)
-                .then(res => res.json())
-                .then(data => {
-                    loadingDiv.style.display = "none";
-                    titleUsulan.style.display = "block";
-                    titleRiwayat.style.display = "block";
+            loadingDiv.style.display = "none";
+            titleUsulan.style.display = "block";
+            titleRiwayat.style.display = "block";
 
-                    let jumlahUsulanAktif = 0;
-                    let jumlahRiwayat = 0;
+            let jumlahUsulanAktif = 0;
+            let jumlahRiwayat = 0;
 
-                    data.forEach(item => {
-                        // Ambil status dari database, jika kosong atau bernilai 'PENDING' anggap usulan baru
-                        const statusKini = item.status ? item.status.toString().toUpperCase().trim() : "";
+            data.forEach(item => {
+                // Ambil status dari database, jika kosong atau bernilai 'PENDING' anggap usulan baru
+                const statusKini = item.status ? item.status.toString().toUpperCase().trim() : "";
 
-                        if (statusKini === "DISETUJUI" || statusKini === "DITOLAK") {
-                            // MASUKKAN KE TABEL RIWAYAT
-                            jumlahRiwayat++;
-                            const tr = document.createElement('tr');
-                            const badgeClass = statusKini === "DISETUJUI" ? "badge-approve" : "badge-reject";
-                            
-                            tr.innerHTML = `
-                                <td><b>${item.nama}</b></td>
-                                <td>${item.kelas}</td>
-                                <td><span style="color: #bfa15f">${item.kategori}</span></td>
-                                <td>${item.kegiatan}</td>
-                                <td><span class="badge ${badgeClass}">${statusKini}</span></td>
-                                <td style="color: #a3b8cc;">${item.verifikator || '-'}</td>
-                            `;
-                            historyTbody.appendChild(tr);
-                        } else {
-                            // MASUKKAN KE TABEL UTAMA (PENDING/BELUM DIKONSOLIDASI)
-                            jumlahUsulanAktif++;
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td><b>${item.nama}</b></td>
-                                <td>${item.kelas}</td>
-                                <td><span style="color: #bfa15f">${item.kategori}</span></td>
-                                <td>${item.kegiatan}</td>
-                                <td style="color: #a3b8cc; max-width: 250px;">${item.deskripsi || '-'}</td>
-                                <td>
-                                    <button class="btn btn-approve" onclick="prosesStatus(${item.row}, 'DISETUJUI')">Setujui</button>
-                                    <button class="btn btn-reject" onclick="prosesStatus(${item.row}, 'DITOLAK')">Tolak</button>
-                                </td>
-                            `;
-                            tbody.appendChild(tr);
-                        }
-                    });
+                if (statusKini === "DISETUJUI" || statusKini === "DITOLAK") {
+                    // MASUKKAN KE TABEL RIWAYAT
+                    jumlahRiwayat++;
+                    const tr = document.createElement('tr');
+                    const badgeClass = statusKini === "DISETUJUI" ? "badge-approve" : "badge-reject";
+                    
+                    tr.innerHTML = `
+                        <td><b>${item.nama}</b></td>
+                        <td>${item.kelas}</td>
+                        <td><span style="color: #bfa15f">${item.kategori}</span></td>
+                        <td>${item.kegiatan}</td>
+                        <td><span class="badge ${badgeClass}">${statusKini}</span></td>
+                        <td style="color: #a3b8cc;">${item.verifikator || '-'}</td>
+                    `;
+                    historyTbody.appendChild(tr);
+                } else {
+                    // MASUKKAN KE TABEL UTAMA (PENDING/BELUM DIKONSOLIDASI)
+                    jumlahUsulanAktif++;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><b>${item.nama}</b></td>
+                        <td>${item.kelas}</td>
+                        <td><span style="color: #bfa15f">${item.kategori}</span></td>
+                        <td>${item.kegiatan}</td>
+                        <td style="color: #a3b8cc; max-width: 250px;">${item.deskripsi || '-'}</td>
+                        <td>
+                            <button class="btn btn-approve" onclick="prosesStatus(${item.row}, 'DISETUJUI')">Setujui</button>
+                            <button class="btn btn-reject" onclick="prosesStatus(${item.row}, 'DITOLAK')">Tolak</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
 
-                    // Atur visibilitas Tampilan Tabel Usulan Utama
-                    if(jumlahUsulanAktif === 0) {
-                        emptyDiv.style.display = "block";
-                    } else {
-                        tableEl.style.display = "table";
-                    }
+            // Atur visibilitas Tampilan Tabel Usulan Utama
+            if(jumlahUsulanAktif === 0) {
+                emptyDiv.style.display = "block";
+            } else {
+                tableEl.style.display = "table";
+            }
 
-                    // Atur visibilitas Tampilan Tabel Riwayat
-                    if(jumlahRiwayat === 0) {
-                        emptyHistoryDiv.style.display = "block";
-                    } else {
-                        historyTableEl.style.display = "table";
-                    }
-                })
-                .catch(err => {
-                    loadingDiv.textContent = "❌ Gagal memuat data. Periksa koneksi internet atau verifikasi deployment script.";
-                    console.error(err);
-                });
+            // Atur visibilitas Tampilan Tabel Riwayat
+            if(jumlahRiwayat === 0) {
+                emptyHistoryDiv.style.display = "block";
+            } else {
+                historyTableEl.style.display = "table";
+            }
+        })
+        .catch(err => {
+            loadingDiv.textContent = "❌ Gagal memuat data. Periksa koneksi internet atau verifikasi deployment script.";
+            console.error(err);
+        });
         }
 
         // Fungsi Aksi Klik Setujui / Tolak
