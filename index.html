@@ -98,61 +98,134 @@
             margin-bottom: 35px;
         }
 
-        .btn {
+        /* 👑 GAYA UTAMA PANEL PREMIUM (SERAGAM DAN SAMA BESAR) */
+        .panel-menu {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #04434a, #022326);
+            border: 2px solid #1a5157;
+            border-radius: 14px;
+            text-decoration: none;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        /* Efek Kilau / Glossy halus yang bergerak saat di-hover */
+        .panel-menu::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -50%;
+            width: 30%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            transition: 0.75s;
+        }
+
+        .panel-menu:hover::before {
+            left: 125%;
+        }
+
+        .panel-menu:hover {
+            transform: translateY(-3px);
+            border-color: #bfa15f;
+            box-shadow: 0 6px 20px rgba(191, 161, 95, 0.25);
+            background: linear-gradient(135deg, #06545d, #032b30);
+        }
+
+        /* Variasi khusus untuk tombol prioritas tinggi atau berbeda peran */
+        .panel-siswa-premium {
+            border-color: #c49a23;
+            background: linear-gradient(135deg, #06545d, #022326);
+            box-shadow: 0 4px 15px rgba(196, 154, 35, 0.15);
+        }
+        
+        .panel-siswa-premium:hover {
+            border-color: #ffffff;
+            box-shadow: 0 6px 20px rgba(196, 154, 35, 0.35);
+        }
+
+        .panel-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .panel-icon-box {
+            font-size: 22px;
+            background-color: rgba(191, 161, 95, 0.1);
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            padding: 14px;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            border-radius: 12px;
-            cursor: pointer;
+            border-radius: 10px;
+            border: 1px solid rgba(191, 161, 95, 0.2);
             transition: all 0.3s ease;
-            text-decoration: none;
-            margin-bottom: 15px;
         }
 
-        .btn-siswa {
+        /* Warna kotak ikon khusus panel utama siswa */
+        .panel-siswa-premium .panel-icon-box {
+            background-color: rgba(196, 154, 35, 0.15);
+            border-color: rgba(196, 154, 35, 0.3);
+        }
+
+        .panel-menu:hover .panel-icon-box {
+            background-color: #bfa15f;
+            transform: scale(1.05) rotate(10deg);
+        }
+
+        .panel-siswa-premium:hover .panel-icon-box {
             background-color: #c49a23;
-            color: #0c1a1c;
-            border: none;
-            box-shadow: 0 0 15px rgba(196, 154, 35, 0.3);
         }
 
-        .btn-siswa:hover {
-            background-color: #b0891e;
+        .panel-text-wrapper {
+            display: flex;
+            flex-direction: column;
         }
 
-        /* STYLE BARU CEK NILAI */
-        .btn-cek-nilai {
-            background: linear-gradient(135deg, #0d3d42, #07383d);
+        .panel-main-title {
+            font-size: 14px;
+            font-weight: 800;
             color: #bfa15f;
-            border: 1px solid #bfa15f;
-            box-shadow: 0 4px 15px rgba(191, 161, 95, 0.15);
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
         }
 
-        .btn-cek-nilai:hover {
-            background: linear-gradient(135deg, #134e54, #0d3d42);
+        .panel-siswa-premium .panel-main-title {
+            color: #c49a23;
+        }
+
+        .panel-menu:hover .panel-main-title {
             color: #ffffff;
-            box-shadow: 0 4px 20px rgba(191, 161, 95, 0.3);
-            transform: translateY(-1px);
         }
 
-        .btn-guru {
-            background-color: #07383d;
+        .panel-sub-title {
+            font-size: 11px;
+            color: #a3b8cc;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .panel-arrow {
+            font-size: 14px;
+            color: #bfa15f;
+            transition: transform 0.3s ease;
+        }
+
+        .panel-siswa-premium .panel-arrow {
+            color: #c49a23;
+        }
+
+        .panel-menu:hover .panel-arrow {
+            transform: translateX(4px);
             color: #ffffff;
-            border: 1px solid #1a5157;
-        }
-
-        .btn-guru:hover {
-            background-color: #0a464c;
-        }
-
-        .btn .icon {
-            margin-right: 10px;
-            font-size: 16px;
         }
 
         .footer {
@@ -178,19 +251,52 @@
         
         <div class="year-badge">Tahun Pelajaran 2026/2027</div>
 
-        <a href="dashboard-siswa.html" class="btn btn-siswa">
-            <span class="icon">🧑‍🎓</span> PINTU MASUK SISWA
+        <a href="dashboard-siswa.html" class="panel-menu panel-siswa-premium">
+            <div class="panel-content">
+                <div class="panel-icon-box">🧑‍🎓</div>
+                <div class="panel-text-wrapper">
+                    <span class="panel-main-title">MASUK RUANG BELAJAR</span>
+                    <span class="panel-sub-title">Pintu masuk utama pembelajaran siswa</span>
+                </div>
+            </div>
+            <div class="panel-arrow">➔</div>
         </a>
 
-        <a href="cek-nilai.html" class="btn btn-cek-nilai">
-        <span class="icon" style="font-size: 18px; filter: drop-shadow(0 0 2px #bfa15f);">📊</span> CEK NILAI & ESTIMASI RAPORT
+        <a href="cek-nilai.html" class="panel-menu">
+            <div class="panel-content">
+                <div class="panel-icon-box">📊</div>
+                <div class="panel-text-wrapper">
+                    <span class="panel-main-title">CEK NILAI & ESTIMASI RAPORT</span>
+                    <span class="panel-sub-title">Pantau akumulasi nilai transparan kamu</span>
+                </div>
+            </div>
+            <div class="panel-arrow">➔</div>
         </a>
-        <a href="login-guru.html" class="btn btn-guru">
-            <span class="icon">🔒</span> PINTU MASUK GURU
+
+        <a href="extra.html" class="panel-menu">
+            <div class="panel-content">
+                <div class="panel-icon-box">🚀</div>
+                <div class="panel-text-wrapper">
+                    <span class="panel-main-title">PENGEMBANGAN DIRI (EKSTRA)</span>
+                    <span class="panel-sub-title">Klik di sini untuk input data ekstra kamu</span>
+                </div>
+            </div>
+            <div class="panel-arrow">➔</div>
+        </a>
+
+        <a href="login-guru.html" class="panel-menu">
+            <div class="panel-content">
+                <div class="panel-icon-box">🔒</div>
+                <div class="panel-text-wrapper">
+                    <span class="panel-main-title">PINTU MASUK GURU</span>
+                    <span class="panel-sub-title">Akses dashboard internal tenaga pengajar</span>
+                </div>
+            </div>
+            <div class="panel-arrow">➔</div>
         </a>
 
         <div class="footer">
-            © 2026 SMAN 15 Maluku Tengah. All Rights Reserved.
+            usep saepudin © 2026 SMAN 15 Maluku Tengah. All Rights Reserved.
         </div>
     </div>
 
