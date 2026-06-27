@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pratinjau Materi Pembelajaran</title>
-    <link rel="stylesheet" href="../style-shared.css">
-<style>
+    <style>
         body {
             background-color: #0b1a1a;
             color: #ffffff;
@@ -50,8 +49,6 @@
             background-color: #bfa15f;
             color: #032b30;
         }
-        
-        /* 📱 DESAIN BINGKAI MOBILE PREMIUM (SUDAH DIPERBAIKI) */
         .frame-pembungkus {
             position: relative;
             width: 100%;
@@ -59,14 +56,13 @@
             background: #ffffff; 
             border: 3px solid #bfa15f;
             border-radius: 12px;
-            overflow-y: auto;          /* ✨ Mengaktifkan scroll atas-bawah jika gambar panjang */
+            overflow-y: auto;
             overflow-x: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
-            align-items: flex-start;   /* ✨ Gambar dimulai tepat dari baris paling atas */
+            align-items: flex-start;
         }
-        
         iframe {
             width: 100%;
             height: 100%;
@@ -74,16 +70,12 @@
             background-color: #ffffff;
             display: block;
         }
-
-        /* 🖼️ PENGATURAN GAMBAR MATERI (SUDAH DIPERBAIKI) */
         #gambarMateri {
-            width: 100%;               /* ✨ Lebar gambar dipaksa pas dengan lebar HP */
-            height: auto;              /* ✨ Tinggi gambar otomatis menyesuaikan proporsi agar tidak gepeng */
+            width: 100%;
+            height: auto;
             display: none; 
-            image-rendering: -webkit-optimize-contrast; /* ✨ Menajamkan tulisan di dalam gambar */
+            image-rendering: -webkit-optimize-contrast;
         }
-        
-        /* Loading Animasi Kreatif */
         .loading-box {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -108,7 +100,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         .error-notif {
             text-align: center;
             padding: 40px 20px;
@@ -120,7 +111,19 @@
             width: 100%;
         }
     </style>
-    </head>
+    <script>
+        // Dipindahkan ke atas agar browser mengenali fungsinya sebelum elemen HTML termuat
+        function hilangkanLoading() {
+            const loadingSistem = document.getElementById('loadingSistem');
+            if (loadingSistem) {
+                loadingSistem.style.opacity = '0';
+                setTimeout(() => {
+                    loadingSistem.style.display = 'none';
+                }, 500);
+            }
+        }
+    </script>
+</head>
 <body>
 
     <div class="container-materi">
@@ -141,149 +144,148 @@
         </div>
     </div>
 
-<script>
-    
-    window.onload = function() {
-        const parameterUrl = new URLSearchParams(window.location.search);
-        let linkMateriMentah = parameterUrl.get('doc');
+    <script>
+        window.onload = function() {
+            const parameterUrl = new URLSearchParams(window.location.search);
+            let linkMateriMentah = parameterUrl.get('doc');
 
-        const boxMateri = document.getElementById('boxMateri');
-        const iframeMateri = document.getElementById('iframeMateri');
-        const gambarMateri = document.getElementById('gambarMateri');
-        const textJudulHalaman = document.getElementById('textJudulHalaman');
-        const textLoading = document.getElementById('textLoading');
+            const boxMateri = document.getElementById('boxMateri');
+            const iframeMateri = document.getElementById('iframeMateri');
+            const gambarMateri = document.getElementById('gambarMateri');
+            const textJudulHalaman = document.getElementById('textJudulHalaman');
+            const textLoading = document.getElementById('textLoading');
 
-        if (!linkMateriMentah) {
-            boxMateri.innerHTML = `<div class="error-notif">❌ Tautan materi tidak valid atau tidak ditemukan!</div>`;
-            return;
-        }
-
-        let urlBersih = linkMateriMentah.trim();
-        let urlFinal = urlBersih;
-
-        // =========================================================================
-        // FUNGSI EKSTRAKSI PINTAR: Mengambil ID Unik File Google Drive (Anti-Macet)
-        // =========================================================================
-        function ambilIdDrive(url) {
-            let id = "";
-            if (url.includes("/d/")) {
-                id = url.split("/d/")[1].split("/")[0].split("?")[0];
-            } else if (url.includes("id=")) {
-                id = url.split("id=")[1].split("&")[0];
-            } else if (url.includes("drive.google.com/open?")) {
-                id = url.split("id=")[1].split("&")[0];
+            if (!linkMateriMentah) {
+                boxMateri.innerHTML = `<div class="error-notif">❌ Tautan materi tidak valid atau tidak ditemukan!</div>`;
+                return;
             }
-            return id;
-        }
 
-        // ---------------------------------------------------------------------
-        // ENGINE DETEKSI SINKRONISASI MEDIA (DOKUMEN, VIDEO, & GAMBAR)
-        // ---------------------------------------------------------------------
-        
-        // KONDISI 1: JIKA LINK ADALAH GAMBAR (Ekstensi file atau Google Drive Gambar)
-        // Ditambahkan pendeteksi kata 'image' atau 'viewing' untuk mengunci file gambar dari Drive
-        if (urlBersih.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)/i) || 
-           (urlBersih.includes("drive.google.com") && (urlBersih.includes("t=image") || urlBersih.includes("image") || !urlBersih.match(/\.(mp4|mkv|mov|avi|webm|flv)/i) && urlBersih.includes("/file/d/")) && !urlBersih.includes("usp=sharing_eip"))) {
-            
-            // Cek sekali lagi apakah ini benar-benar diarahkan untuk gambar
-            let idFileDrive = ambilIdDrive(urlBersih);
-            
-            if (idFileDrive && urlBersih.includes("drive.google.com")) {
-                textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
-                textLoading.innerText = "Memproses rendering gambar cloud...";
-                boxMateri.style.backgroundColor = "#111111"; 
+            let urlClean = linkMateriMentah.trim();
+            let urlFinal = urlClean;
+
+            function ambilIdDrive(url) {
+                let id = "";
+                if (url.includes("/d/")) {
+                    id = url.split("/d/")[1].split("/")[0].split("?")[0];
+                } else if (url.includes("id=")) {
+                    id = url.split("id=")[1].split("&")[0];
+                } else if (url.includes("drive.google.com/open?")) {
+                    id = url.split("id=")[1].split("&")[0];
+                }
+                return id;
+            }
+
+            const apakahGambar = urlClean.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)/i);
+            const apakahPDF = urlClean.match(/\.pdf/i);
+            const apakahVideo = urlClean.match(/\.(mp4|mkv|ogv|webm|mov|avi|flv)/i);
+
+            // 1. KONDISI VIDEO YOUTUBE
+            if (urlClean.includes("youtube.com") || urlClean.includes("youtu.be")) {
+                textJudulHalaman.innerText = "🎬 RUANG VIDEO YOUTUBE";
+                textLoading.innerText = "Menghubungkan ke server YouTube...";
+                boxMateri.style.backgroundColor = "#000000";
+                iframeMateri.style.display = "block";
+                gambarMateri.style.display = "none";
+
+                let idVideo = "";
+                if (urlClean.includes("youtu.be/")) {
+                    idVideo = urlClean.split("youtu.be/")[1].split(/[?#]/)[0];
+                } else if (urlClean.includes("v=")) {
+                    idVideo = urlClean.split("v=")[1].split("&")[0];
+                } else if (urlClean.includes("/embed/")) {
+                    idVideo = urlClean.split("/embed/")[1].split(/[?#]/)[0];
+                }
                 
-                iframeMateri.style.display = "none";  // Matikan iframe agar tidak muncul wajah sedih abu-abu
-                gambarMateri.style.display = "block"; // Aktifkan tag img asli
+                urlFinal = `https://www.youtube.com/embed/${idVideo}`;
+                iframeMateri.src = urlFinal;
+            } 
+            
+            // 2. KONDISI VIDEO GOOGLE DRIVE
+            else if (urlClean.includes("drive.google.com") && (apakahVideo || (urlClean.includes("/file/d/") && (urlClean.includes("t=video") || urlClean.includes("video"))))) {
+                textJudulHalaman.innerText = "🎬 RUANG VIDEO MATERI";
+                textLoading.innerText = "Menyiapkan pemutar video awan...";
+                boxMateri.style.backgroundColor = "#000000"; 
+                iframeMateri.style.display = "block";
+                gambarMateri.style.display = "none";
+
+                if (urlClean.includes('/view')) {
+                    urlFinal = urlClean.split('/view')[0] + '/preview';
+                } else if (urlClean.includes('/edit')) {
+                    urlFinal = urlClean.split('/edit')[0] + '/preview';
+                } else if (!urlClean.includes('/preview')) {
+                    urlFinal = urlClean + '/preview';
+                }
                 
-                // 🌟 JALUR KHUSUS: Mengubah URL menjadi Direct Endpoint khusus untuk Gambar/Foto
-                urlFinal = `https://docs.google.com/uc?export=view&id=${idFileDrive}`;
-                gambarMateri.src = urlFinal;
-            } else {
-                // Jika gambar link hosting umum luar (Bukan Google Drive)
-                textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
-                textLoading.innerText = "Memuat gambar...";
-                boxMateri.style.backgroundColor = "#111111";
-                iframeMateri.style.display = "none";
-                gambarMateri.style.display = "block";
-                gambarMateri.src = urlBersih;
-            }
-        } 
-        
-        // KONDISI 2: JIKA LINK ADALAH VIDEO GOOGLE DRIVE
-        else if (urlBersih.includes("drive.google.com") && (urlBersih.includes("/file/d/") || urlBersih.match(/\.(mp4|mkv|ogv|webm|mov|avi)/i))) {
-            textJudulHalaman.innerText = "🎬 RUANG VIDEO MATERI";
-            textLoading.innerText = "Menyiapkan pemutar video awan...";
-            boxMateri.style.backgroundColor = "#000000"; 
-            
-            iframeMateri.style.display = "block";
-            gambarMateri.style.display = "none";
+                iframeMateri.src = urlFinal;
+            } 
 
-            if (urlBersih.includes('/view')) {
-                urlFinal = urlBersih.split('/view')[0] + '/preview';
-            } else if (urlBersih.includes('/edit')) {
-                urlFinal = urlBersih.split('/edit')[0] + '/preview';
-            } else if (!urlBersih.includes('/preview')) {
-                urlFinal = urlBersih + '/preview';
+            // 3. KONDISI FILE PDF / FILE DRIVE NON-DOCS
+            else if (apakahPDF || (urlClean.includes("drive.google.com") && urlClean.includes("/file/d/") && !apakahGambar && !apakahVideo)) {
+                boxMateri.style.backgroundColor = "#ffffff";
+                iframeMateri.style.display = "block";
+                gambarMateri.style.display = "none";
+
+                if (urlClean.includes('/edit')) {
+                    urlClean = urlClean.split('/edit')[0];
+                } else if (urlClean.includes('/view')) {
+                    urlClean = urlClean.split('/view')[0];
+                } else if (urlClean.includes('/preview')) {
+                    urlClean = urlClean.split('/preview')[0];
+                } else if (urlClean.includes('/mobilebasic')) {
+                    urlClean = urlClean.split('/mobilebasic')[0];
+                }
+
+                textJudulHalaman.innerText = "📄 RUANG BACA PDF";
+                textLoading.innerText = "Membuka file PDF...";
+                urlFinal = urlClean + '/preview';
+                iframeMateri.src = urlFinal;
             }
             
-            iframeMateri.src = urlFinal;
-        } 
-        
-        // KONDISI 3: JIKA LINK ADALAH VIDEO YOUTUBE
-        else if (urlBersih.includes("youtube.com") || urlBersih.includes("youtu.be")) {
-            textJudulHalaman.innerText = "🎬 RUANG VIDEO YOUTUBE";
-            textLoading.innerText = "Menghubungkan ke server YouTube...";
-            boxMateri.style.backgroundColor = "#000000";
+            // 4. KONDISI GAMBAR
+            else if (apakahGambar || (urlClean.includes("drive.google.com") && (urlClean.includes("t=image") || urlClean.includes("image")))) {
+                let idFileDrive = ambilIdDrive(urlClean);
+                
+                if (idFileDrive && urlClean.includes("drive.google.com")) {
+                    textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
+                    textLoading.innerText = "Memproses rendering gambar cloud...";
+                    boxMateri.style.backgroundColor = "#111111"; 
+                    iframeMateri.style.display = "none";
+                    gambarMateri.style.display = "block";
+                    urlFinal = `https://docs.google.com/uc?export=view&id=${idFileDrive}`;
+                    gambarMateri.src = urlFinal;
+                } else {
+                    textJudulHalaman.innerText = "🖼️ RUANG GAMBAR / INFOGRAFIS";
+                    textLoading.innerText = "Memuat gambar...";
+                    boxMateri.style.backgroundColor = "#111111";
+                    iframeMateri.style.display = "none";
+                    gambarMateri.style.display = "block";
+                    gambarMateri.src = urlClean;
+                }
+            } 
             
-            iframeMateri.style.display = "block";
-            gambarMateri.style.display = "none";
+            // 5. KONDISI DEFAULT (Google Docs asli - mobilebasic)
+            else {
+                boxMateri.style.backgroundColor = "#ffffff";
+                iframeMateri.style.display = "block";
+                gambarMateri.style.display = "none";
 
-            let idVideo = "";
-            if (urlBersih.includes("youtu.be/")) {
-                idVideo = urlBersih.split("youtu.be/")[1].split(/[?#]/)[0];
-            } else if (urlBersih.includes("v=")) {
-                idVideo = urlBersih.split("v=")[1].split("&")[0];
-            } else if (urlBersih.includes("/embed/")) {
-                idVideo = urlBersih.split("/embed/")[1].split(/[?#]/)[0];
-            }
-            
-            urlFinal = `https://www.youtube.com/embed/${idVideo}`;
-            iframeMateri.src = urlFinal;
-        } 
-        
-// KONDISI 4: DEFAULT (Google Docs untuk LKPD Interaktif)
-        else {
-            textJudulHalaman.innerText = "📖 RUANG BACA DOKUMEN";
-            textLoading.innerText = "Menyelaraskan dokumen dengan layar HP...";
-            boxMateri.style.backgroundColor = "#ffffff";
-            
-            iframeMateri.style.display = "block";
-            gambarMateri.style.display = "none";
-
-            if (urlBersih.includes('/edit')) {
-                urlBersih = urlBersih.split('/edit')[0];
-            } else if (urlBersih.includes('/view')) {
-                urlBersih = urlBersih.split('/view')[0];
-            } else if (urlBersih.includes('/preview')) {
-                urlBersih = urlBersih.split('/preview')[0];
-            }
-            
-            // ✨ KITA KEMBALIKAN KE MOBILEBASIC: Agar kotak jawaban LKPD muncul lagi demi siswa
-            urlFinal = urlBersih + '/mobilebasic';
-            iframeMateri.src = urlFinal;
-        }    };
-
-    function hilangkanLoading() {
-        const loadingSistem = document.getElementById('loadingSistem');
-        if(loadingSistem) {
-            loadingSistem.style.opacity = '0';
-            setTimeout(() => {
-                loadingSistem.style.display = 'none';
-            }, 500);
-        }
-    }
-</script>
-
+                if (urlClean.includes('/edit')) {
+                    urlClean = urlClean.split('/edit')[0];
+                } else if (urlClean.includes('/view')) {
+                    urlClean = urlClean.split('/view')[0];
+                } else if (urlClean.includes('/preview')) {
+                    urlClean = urlClean.split('/preview')[0];
+                } else if (urlClean.includes('/mobilebasic')) {
+                    urlClean = urlClean.split('/mobilebasic')[0];
+                }
+                
+                textJudulHalaman.innerText = "📖 RUANG BACA DOKUMEN";
+                textLoading.innerText = "Menyelaraskan dokumen dengan layar HP... ";
+                urlFinal = urlClean + '/mobilebasic';
+                
+                iframeMateri.src = urlFinal;
+            }    
+        };
+    </script>
 </body>
 </html>
